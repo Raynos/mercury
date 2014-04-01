@@ -7,30 +7,42 @@
   "repository": "git://github.com/Raynos/mercury.git",
   "main": "index",
   "homepage": "https://github.com/Raynos/mercury",
-  "contributors": [{
-    "name": "Raynos"
-  }],
+  "contributors": [
+    {
+      "name": "Raynos"
+    }
+  ],
   "bugs": {
     "url": "https://github.com/Raynos/mercury/issues",
     "email": "raynos2@gmail.com"
   },
-  "dependencies": {},
+  "dependencies": {
+    "dom-delegator": "^6.2.1",
+    "event-sinks": "^2.0.1",
+    "geval": "^2.0.3",
+    "hash-router": "^0.3.4",
+    "main-loop": "^1.0.1",
+    "observ": "^0.1.5",
+    "observ-array": "^1.0.3",
+    "observ-hash": "^1.1.1",
+    "value-event": "^0.6.1",
+    "vdom-thunk": "^1.1.0",
+    "virtual-dom": "git://github.com/Matt-Esch/virtual-dom"
+  },
   "devDependencies": {
+    "browserify": "^3.38.0",
+    "indexhtmlify": "^1.1.1",
     "tape": "~1.0.2"
   },
-  "licenses": [{
-    "type": "MIT",
-    "url": "http://github.com/Raynos/mercury/raw/master/LICENSE"
-  }],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://github.com/Raynos/mercury/raw/master/LICENSE"
+    }
+  ],
   "scripts": {
     "test": "node ./test/index.js",
-    "start": "node ./index.js",
-    "watch": "nodemon -w ./index.js index.js",
-    "travis-test": "istanbul cover ./test/index.js && ((cat coverage/lcov.info | coveralls) || exit 0)",
-    "cover": "istanbul cover --report none --print detail ./test/index.js",
-    "view-cover": "istanbul report html && google-chrome ./coverage/index.html",
-    "test-browser": "testem-browser ./test/browser/index.js",
-    "testem": "testem-both -b=./test/browser/index.js"
+    "count": "browserify examples/count.js | indexhtmlify > examples/count.html"
   },
   "testling": {
     "files": "test/index.js",
