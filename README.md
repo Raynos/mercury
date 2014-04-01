@@ -10,7 +10,9 @@
 
 <!-- [![browser support][11]][12] -->
 
-A truly modular frontend framework
+A truly modular frontend anti framework
+
+To understand what I mean by anti framework just [read the source](https://github.com/Raynos/mercury/blob/master/index.js)
 
 ## Example
 
@@ -39,6 +41,10 @@ var loop = mercury.main(clickCount(), render)
 clickCount(loop.update)
 document.body.appendChild(loop.target)
 ```
+
+## TodoMVC
+
+Check out [frontend-framework TODOMVC implementation](https://github.com/Raynos/frontend-framework/tree/todomvc)
 
 ## Installation
 
