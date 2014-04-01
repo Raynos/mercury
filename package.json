@@ -1,8 +1,8 @@
 {
   "name": "mercury",
   "version": "1.0.0",
-  "description": "BLARGH",
-  "keywords": [],
+  "description": "A truly modular frontend framework",
+  "keywords": ["framework", "frontend", "virtual", "react", "modular", "web"],
   "author": "Raynos <raynos2@gmail.com>",
   "repository": "git://github.com/Raynos/mercury.git",
   "main": "index",
