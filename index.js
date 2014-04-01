@@ -1,3 +1,7 @@
+/*
+    Pro tip: Don't require `mercury` itself.
+      require and depend on all these modules directly!
+*/
 module.exports = {
     // Entry
     main: require("main-loop"),
