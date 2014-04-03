@@ -44,7 +44,7 @@ document.body.appendChild(loop.target)
 
 ## TodoMVC
 
-Check out [frontend-framework TODOMVC implementation](https://github.com/Raynos/frontend-framework/tree/master/todomvc)
+Check out [TODOMVC implementation](examples/todomvc)
 
 ## Installation
 
