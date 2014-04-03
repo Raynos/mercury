@@ -9,8 +9,6 @@ module.exports = {
     // Input
     Delegator: require("dom-delegator"),
     EventSinks: require("event-sinks/geval"),
-    Event: require("geval"),
-    HashRouter: require("hash-router"),
     event: require("value-event/event"),
     valueEvent: require("value-event/value"),
     submitEvent: require("value-event/submit"),
