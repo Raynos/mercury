@@ -7,7 +7,15 @@
 <script language=javascript>
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var createEditor = require('javascript-editor')
+window.addEventListener('load', function () {
+    var editor = createEditor({
+        container: elem,
+        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar delegator = mercury.Delegator()\nvar inputs = mercury.EventSinks(delegator.id, [\"height\", \"weight\", \"bmi\"])\nvar bmiData = mercury.hash({\n    height: mercury.value(180),\n    weight: mercury.value(80),\n    bmi: mercury.value(null)\n})\n\nfunction updateData(type, data) {\n    bmiData[type].set(data.currentValue.slider)\n    bmiData[type === \"bmi\" ? \"weight\" : \"bmi\"].set(null)\n}\n\ninputs.events.height(updateData.bind(null, \"height\"))\ninputs.events.weight(updateData.bind(null, \"weight\"))\ninputs.events.bmi(updateData.bind(null, \"bmi\"))\n\nfunction calcBmi(data) {\n    var h = data.height / 100\n    return {\n        height: data.height,\n        bmi: data.bmi ? data.bmi : data.weight / (h * h),\n        weight: data.bmi ? data.bmi * (h * h) : data.weight\n    }\n}\n\nfunction slider(value, sink, min, max) {\n    return h(\"input\", {\n        type: \"range\", min: min, max: max, value: value,\n        style: { width: \"100%\" }, name: \"slider\",\n        \"data-event\": mercury.changeEvent(sink)\n    })\n}\n\nfunction render(bmiData) {\n    var values = calcBmi(bmiData)\n    var color = values.bmi < 18.5 ? \"orange\" :\n        values.bmi < 25 ? \"inherit\" :\n        values.bmi < 30 ? \"orange\" : \"red\"\n    var diagnose = values.bmi < 18.5 ? \"underweight\" :\n        values.bmi < 25 ? \"normal\" :\n        values.bmi < 30 ? \"overweight\" : \"obese\"\n\n    return h(\"div\", [\n        h(\"h3\", \"BMI calculator\"),\n        h(\"div\", [\n            \"Weight: \" + ~~values.weight + \"kg\",\n            mercury.partial(slider, values.weight, inputs.sinks.weight, 30, 150)\n        ]),\n        h(\"div\", [\n            \"Height: \" + ~~values.height + \"cm\",\n            mercury.partial(slider, values.height,\n                inputs.sinks.height, 100, 220)\n        ]),\n        h(\"div\", [\n            \"BMI: \" + ~~values.bmi + \" \",\n            h(\"span\", { style: { color: color } }, diagnose),\n            mercury.partial(slider, values.bmi, inputs.sinks.bmi, 10, 50)\n        ])\n    ])\n}\n\n\nvar loop = mercury.main(bmiData(), render)\nbmiData(loop.update)\ndocument.body.appendChild(loop.target)\n",
+        readOnly: true
+    })
+})
 var elem = document.createElement('div')
+document.body.appendChild(elem)
 var link = document.createElement('link')
 link.rel = 'stylesheet'
 link.href = 'https://rawgithub.com/maxogden/javascript-editor/master/css/codemirror.css'
@@ -16,14 +24,7 @@ var link = document.createElement('link')
 link.rel = 'stylesheet'
 link.href = 'https://rawgithub.com/maxogden/javascript-editor/master/css/theme.css'
 document.head.appendChild(link)
-document.body.appendChild(elem)
-setTimeout(function () {
-    var editor = createEditor({
-        container: elem,
-        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar delegator = mercury.Delegator()\nvar inputs = mercury.EventSinks(delegator.id, [\"height\", \"weight\", \"bmi\"])\nvar bmiData = mercury.hash({\n    height: mercury.value(180),\n    weight: mercury.value(80),\n    bmi: mercury.value(null)\n})\n\nfunction updateData(type, data) {\n    bmiData[type].set(data.currentValue.slider)\n    bmiData[type === \"bmi\" ? \"weight\" : \"bmi\"].set(null)\n}\n\ninputs.events.height(updateData.bind(null, \"height\"))\ninputs.events.weight(updateData.bind(null, \"weight\"))\ninputs.events.bmi(updateData.bind(null, \"bmi\"))\n\nfunction calcBmi(data) {\n    var h = data.height / 100\n    return {\n        height: data.height,\n        bmi: data.bmi ? data.bmi : data.weight / (h * h),\n        weight: data.bmi ? data.bmi * (h * h) : data.weight\n    }\n}\n\nfunction slider(value, sink, min, max) {\n    return h(\"input\", {\n        type: \"range\", min: min, max: max, value: value,\n        style: { width: \"100%\" }, name: \"slider\",\n        \"data-event\": mercury.changeEvent(sink)\n    })\n}\n\nfunction render(bmiData) {\n    var values = calcBmi(bmiData)\n    var color = values.bmi < 18.5 ? \"orange\" :\n        values.bmi < 25 ? \"inherit\" :\n        values.bmi < 30 ? \"orange\" : \"red\"\n    var diagnose = values.bmi < 18.5 ? \"underweight\" :\n        values.bmi < 25 ? \"normal\" :\n        values.bmi < 30 ? \"overweight\" : \"obese\"\n\n    return h(\"div\", [\n        h(\"h3\", \"BMI calculator\"),\n        h(\"div\", [\n            \"Weight: \" + ~~values.weight + \"kg\",\n            mercury.partial(slider, values.weight, inputs.sinks.weight, 30, 150)\n        ]),\n        h(\"div\", [\n            \"Height: \" + ~~values.height + \"cm\",\n            mercury.partial(slider, values.height,\n                inputs.sinks.height, 100, 220)\n        ]),\n        h(\"div\", [\n            \"BMI: \" + ~~values.bmi + \" \",\n            h(\"span\", { style: { color: color } }, diagnose),\n            mercury.partial(slider, values.bmi, inputs.sinks.bmi, 10, 50)\n        ])\n    ])\n}\n\n\nvar loop = mercury.main(bmiData(), render)\nbmiData(loop.update)\ndocument.body.appendChild(loop.target)\n",
-        readOnly: true
-    })
-}, 100)
+
 },{"javascript-editor":25}],2:[function(require,module,exports){
 var mercury = require("../index.js")
 var h = mercury.h
