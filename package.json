@@ -53,6 +53,7 @@
   "scripts": {
     "test": "node ./test/index.js",
     "count": "browserify examples/count.js | indexhtmlify > examples/count.html",
+    "bmi-counter": "browserify examples/bmi-counter.js | indexhtmlify > examples/bmi-counter.html",
     "shared-state": "browserify examples/shared-state.js | indexhtmlify > examples/shared-state.html",
     "todomvc": "browserify examples/todomvc/browser.js | indexhtmlify > examples/todomvc/index.html"
   },
