@@ -9,6 +9,10 @@ module.exports = render
 
 function render(state) {
     return h("#todoapp.todomvc-wrapper", [
+        h("link", {
+            rel: "stylesheet",
+            href: "http://raynos.github.io/mercury/examples/todomvc/style.css"
+        }),
         h("section.todoapp", [
             mercury.partial(header, state.todoField, state.sinks),
             mercury.partial(mainSection, state.todos, state.route, state.sinks),

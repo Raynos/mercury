@@ -52,7 +52,8 @@
   ],
   "scripts": {
     "test": "node ./test/index.js",
-    "count": "browserify examples/count.js | indexhtmlify > examples/count.html"
+    "count": "browserify examples/count.js | indexhtmlify > examples/count.html",
+    "todomvc": "browserify examples/todomvc/browser.js | indexhtmlify > examples/todomvc/index.html"
   },
   "testling": {
     "files": "test/index.js",
