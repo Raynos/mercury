@@ -57,7 +57,7 @@
     "count": "node bin/browserify-editor.js examples/count.js | indexhtmlify > examples/count.html",
     "bmi-counter": "node bin/browserify-editor.js examples/bmi-counter.js | indexhtmlify > examples/bmi-counter.html",
     "shared-state": "node bin/browserify-editor.js examples/shared-state.js | indexhtmlify > examples/shared-state.html",
-    "todomvc": "node bin/browserify-editor.js examples/todomvc/browser.js | indexhtmlify > examples/todomvc/index.html"
+    "todomvc": "browserify examples/todomvc/browser.js | indexhtmlify > examples/todomvc/index.html"
   },
   "testling": {
     "files": "test/index.js",
