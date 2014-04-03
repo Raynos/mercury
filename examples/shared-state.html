@@ -10,7 +10,7 @@ var createEditor = require('javascript-editor')
 window.addEventListener('load', function () {
     var editor = createEditor({
         container: elem,
-        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar delegator = mercury.Delegator()\nvar inputs = mercury.EventSinks(delegator.id, [\"change\"])\nvar textValue = mercury.value(\"\")\n\ninputs.events.change(function (data) {\n    textValue.set(data.currentValue.text)\n})\n\nfunction inputBox(value, sink) {\n    return h(\"input\", {\n        value: value,\n        name: \"text\",\n        \"data-event\": mercury.changeEvent(sink)\n    })\n}\n\nfunction render(textValue) {\n    return h(\"div\", [\n        h(\"p\", \"The value is now: \" + textValue),\n        h(\"p\", [\n            \"Change it here: \",\n            inputBox(textValue, inputs.sinks.change)\n        ])\n    ])\n}\n\nvar loop = mercury.main(textValue(), render)\ntextValue(loop.update)\ndocument.body.appendChild(loop.target)\n",
+        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar delegator = mercury.Delegator()\nvar inputs = mercury.EventSinks(delegator.id, [\"change\"])\nvar textValue = mercury.value(\"\")\n\ninputs.events.change(function (data) {\n    textValue.set(data.text)\n})\n\nfunction inputBox(value, sink) {\n    return h(\"input\", {\n        value: value,\n        name: \"text\",\n        \"data-event\": mercury.changeEvent(sink)\n    })\n}\n\nfunction render(textValue) {\n    return h(\"div\", [\n        h(\"p\", \"The value is now: \" + textValue),\n        h(\"p\", [\n            \"Change it here: \",\n            inputBox(textValue, inputs.sinks.change)\n        ])\n    ])\n}\n\nvar loop = mercury.main(textValue(), render)\ntextValue(loop.update)\ndocument.body.appendChild(loop.target)\n",
         readOnly: true
     })
 })
@@ -34,7 +34,7 @@ var inputs = mercury.EventSinks(delegator.id, ["change"])
 var textValue = mercury.value("")
 
 inputs.events.change(function (data) {
-    textValue.set(data.currentValue.text)
+    textValue.set(data.text)
 })
 
 function inputBox(value, sink) {
@@ -13124,7 +13124,7 @@ function handleEvent(ev) {
     }
 
     var value = getFormData(ev.currentTarget)
-    var data = extend(this.data, { currentValue: value })
+    var data = extend(value, this.data)
 
     if (typeof this.sink === 'function') {
         this.sink(data)
@@ -13322,7 +13322,7 @@ function handleEvent(ev) {
     }
 
     var value = getFormData(ev.currentTarget)
-    var data = extend(this.data, { currentValue: value })
+    var data = extend(value, this.data)
 
     if (typeof this.sink === 'function') {
         this.sink(data)
@@ -13352,7 +13352,7 @@ ValueEventHandler.prototype.handleEvent = handleEvent
 
 function handleEvent(ev) {
     var value = getFormData(ev.currentTarget)
-    var data = extend(this.data, { currentValue: value })
+    var data = extend(value, this.data)
 
     if (typeof this.sink === 'function') {
         this.sink(data)

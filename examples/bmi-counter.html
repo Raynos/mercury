@@ -10,7 +10,7 @@ var createEditor = require('javascript-editor')
 window.addEventListener('load', function () {
     var editor = createEditor({
         container: elem,
-        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar delegator = mercury.Delegator()\nvar inputs = mercury.EventSinks(delegator.id, [\"height\", \"weight\", \"bmi\"])\nvar bmiData = mercury.hash({\n    height: mercury.value(180),\n    weight: mercury.value(80),\n    bmi: mercury.value(null)\n})\n\nfunction updateData(type, data) {\n    bmiData[type].set(data.currentValue.slider)\n    bmiData[type === \"bmi\" ? \"weight\" : \"bmi\"].set(null)\n}\n\ninputs.events.height(updateData.bind(null, \"height\"))\ninputs.events.weight(updateData.bind(null, \"weight\"))\ninputs.events.bmi(updateData.bind(null, \"bmi\"))\n\nfunction calcBmi(data) {\n    var h = data.height / 100\n    return {\n        height: data.height,\n        bmi: data.bmi ? data.bmi : data.weight / (h * h),\n        weight: data.bmi ? data.bmi * (h * h) : data.weight\n    }\n}\n\nfunction slider(value, sink, min, max) {\n    return h(\"input\", {\n        type: \"range\", min: min, max: max, value: value,\n        style: { width: \"100%\" }, name: \"slider\",\n        \"data-event\": mercury.changeEvent(sink)\n    })\n}\n\nfunction render(bmiData) {\n    var values = calcBmi(bmiData)\n    var color = values.bmi < 18.5 ? \"orange\" :\n        values.bmi < 25 ? \"inherit\" :\n        values.bmi < 30 ? \"orange\" : \"red\"\n    var diagnose = values.bmi < 18.5 ? \"underweight\" :\n        values.bmi < 25 ? \"normal\" :\n        values.bmi < 30 ? \"overweight\" : \"obese\"\n\n    return h(\"div\", [\n        h(\"h3\", \"BMI calculator\"),\n        h(\"div\", [\n            \"Weight: \" + ~~values.weight + \"kg\",\n            mercury.partial(slider, values.weight, inputs.sinks.weight, 30, 150)\n        ]),\n        h(\"div\", [\n            \"Height: \" + ~~values.height + \"cm\",\n            mercury.partial(slider, values.height,\n                inputs.sinks.height, 100, 220)\n        ]),\n        h(\"div\", [\n            \"BMI: \" + ~~values.bmi + \" \",\n            h(\"span\", { style: { color: color } }, diagnose),\n            mercury.partial(slider, values.bmi, inputs.sinks.bmi, 10, 50)\n        ])\n    ])\n}\n\n\nvar loop = mercury.main(bmiData(), render)\nbmiData(loop.update)\ndocument.body.appendChild(loop.target)\n",
+        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar delegator = mercury.Delegator()\nvar inputs = mercury.EventSinks(delegator.id, [\"height\", \"weight\", \"bmi\"])\nvar bmiData = mercury.hash({\n    height: mercury.value(180),\n    weight: mercury.value(80),\n    bmi: mercury.value(null)\n})\n\nfunction updateData(type, data) {\n    bmiData[type].set(data.slider)\n    bmiData[type === \"bmi\" ? \"weight\" : \"bmi\"].set(null)\n}\n\ninputs.events.height(updateData.bind(null, \"height\"))\ninputs.events.weight(updateData.bind(null, \"weight\"))\ninputs.events.bmi(updateData.bind(null, \"bmi\"))\n\nfunction calcBmi(data) {\n    var h = data.height / 100\n    return {\n        height: data.height,\n        bmi: data.bmi ? data.bmi : data.weight / (h * h),\n        weight: data.bmi ? data.bmi * (h * h) : data.weight\n    }\n}\n\nfunction slider(value, sink, min, max) {\n    return h(\"input\", {\n        type: \"range\", min: min, max: max, value: value,\n        style: { width: \"100%\" }, name: \"slider\",\n        \"data-event\": mercury.changeEvent(sink)\n    })\n}\n\nfunction render(bmiData) {\n    var values = calcBmi(bmiData)\n    var color = values.bmi < 18.5 ? \"orange\" :\n        values.bmi < 25 ? \"inherit\" :\n        values.bmi < 30 ? \"orange\" : \"red\"\n    var diagnose = values.bmi < 18.5 ? \"underweight\" :\n        values.bmi < 25 ? \"normal\" :\n        values.bmi < 30 ? \"overweight\" : \"obese\"\n\n    return h(\"div\", [\n        h(\"h3\", \"BMI calculator\"),\n        h(\"div\", [\n            \"Weight: \" + ~~values.weight + \"kg\",\n            mercury.partial(slider, values.weight, inputs.sinks.weight, 30, 150)\n        ]),\n        h(\"div\", [\n            \"Height: \" + ~~values.height + \"cm\",\n            mercury.partial(slider, values.height,\n                inputs.sinks.height, 100, 220)\n        ]),\n        h(\"div\", [\n            \"BMI: \" + ~~values.bmi + \" \",\n            h(\"span\", { style: { color: color } }, diagnose),\n            mercury.partial(slider, values.bmi, inputs.sinks.bmi, 10, 50)\n        ])\n    ])\n}\n\n\nvar loop = mercury.main(bmiData(), render)\nbmiData(loop.update)\ndocument.body.appendChild(loop.target)\n",
         readOnly: true
     })
 })
@@ -38,7 +38,7 @@ var bmiData = mercury.hash({
 })
 
 function updateData(type, data) {
-    bmiData[type].set(data.currentValue.slider)
+    bmiData[type].set(data.slider)
     bmiData[type === "bmi" ? "weight" : "bmi"].set(null)
 }
 
@@ -13161,7 +13161,7 @@ function handleEvent(ev) {
     }
 
     var value = getFormData(ev.currentTarget)
-    var data = extend(this.data, { currentValue: value })
+    var data = extend(value, this.data)
 
     if (typeof this.sink === 'function') {
         this.sink(data)
@@ -13359,7 +13359,7 @@ function handleEvent(ev) {
     }
 
     var value = getFormData(ev.currentTarget)
-    var data = extend(this.data, { currentValue: value })
+    var data = extend(value, this.data)
 
     if (typeof this.sink === 'function') {
         this.sink(data)
@@ -13389,7 +13389,7 @@ ValueEventHandler.prototype.handleEvent = handleEvent
 
 function handleEvent(ev) {
     var value = getFormData(ev.currentTarget)
-    var data = extend(this.data, { currentValue: value })
+    var data = extend(value, this.data)
 
     if (typeof this.sink === 'function') {
         this.sink(data)
