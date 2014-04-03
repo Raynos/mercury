@@ -1,6 +1,5 @@
 var window = require("global/window")
 var HashRouter = require("hash-router")
-var Event = require("geval")
 
 var mercury = require("../../index.js")
 
@@ -19,10 +18,10 @@ function createInput() {
 }
 
 function EventRouter() {
-    var router = HashRouter()
+    var router = HashRouter(),
+        hash = mercury.value()
     window.addEventListener("hashchange", router)
 
-    return Event(function (emit) {
-        router.on("hash", emit)
-    })
+    router.on("hash", hash.set)
+    return hash
 }
