@@ -23,13 +23,13 @@ function toggleAll(state) {
 
 function add(state, data) {
     state.todos.push(State.todoItem({
-        title: data.currentValue.newTodo
+        title: data.newTodo
     }))
     state.todoField.set("")
 }
 
 function setTodoField(state, data) {
-    state.todoField.set(data.currentValue.newTodo)
+    state.todoField.set(data.newTodo)
 }
 
 function toggle(state, data) {
@@ -50,7 +50,7 @@ function destroy(state, data) {
 function finishEdit(state, data) {
     var item = find(state.todos, data.id)
     item.editing.set(false)
-    item.title.set(data.currentValue.title)
+    item.title.set(data.title)
 }
 
 function find(list, id) {

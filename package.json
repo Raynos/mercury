@@ -30,7 +30,7 @@
     "observ": "^0.1.5",
     "observ-array": "^1.0.3",
     "observ-hash": "^1.1.1",
-    "value-event": "^0.6.2",
+    "value-event": "^1.0.0",
     "vdom-thunk": "^1.1.0",
     "virtual-dom": "git://github.com/Matt-Esch/virtual-dom"
   },

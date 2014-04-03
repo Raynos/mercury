@@ -6,7 +6,7 @@ var inputs = mercury.EventSinks(delegator.id, ["change"])
 var textValue = mercury.value("")
 
 inputs.events.change(function (data) {
-    textValue.set(data.currentValue.text)
+    textValue.set(data.text)
 })
 
 function inputBox(value, sink) {

@@ -10,7 +10,7 @@ var bmiData = mercury.hash({
 })
 
 function updateData(type, data) {
-    bmiData[type].set(data.currentValue.slider)
+    bmiData[type].set(data.slider)
     bmiData[type === "bmi" ? "weight" : "bmi"].set(null)
 }
 
