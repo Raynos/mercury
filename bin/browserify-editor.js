@@ -6,14 +6,29 @@ var cuid = require("cuid")
 var fileName = process.argv[2]
 var src = fs.readFileSync(path.resolve(fileName), "utf8")
 
+function addLink(href) {
+    return "" +
+        "var link = document.createElement('link')\n" +
+        "link.rel = 'stylesheet'\n" +
+        "link.href = '" + href + "'\n" +
+        "document.head.appendChild(link)\n"
+}
+
 var code = "" +
     "var createEditor = require('javascript-editor')\n" +
     "var elem = document.createElement('div')\n" +
-    "createEditor({\n" +
-    "    container: elem,\n" +
-    "    value: " + JSON.stringify(src) + ",\n" +
-    "    readOnly: true\n" +
-    "})\n"
+    addLink("https://rawgithub.com/maxogden/" +
+        "javascript-editor/master/css/codemirror.css") +
+    addLink("https://rawgithub.com/maxogden/" +
+        "javascript-editor/master/css/theme.css") +
+    "document.body.appendChild(elem)\n" +
+    "setTimeout(function () {\n" +
+    "    var editor = createEditor({\n" +
+    "        container: elem,\n" +
+    "        value: " + JSON.stringify(src) + ",\n" +
+    "        readOnly: true\n" +
+    "    })\n" +
+    "}, 100)"
 var loc = path.join(__dirname, cuid() + ".js")
 fs.writeFileSync(loc, code)
 
