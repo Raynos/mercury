@@ -41,6 +41,7 @@
     "global": "^3.0.0",
     "hash-router": "^0.3.4",
     "indexhtmlify": "^1.1.1",
+    "javascript-editor": "^0.2.1",
     "tape": "~1.0.2",
     "xtend": "^2.2.0"
   },
