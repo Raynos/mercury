@@ -16,19 +16,19 @@ function addLink(href) {
 
 var code = "" +
     "var createEditor = require('javascript-editor')\n" +
-    "var elem = document.createElement('div')\n" +
-    addLink("https://rawgithub.com/maxogden/" +
-        "javascript-editor/master/css/codemirror.css") +
-    addLink("https://rawgithub.com/maxogden/" +
-        "javascript-editor/master/css/theme.css") +
-    "document.body.appendChild(elem)\n" +
-    "setTimeout(function () {\n" +
+    "window.addEventListener('load', function () {\n" +
     "    var editor = createEditor({\n" +
     "        container: elem,\n" +
     "        value: " + JSON.stringify(src) + ",\n" +
     "        readOnly: true\n" +
     "    })\n" +
-    "}, 100)"
+    "})\n" +
+    "var elem = document.createElement('div')\n" +
+    "document.body.appendChild(elem)\n" +
+    addLink("https://rawgithub.com/maxogden/" +
+        "javascript-editor/master/css/codemirror.css") +
+    addLink("https://rawgithub.com/maxogden/" +
+        "javascript-editor/master/css/theme.css")
 var loc = path.join(__dirname, cuid() + ".js")
 fs.writeFileSync(loc, code)
 
