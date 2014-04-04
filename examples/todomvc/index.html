@@ -6,383 +6,8 @@
 <body></body>
 <script language=javascript>
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var mercury = require("../../index.js")
-var document = require("global/document")
 
-var Input = require("./input.js")
-var State = require("./state.js")
-var Render = require("./render.js")
-var Update = require("./update.js")
-
-module.exports = createApp
-
-var rootNode = createApp()
-document.body.appendChild(rootNode)
-
-function createApp() {
-    // load from localStorage
-    var initialState = null
-
-    var input = Input()
-    var state = State.todoApp(input.sinks, initialState)
-
-    wireUpEvents(state, input.events)
-
-    var loop = mercury.main(state(), Render)
-
-    state(function (newState) {
-        loop.update(newState)
-    })
-
-    return loop.target
-}
-
-function wireUpEvents(state, events) {
-    events.toggleAll(Update.toggleAll.bind(null, state))
-    events.add(Update.add.bind(null, state))
-    events.setTodoField(Update.setTodoField.bind(null, state))
-    events.toggle(Update.toggle.bind(null, state))
-    events.destroy(Update.destroy.bind(null, state))
-    events.startEdit(Update.startEdit.bind(null, state))
-    events.finishEdit(Update.finishEdit.bind(null, state))
-    events.setRoute(Update.setRoute.bind(null, state))
-}
-
-},{"../../index.js":7,"./input.js":2,"./render.js":4,"./state.js":5,"./update.js":6,"global/document":37}],2:[function(require,module,exports){
-var window = require("global/window")
-var HashRouter = require("hash-router")
-var Event = require("geval")
-
-var mercury = require("../../index.js")
-
-module.exports = createInput
-
-function createInput() {
-    var del = mercury.Delegator()
-    var tuple = mercury.EventSinks(del.id, [
-        "toggleAll", "add", "setTodoField", "toggle", "destroy",
-        "startEdit", "finishEdit"
-    ])
-
-    tuple.events.setRoute = EventRouter()
-
-    return { sinks: tuple.sinks, events: tuple.events }
-}
-
-function EventRouter() {
-    var router = HashRouter()
-    window.addEventListener("hashchange", router)
-
-    return Event(function (emit) {
-        router.on("hash", emit)
-    })
-}
-
-},{"../../index.js":7,"geval":36,"global/window":38,"hash-router":39}],3:[function(require,module,exports){
-var document = require("global/document")
-
-module.exports = doMutableFocus
-
-function doMutableFocus(node, property) {
-    if (document.activeElement !== node) {
-        node.focus();
-    }
-}
-
-},{"global/document":37}],4:[function(require,module,exports){
-var mercury = require("../../index.js")
-var h = require("../../index.js").h
-
-var doMutableFocus = require("./lib/do-mutable-focus.js")
-
-var footer = infoFooter()
-
-module.exports = render
-
-function render(state) {
-    return h("#todoapp.todomvc-wrapper", [
-        h("link", {
-            rel: "stylesheet",
-            href: "http://raynos.github.io/mercury/examples/todomvc/style.css"
-        }),
-        h("section.todoapp", [
-            mercury.partial(header, state.todoField, state.sinks),
-            mercury.partial(mainSection, state.todos, state.route, state.sinks),
-            mercury.partial(statsSection, state.todos, state.route)
-        ]),
-        footer
-    ])
-}
-
-function header(todoField, sinks) {
-    return h("header#header.header", {
-        "data-event": [
-            mercury.changeEvent(sinks.setTodoField),
-            mercury.submitEvent(sinks.add)
-        ]
-    }, [
-        h("h1", "Todos"),
-        h("input#new-todo.new-todo", {
-            placeholder: "What needs to be done?",
-            autofocus: true,
-            value: todoField,
-            name: "newTodo"
-        })
-    ])
-}
-
-function mainSection(todos, route, sinks) {
-    var allCompleted = todos.every(function (todo) {
-        return todo.completed
-    })
-    var visibleTodos = todos.filter(function (todo) {
-        return route === "completed" && todo.completed ||
-            route === "active" && !todo.completed ||
-            route === "all"
-    })
-
-    return h("section#main.main", { hidden: !todos.length }, [
-        h("input#toggle-all.toggle-all", {
-            type: "checkbox",
-            checked: allCompleted,
-            "data-change": mercury.event(sinks.toggleAll)
-        }),
-        h("label", { htmlFor: "toggle-all" }, "Mark all as complete"),
-        h("ul#todo-list.todolist", visibleTodos.map(function (todo) {
-            return mercury.partial(todoItem, todo, sinks)
-        }))
-    ])
-}
-
-function todoItem(todo, sinks) {
-    var className = (todo.completed ? "completed " : "") +
-        (todo.editing ? "editing" : "")
-
-    return h("li", { className: className, key: todo.id }, [
-        h(".view", [
-            h("input.toggle", {
-                type: "checkbox",
-                checked: todo.completed,
-                "data-change": mercury.event(sinks.toggle, {
-                    id: todo.id,
-                    completed: !todo.completed
-                })
-            }),
-            h("label", {
-                "data-dblclick": mercury.event(sinks.startEdit, { id: todo.id })
-            }, todo.title),
-            h("button.destroy", {
-                "data-click": mercury.event(sinks.destroy, { id: todo.id })
-            })
-        ]),
-        h("input.edit", {
-            value: todo.title,
-            name: "title",
-            // when we need an RPC invocation we add a 
-            // custom mutable operation into the tree to be
-            // invoked at patch time
-            "data-focus": todo.editing ? doMutableFocus : null,
-            "data-event": mercury.submitEvent(sinks.finishEdit, { id: todo.id }),
-            "data-blur": mercury.valueEvent(sinks.finishEdit, { id: todo.id })
-        })
-    ])
-}
-
-function statsSection(todos, route) {
-    var todosLeft = todos.filter(function (todo) {
-        return !todo.completed
-    }).length
-
-    return h("footer#footer.footer", { hidden: !todos.length }, [
-        h("span#todo-count.todo-count", [
-            h("strong", String(todosLeft)),
-            todosLeft === 1 ? " item" : " items",
-            " left"
-        ]),
-        h("ul#filters.filters", [
-            link("#/", "All", route === "all"),
-            link("#/active", "Active", route === "active"),
-            link("#/completed", "Completed", route === "completed")
-        ])
-    ])
-}
-
-function link(uri, text, isSelected) {
-    return h("li", [
-        h("a", { className: isSelected ? "selected" : "", href: uri }, text)
-    ])
-}
-
-function infoFooter() {
-    return h("footer#info.info", [
-        h("p", "Double-click to edit a todo"),
-        h("p", [
-            "Written by ",
-            h("a", { href: "https://github.com/Raynos" }, "Raynos")
-        ]),
-        h("p", [
-            "Part of ",
-            h("a", { href: "http://todomvc.com" }, "TodoMVC")
-        ])
-    ])
-}
-
-},{"../../index.js":7,"./lib/do-mutable-focus.js":3}],5:[function(require,module,exports){
-var cuid = require("cuid")
-var extend = require("xtend")
-var mercury = require("../../index.js")
-
-var TodoApp = {
-    todos: [],
-    route: "all",
-    todoField: ""
-}
-
-var TodoItem = {
-    id: null,
-    title: "",
-    editing: false,
-    completed: false
-}
-
-module.exports = {
-    todoApp: todoApp,
-    todoItem: todoItem
-}
-
-function todoApp(sinks, initialState) {
-    var state = extend(TodoApp, initialState)
-
-    return mercury.hash({
-        todos: mercury.array(state.todos),
-        route: mercury.value(state.route),
-        todoField: mercury.value(state.todoField),
-        sinks: sinks
-    })
-}
-
-function todoItem(item) {
-    var state = extend(TodoItem, item)
-
-    return mercury.hash({
-        id: cuid(),
-        title: mercury.value(state.title),
-        editing: mercury.value(state.editing),
-        completed: mercury.value(state.completed)
-    })
-}
-
-},{"../../index.js":7,"cuid":15,"xtend":132}],6:[function(require,module,exports){
-var State = require("./state.js")
-
-module.exports = {
-    setRoute: setRoute,
-    toggleAll: toggleAll,
-    add: add,
-    setTodoField: setTodoField,
-    toggle: toggle,
-    destroy: destroy,
-    startEdit: startEdit,
-    finishEdit: finishEdit
-}
-
-function setRoute(state, route) {
-    state.route.set(route.substr(2) || "all")
-}
-
-function toggleAll(state) {
-    state.todos.forEach(function (todo) {
-        todo.completed.set(!todo.completed())
-    })
-}
-
-function add(state, data) {
-    state.todos.push(State.todoItem({
-        title: data.newTodo
-    }))
-    state.todoField.set("")
-}
-
-function setTodoField(state, data) {
-    state.todoField.set(data.newTodo)
-}
-
-function toggle(state, data) {
-    var item = find(state.todos, data.id)
-    item.completed.set(data.completed)
-}
-
-function startEdit(state, data) {
-    var item = find(state.todos, data.id)
-    item.editing.set(true)
-}
-
-function destroy(state, data) {
-    var index = findIndex(state.todos, data.id)
-    state.todos.splice(index, 1)
-}
-
-function finishEdit(state, data) {
-    var item = find(state.todos, data.id)
-    item.editing.set(false)
-    item.title.set(data.title)
-}
-
-function find(list, id) {
-    for (var i = 0; i < list.getLength(); i++) {
-        var item = list.get(i)
-        if (item.id === id) {
-            return item
-        }
-    }
-
-    return null
-}
-
-function findIndex(list, id) {
-    for (var i = 0; i < list.getLength(); i++) {
-        var item = list.get(i)
-        if (item.id === id) {
-            return i
-        }
-    }
-
-    return null
-}
-
-},{"./state.js":5}],7:[function(require,module,exports){
-/*
-    Pro tip: Don't require `mercury` itself.
-      require and depend on all these modules directly!
-*/
-module.exports = {
-    // Entry
-    main: require("main-loop"),
-
-    // Input
-    Delegator: require("dom-delegator"),
-    EventSinks: require("event-sinks/geval"),
-    event: require("value-event/event"),
-    valueEvent: require("value-event/value"),
-    submitEvent: require("value-event/submit"),
-    changeEvent: require("value-event/change"),
-
-    // State
-    array: require("observ-array"),
-    hash: require("observ-hash"),
-    value: require("observ"),
-
-    // Render
-    diff: require("virtual-dom/diff"),
-    patch: require("virtual-dom/patch"),
-    partial: require("vdom-thunk"),
-    create: require("virtual-dom/create-element"),
-    h: require("virtual-dom/h")
-}
-
-},{"dom-delegator":20,"event-sinks/geval":32,"main-loop":44,"observ":78,"observ-array":67,"observ-hash":70,"value-event/change":79,"value-event/event":80,"value-event/submit":84,"value-event/value":85,"vdom-thunk":86,"virtual-dom/create-element":106,"virtual-dom/diff":107,"virtual-dom/h":108,"virtual-dom/patch":127}],8:[function(require,module,exports){
-
-},{}],9:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -684,7 +309,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],10:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 (function (global){
 /*! http://mths.be/punycode v1.2.4 by @mathias */
 ;(function(root) {
@@ -1195,7 +820,7 @@ function isUndefined(arg) {
 }(this));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],11:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1281,7 +906,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],12:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1368,13 +993,13 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],13:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":11,"./encode":12}],14:[function(require,module,exports){
+},{"./decode":4,"./encode":5}],7:[function(require,module,exports){
 /*jshint strict:true node:true es5:true onevar:true laxcomma:true laxbreak:true eqeqeq:true immed:true latedef:true*/
 (function () {
   "use strict";
@@ -2007,7 +1632,381 @@ function parseHost(host) {
 
 }());
 
-},{"punycode":10,"querystring":13}],15:[function(require,module,exports){
+},{"punycode":3,"querystring":6}],8:[function(require,module,exports){
+var mercury = require("../../index.js")
+var document = require("global/document")
+
+var Input = require("./input.js")
+var State = require("./state.js")
+var Render = require("./render.js")
+var Update = require("./update.js")
+
+module.exports = createApp
+
+var rootNode = createApp()
+document.body.appendChild(rootNode)
+
+function createApp() {
+    // load from localStorage
+    var initialState = null
+
+    var input = Input()
+    var state = State.todoApp(input.sinks, initialState)
+
+    wireUpEvents(state, input.events)
+
+    var loop = mercury.main(state(), Render)
+
+    state(function (newState) {
+        loop.update(newState)
+    })
+
+    return loop.target
+}
+
+function wireUpEvents(state, events) {
+    events.toggleAll(Update.toggleAll.bind(null, state))
+    events.add(Update.add.bind(null, state))
+    events.setTodoField(Update.setTodoField.bind(null, state))
+    events.toggle(Update.toggle.bind(null, state))
+    events.destroy(Update.destroy.bind(null, state))
+    events.startEdit(Update.startEdit.bind(null, state))
+    events.finishEdit(Update.finishEdit.bind(null, state))
+    events.setRoute(Update.setRoute.bind(null, state))
+}
+
+},{"../../index.js":14,"./input.js":9,"./render.js":11,"./state.js":12,"./update.js":13,"global/document":31}],9:[function(require,module,exports){
+var window = require("global/window")
+var HashRouter = require("hash-router")
+
+var mercury = require("../../index.js")
+
+module.exports = createInput
+
+function createInput() {
+    var del = mercury.Delegator()
+    var tuple = mercury.EventSinks(del.id, [
+        "toggleAll", "add", "setTodoField", "toggle", "destroy",
+        "startEdit", "finishEdit"
+    ])
+
+    tuple.events.setRoute = EventRouter()
+
+    return { sinks: tuple.sinks, events: tuple.events }
+}
+
+function EventRouter() {
+    var router = HashRouter(),
+        hash = mercury.value()
+    window.addEventListener("hashchange", router)
+
+    router.on("hash", hash.set)
+    return hash
+}
+
+},{"../../index.js":14,"global/window":32,"hash-router":33}],10:[function(require,module,exports){
+var document = require("global/document")
+
+module.exports = doMutableFocus
+
+function doMutableFocus(node, property) {
+    if (document.activeElement !== node) {
+        node.focus();
+    }
+}
+
+},{"global/document":31}],11:[function(require,module,exports){
+var mercury = require("../../index.js")
+var h = require("../../index.js").h
+
+var doMutableFocus = require("./lib/do-mutable-focus.js")
+
+var footer = infoFooter()
+
+module.exports = render
+
+function render(state) {
+    return h("#todoapp.todomvc-wrapper", [
+        h("link", {
+            rel: "stylesheet",
+            href: "http://raynos.github.io/mercury/examples/todomvc/style.css"
+        }),
+        h("section.todoapp", [
+            mercury.partial(header, state.todoField, state.sinks),
+            mercury.partial(mainSection, state.todos, state.route, state.sinks),
+            mercury.partial(statsSection, state.todos, state.route)
+        ]),
+        footer
+    ])
+}
+
+function header(todoField, sinks) {
+    return h("header#header.header", {
+        "data-event": [
+            mercury.changeEvent(sinks.setTodoField),
+            mercury.submitEvent(sinks.add)
+        ]
+    }, [
+        h("h1", "Todos"),
+        h("input#new-todo.new-todo", {
+            placeholder: "What needs to be done?",
+            autofocus: true,
+            value: todoField,
+            name: "newTodo"
+        })
+    ])
+}
+
+function mainSection(todos, route, sinks) {
+    var allCompleted = todos.every(function (todo) {
+        return todo.completed
+    })
+    var visibleTodos = todos.filter(function (todo) {
+        return route === "completed" && todo.completed ||
+            route === "active" && !todo.completed ||
+            route === "all"
+    })
+
+    return h("section#main.main", { hidden: !todos.length }, [
+        h("input#toggle-all.toggle-all", {
+            type: "checkbox",
+            checked: allCompleted,
+            "data-change": mercury.event(sinks.toggleAll)
+        }),
+        h("label", { htmlFor: "toggle-all" }, "Mark all as complete"),
+        h("ul#todo-list.todolist", visibleTodos.map(function (todo) {
+            return mercury.partial(todoItem, todo, sinks)
+        }))
+    ])
+}
+
+function todoItem(todo, sinks) {
+    var className = (todo.completed ? "completed " : "") +
+        (todo.editing ? "editing" : "")
+
+    return h("li", { className: className, key: todo.id }, [
+        h(".view", [
+            h("input.toggle", {
+                type: "checkbox",
+                checked: todo.completed,
+                "data-change": mercury.event(sinks.toggle, {
+                    id: todo.id,
+                    completed: !todo.completed
+                })
+            }),
+            h("label", {
+                "data-dblclick": mercury.event(sinks.startEdit, { id: todo.id })
+            }, todo.title),
+            h("button.destroy", {
+                "data-click": mercury.event(sinks.destroy, { id: todo.id })
+            })
+        ]),
+        h("input.edit", {
+            value: todo.title,
+            name: "title",
+            // when we need an RPC invocation we add a 
+            // custom mutable operation into the tree to be
+            // invoked at patch time
+            "data-focus": todo.editing ? doMutableFocus : null,
+            "data-event": mercury.submitEvent(sinks.finishEdit, { id: todo.id }),
+            "data-blur": mercury.valueEvent(sinks.finishEdit, { id: todo.id })
+        })
+    ])
+}
+
+function statsSection(todos, route) {
+    var todosLeft = todos.filter(function (todo) {
+        return !todo.completed
+    }).length
+
+    return h("footer#footer.footer", { hidden: !todos.length }, [
+        h("span#todo-count.todo-count", [
+            h("strong", String(todosLeft)),
+            todosLeft === 1 ? " item" : " items",
+            " left"
+        ]),
+        h("ul#filters.filters", [
+            link("#/", "All", route === "all"),
+            link("#/active", "Active", route === "active"),
+            link("#/completed", "Completed", route === "completed")
+        ])
+    ])
+}
+
+function link(uri, text, isSelected) {
+    return h("li", [
+        h("a", { className: isSelected ? "selected" : "", href: uri }, text)
+    ])
+}
+
+function infoFooter() {
+    return h("footer#info.info", [
+        h("p", "Double-click to edit a todo"),
+        h("p", [
+            "Written by ",
+            h("a", { href: "https://github.com/Raynos" }, "Raynos")
+        ]),
+        h("p", [
+            "Part of ",
+            h("a", { href: "http://todomvc.com" }, "TodoMVC")
+        ])
+    ])
+}
+
+},{"../../index.js":14,"./lib/do-mutable-focus.js":10}],12:[function(require,module,exports){
+var cuid = require("cuid")
+var extend = require("xtend")
+var mercury = require("../../index.js")
+
+var TodoApp = {
+    todos: [],
+    route: "all",
+    todoField: ""
+}
+
+var TodoItem = {
+    id: null,
+    title: "",
+    editing: false,
+    completed: false
+}
+
+module.exports = {
+    todoApp: todoApp,
+    todoItem: todoItem
+}
+
+function todoApp(sinks, initialState) {
+    var state = extend(TodoApp, initialState)
+
+    return mercury.hash({
+        todos: mercury.array(state.todos),
+        route: mercury.value(state.route),
+        todoField: mercury.value(state.todoField),
+        sinks: sinks
+    })
+}
+
+function todoItem(item) {
+    var state = extend(TodoItem, item)
+
+    return mercury.hash({
+        id: cuid(),
+        title: mercury.value(state.title),
+        editing: mercury.value(state.editing),
+        completed: mercury.value(state.completed)
+    })
+}
+
+},{"../../index.js":14,"cuid":15,"xtend":124}],13:[function(require,module,exports){
+var State = require("./state.js")
+
+module.exports = {
+    setRoute: setRoute,
+    toggleAll: toggleAll,
+    add: add,
+    setTodoField: setTodoField,
+    toggle: toggle,
+    destroy: destroy,
+    startEdit: startEdit,
+    finishEdit: finishEdit
+}
+
+function setRoute(state, route) {
+    state.route.set(route.substr(2) || "all")
+}
+
+function toggleAll(state) {
+    state.todos.forEach(function (todo) {
+        todo.completed.set(!todo.completed())
+    })
+}
+
+function add(state, data) {
+    state.todos.push(State.todoItem({
+        title: data.newTodo
+    }))
+    state.todoField.set("")
+}
+
+function setTodoField(state, data) {
+    state.todoField.set(data.newTodo)
+}
+
+function toggle(state, data) {
+    var item = find(state.todos, data.id)
+    item.completed.set(data.completed)
+}
+
+function startEdit(state, data) {
+    var item = find(state.todos, data.id)
+    item.editing.set(true)
+}
+
+function destroy(state, data) {
+    var index = findIndex(state.todos, data.id)
+    state.todos.splice(index, 1)
+}
+
+function finishEdit(state, data) {
+    var item = find(state.todos, data.id)
+    item.editing.set(false)
+    item.title.set(data.title)
+}
+
+function find(list, id) {
+    for (var i = 0; i < list.getLength(); i++) {
+        var item = list.get(i)
+        if (item.id === id) {
+            return item
+        }
+    }
+
+    return null
+}
+
+function findIndex(list, id) {
+    for (var i = 0; i < list.getLength(); i++) {
+        var item = list.get(i)
+        if (item.id === id) {
+            return i
+        }
+    }
+
+    return null
+}
+
+},{"./state.js":12}],14:[function(require,module,exports){
+/*
+    Pro tip: Don't require `mercury` itself.
+      require and depend on all these modules directly!
+*/
+module.exports = {
+    // Entry
+    main: require("main-loop"),
+
+    // Input
+    Delegator: require("dom-delegator"),
+    EventSinks: require("event-sinks/geval"),
+    event: require("value-event/event"),
+    valueEvent: require("value-event/value"),
+    submitEvent: require("value-event/submit"),
+    changeEvent: require("value-event/change"),
+
+    // State
+    array: require("observ-array"),
+    hash: require("observ-hash"),
+    value: require("observ"),
+
+    // Render
+    diff: require("virtual-dom/diff"),
+    patch: require("virtual-dom/patch"),
+    partial: require("vdom-thunk"),
+    create: require("virtual-dom/create-element"),
+    h: require("virtual-dom/h")
+}
+
+},{"dom-delegator":20,"event-sinks/geval":28,"main-loop":38,"observ":70,"observ-array":61,"observ-hash":63,"value-event/change":71,"value-event/event":72,"value-event/submit":76,"value-event/value":77,"vdom-thunk":78,"virtual-dom/create-element":98,"virtual-dom/diff":99,"virtual-dom/h":100,"virtual-dom/patch":119}],15:[function(require,module,exports){
 /**
  * cuid.js
  * Collision-resistant UID generator for browsers and node.
@@ -2132,7 +2131,7 @@ function addEvent(id, target, type, handler) {
     ds[type] = events
 }
 
-},{"data-set":24}],17:[function(require,module,exports){
+},{"data-set":23}],17:[function(require,module,exports){
 var cuid = require("cuid")
 
 var addEvent = require("./add-event.js")
@@ -2177,7 +2176,7 @@ function createDelegator(surface) {
     }
 }
 
-},{"./add-event.js":16,"./listen.js":21,"cuid":22}],18:[function(require,module,exports){
+},{"./add-event.js":16,"./listen.js":21,"cuid":15}],18:[function(require,module,exports){
 var document = require("global/document")
 
 var allEvents = [
@@ -2207,7 +2206,7 @@ function getParent(target) {
     return target.parentNode
 }
 
-},{"global/document":29}],19:[function(require,module,exports){
+},{"global/document":31}],19:[function(require,module,exports){
 var DataSet = require("data-set")
 
 module.exports = getListener
@@ -2256,7 +2255,7 @@ function Listener(target, handlers) {
     this.handlers = handlers
 }
 
-},{"data-set":24}],20:[function(require,module,exports){
+},{"data-set":23}],20:[function(require,module,exports){
 var DOMSurface = require("./dom-surface.js")
 var createDelegator = require("./create-delegator.js")
 
@@ -2289,9 +2288,7 @@ function listen(delegator, surface, eventName) {
     })
 }
 
-},{"./get-listener.js":19,"xtend":31}],22:[function(require,module,exports){
-module.exports=require(15)
-},{}],23:[function(require,module,exports){
+},{"./get-listener.js":19,"xtend":124}],22:[function(require,module,exports){
 module.exports = createHash
 
 function createHash(elem) {
@@ -2315,7 +2312,7 @@ function createHash(elem) {
     return hash
 }
 
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var createStore = require("weakmap-shim/create-store")
 var Individual = require("individual")
 
@@ -2335,7 +2332,7 @@ function DataSet(elem) {
     return store.hash
 }
 
-},{"./create-hash.js":23,"individual":25,"weakmap-shim/create-store":27}],25:[function(require,module,exports){
+},{"./create-hash.js":22,"individual":24,"weakmap-shim/create-store":26}],24:[function(require,module,exports){
 var root = require("global")
 
 module.exports = Individual
@@ -2353,7 +2350,7 @@ function Individual(key, value) {
     return value
 }
 
-},{"global":26}],26:[function(require,module,exports){
+},{"global":25}],25:[function(require,module,exports){
 (function (global){
 /*global window, global*/
 if (typeof global !== "undefined") {
@@ -2363,7 +2360,7 @@ if (typeof global !== "undefined") {
 }
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 var hiddenStore = require('./hidden-store.js');
 
 module.exports = createStore;
@@ -2382,7 +2379,7 @@ function createStore() {
     };
 }
 
-},{"./hidden-store.js":28}],28:[function(require,module,exports){
+},{"./hidden-store.js":27}],27:[function(require,module,exports){
 module.exports = hiddenStore;
 
 function hiddenStore(obj, key) {
@@ -2400,48 +2397,7 @@ function hiddenStore(obj, key) {
     return store;
 }
 
-},{}],29:[function(require,module,exports){
-if (typeof document !== "undefined") {
-    module.exports = document;
-} else {
-    module.exports = require("min-document");
-}
-
-},{"min-document":8}],30:[function(require,module,exports){
-module.exports = hasKeys
-
-function hasKeys(source) {
-    return source !== null &&
-        (typeof source === "object" ||
-        typeof source === "function")
-}
-
-},{}],31:[function(require,module,exports){
-var hasKeys = require("./has-keys")
-
-module.exports = extend
-
-function extend() {
-    var target = {}
-
-    for (var i = 0; i < arguments.length; i++) {
-        var source = arguments[i]
-
-        if (!hasKeys(source)) {
-            continue
-        }
-
-        for (var key in source) {
-            if (source.hasOwnProperty(key)) {
-                target[key] = source[key]
-            }
-        }
-    }
-
-    return target
-}
-
-},{"./has-keys":30}],32:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 var GevalEvent = require("geval/event")
 
 var Sink = require("./sink.js")
@@ -2467,7 +2423,20 @@ function EventSinks(id, names) {
     return { events: sources, sinks: sinks }
 }
 
-},{"./sink.js":34,"geval/event":33}],33:[function(require,module,exports){
+},{"./sink.js":29,"geval/event":30}],29:[function(require,module,exports){
+module.exports = Sink
+
+function Sink(write, id, key) {
+    if (!(this instanceof Sink)) {
+        return new Sink(id, key, write)
+    }
+
+    this.id = id || ""
+    this.key = key || ""
+    this.write = write
+}
+
+},{}],30:[function(require,module,exports){
 module.exports = Event
 
 function Event() {
@@ -2495,37 +2464,14 @@ function Event() {
     }
 }
 
-},{}],34:[function(require,module,exports){
-module.exports = Sink
-
-function Sink(write, id, key) {
-    if (!(this instanceof Sink)) {
-        return new Sink(id, key, write)
-    }
-
-    this.id = id || ""
-    this.key = key || ""
-    this.write = write
+},{}],31:[function(require,module,exports){
+if (typeof document !== "undefined") {
+    module.exports = document;
+} else {
+    module.exports = require("min-document");
 }
 
-},{}],35:[function(require,module,exports){
-module.exports=require(33)
-},{}],36:[function(require,module,exports){
-var Event = require('./event.js')
-
-module.exports = Source
-
-function Source(broadcaster) {
-    var tuple = Event()
-
-    broadcaster(tuple.broadcast)
-
-    return tuple.listen
-}
-
-},{"./event.js":35}],37:[function(require,module,exports){
-module.exports=require(29)
-},{"min-document":8}],38:[function(require,module,exports){
+},{"min-document":1}],32:[function(require,module,exports){
 (function (global){
 if (typeof window !== "undefined") {
     module.exports = window;
@@ -2536,7 +2482,7 @@ if (typeof window !== "undefined") {
 }
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],39:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 var Router = require("routes")
 var url = require("url")
 var location = require("global/document").location
@@ -2602,14 +2548,14 @@ function defaultGetRoute() {
     return location.hash || "#/"
 }
 
-},{"events":9,"global/document":40,"routes":41,"url":14,"xtend/mutable":43}],40:[function(require,module,exports){
+},{"events":2,"global/document":34,"routes":35,"url":7,"xtend/mutable":37}],34:[function(require,module,exports){
 if (typeof document !== "undefined") {
     module.exports = document
 } else {
     module.exports = require("min-document")
 }
 
-},{"min-document":8}],41:[function(require,module,exports){
+},{"min-document":1}],35:[function(require,module,exports){
 
 var localRoutes = [];
 
@@ -2759,9 +2705,16 @@ Router.Router = Router
 
 module.exports = Router
 
-},{}],42:[function(require,module,exports){
-module.exports=require(30)
-},{}],43:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
+module.exports = hasKeys
+
+function hasKeys(source) {
+    return source !== null &&
+        (typeof source === "object" ||
+        typeof source === "function")
+}
+
+},{}],37:[function(require,module,exports){
 var hasKeys = require("./has-keys")
 
 module.exports = extend
@@ -2782,9 +2735,9 @@ function extend(target) {
     return target
 }
 
-},{"./has-keys":42}],44:[function(require,module,exports){
+},{"./has-keys":36}],38:[function(require,module,exports){
 var raf = require("raf").polyfill
-var vdomCreate = require("virtual-dom/render")
+var vdomCreate = require("virtual-dom/create-element")
 var vdomDiff = require("virtual-dom/diff")
 var vdomPatch = require("virtual-dom/patch")
 
@@ -2842,7 +2795,7 @@ function main(initialState, view, opts) {
     }
 }
 
-},{"raf":45,"virtual-dom/diff":46,"virtual-dom/patch":62,"virtual-dom/render":63}],45:[function(require,module,exports){
+},{"raf":39,"virtual-dom/create-element":40,"virtual-dom/diff":41,"virtual-dom/patch":57}],39:[function(require,module,exports){
 module.exports = raf
 
 var EE = require('events').EventEmitter
@@ -2906,7 +2859,69 @@ raf.polyfill = _raf
 raf.now = now
 
 
-},{"events":9}],46:[function(require,module,exports){
+},{"events":2}],40:[function(require,module,exports){
+var DataSet = require("data-set")
+
+var isVirtualDomNode = require("./lib/is-virtual-dom")
+var isVirtualTextNode = require("./lib/is-virtual-text")
+var isString = require("./lib/is-string")
+
+module.exports = render
+
+function render(virtualDom, opts) {
+    var doc = opts ? opts.document || document : document
+    var warn = opts ? opts.warn : null
+
+    if (virtualDom && typeof virtualDom.init === "function") {
+        return virtualDom.init()
+    } else if (isVirtualTextNode(virtualDom)) {
+        return doc.createTextNode(virtualDom.text)
+    } else if (isString(virtualDom)) {
+        return doc.createTextNode(virtualDom)
+    } else if (!isVirtualDomNode(virtualDom)) {
+        if (warn) {
+            warn("Item is not a valid virtual dom node", virtualDom)
+        }
+        return null
+    }
+
+    var node = doc.createElement(virtualDom.tagName)
+    applyProperties(node, virtualDom.properties)
+    var children = virtualDom.children
+
+    for (var i = 0; i < children.length; i++) {
+        var childNode = render(children[i], opts)
+        if (childNode) {
+            node.appendChild(childNode)
+        }
+    }
+
+    return node
+}
+
+function applyProperties(node, props) {
+    for (var propName in props) {
+        var propValue = props[propName]
+
+        if (typeof propValue === "function") {
+            propValue(node, propName)
+        } else if(propName === "style") {
+            if(typeof propValue === "string") {
+                node.style.cssText = propValue
+            } else {
+                for (var s in propValue) {
+                    node.style[s] = propValue[s]
+                }
+            }
+        } else if (propName.substr(0, 5) === "data-") {
+            DataSet(node)[propName.substr(5)] = propValue
+        } else {
+            node[propName] = propValue
+        }
+    }
+}
+
+},{"./lib/is-string":44,"./lib/is-virtual-dom":45,"./lib/is-virtual-text":46,"data-set":51}],41:[function(require,module,exports){
 var createPatch = require("./lib/patch-op")
 
 var isArray = require("./lib/is-array")
@@ -3073,7 +3088,7 @@ function appendPatch(apply, patch) {
     }
 }
 
-},{"./lib/is-array":48,"./lib/is-virtual-dom":50,"./lib/is-virtual-text":51,"./lib/is-widget":52,"./lib/patch-op":53}],47:[function(require,module,exports){
+},{"./lib/is-array":43,"./lib/is-virtual-dom":45,"./lib/is-virtual-text":46,"./lib/is-widget":47,"./lib/patch-op":48}],42:[function(require,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -3160,7 +3175,7 @@ function ascending(a, b) {
     return a > b
 }
 
-},{}],48:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 var nativeIsArray = Array.isArray
 var toString = Object.prototype.toString
 
@@ -3170,7 +3185,7 @@ function isArray(obj) {
     return toString.call(obj) === "[object Array]"
 }
 
-},{}],49:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 var toString = Object.prototype.toString
 
 module.exports = isString
@@ -3179,7 +3194,7 @@ function isString(obj) {
     return toString.call(obj) === "[object String]"
 }
 
-},{}],50:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 var version = require("../version")
 var major = version[0]
 
@@ -3193,7 +3208,7 @@ function isVirtualDomNode(x) {
     return x.type === "VirtualDOMNode" && x.version[0] === major
 }
 
-},{"../version":64}],51:[function(require,module,exports){
+},{"../version":58}],46:[function(require,module,exports){
 var version = require("../version")
 var major = version[0]
 
@@ -3207,15 +3222,17 @@ function isVirtualTextNode(x) {
     return x.type === "VirtualTextNode" && x.version[0] === major
 }
 
-},{"../version":64}],52:[function(require,module,exports){
+},{"../version":58}],47:[function(require,module,exports){
 module.exports = isWidget
 
 function isWidget(w) {
     return w && typeof w.init === "function" && typeof w.update === "function"
 }
 
-},{}],53:[function(require,module,exports){
-var render = require("../render")
+},{}],48:[function(require,module,exports){
+var DataSet = require("data-set")
+
+var render = require("../create-element")
 var isWidget = require("./is-widget")
 var isString = require("./is-string")
 var isVNode = require("./is-virtual-dom")
@@ -3339,6 +3356,8 @@ function propPatch(domNode, patch) {
 
             if (typeof patchValue === "function") {
                 patchValue(domNode, prop)
+            } else if (prop.substr(0, 5) === "data-") {
+                DataSet(domNode)[prop.substr(5)] = patchValue
             } else {
                 domNode[prop] = patchValue
             }
@@ -3355,7 +3374,7 @@ function destroyWidget(domNode, w) {
     }
 }
 
-},{"../render":63,"./is-string":49,"./is-virtual-dom":50,"./is-widget":52,"./update-widget":54}],54:[function(require,module,exports){
+},{"../create-element":40,"./is-string":44,"./is-virtual-dom":45,"./is-widget":47,"./update-widget":49,"data-set":51}],49:[function(require,module,exports){
 var isWidget = require("./is-widget")
 
 module.exports = updateWidget
@@ -3371,19 +3390,19 @@ function updateWidget(a, b) {
 
     return false
 }
-},{"./is-widget":52}],55:[function(require,module,exports){
-module.exports=require(23)
-},{}],56:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"./create-hash.js":55,"individual":57,"weakmap-shim/create-store":59}],57:[function(require,module,exports){
+},{"./is-widget":47}],50:[function(require,module,exports){
+module.exports=require(22)
+},{}],51:[function(require,module,exports){
+arguments[4][23][0].apply(exports,arguments)
+},{"./create-hash.js":50,"individual":52,"weakmap-shim/create-store":54}],52:[function(require,module,exports){
+module.exports=require(24)
+},{"global":53}],53:[function(require,module,exports){
 module.exports=require(25)
-},{"global":58}],58:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 module.exports=require(26)
-},{}],59:[function(require,module,exports){
+},{"./hidden-store.js":55}],55:[function(require,module,exports){
 module.exports=require(27)
-},{"./hidden-store.js":60}],60:[function(require,module,exports){
-module.exports=require(28)
-},{}],61:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 ;(function(exports) {
 
 // export the class if we are in a Node-like system.
@@ -4392,7 +4411,7 @@ if (typeof define === 'function' && define.amd)
   semver = {}
 );
 
-},{}],62:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 var domIndex = require("./lib/dom-index")
 var isArray = require("./lib/is-array")
 
@@ -4464,74 +4483,12 @@ function patchIndices(patches) {
     return indices
 }
 
-},{"./lib/dom-index":47,"./lib/is-array":48}],63:[function(require,module,exports){
-var DataSet = require("data-set")
-
-var isVirtualDomNode = require("./lib/is-virtual-dom")
-var isVirtualTextNode = require("./lib/is-virtual-text")
-var isString = require("./lib/is-string")
-
-module.exports = render
-
-function render(virtualDom, opts) {
-    var doc = opts ? opts.document || document : document
-    var warn = opts ? opts.warn : null
-
-    if (virtualDom && typeof virtualDom.init === "function") {
-        return virtualDom.init()
-    } else if (isVirtualTextNode(virtualDom)) {
-        return doc.createTextNode(virtualDom.text)
-    } else if (isString(virtualDom)) {
-        return doc.createTextNode(virtualDom)
-    } else if (!isVirtualDomNode(virtualDom)) {
-        if (warn) {
-            warn("Item is not a valid virtual dom node", virtualDom)
-        }
-        return null
-    }
-
-    var node = doc.createElement(virtualDom.tagName)
-    applyProperties(node, virtualDom.properties)
-    var children = virtualDom.children
-
-    for (var i = 0; i < children.length; i++) {
-        var childNode = render(children[i], opts)
-        if (childNode) {
-            node.appendChild(childNode)
-        }
-    }
-
-    return node
-}
-
-function applyProperties(node, props) {
-    for (var propName in props) {
-        var propValue = props[propName]
-
-        if (typeof propValue === "function") {
-            propValue(node, propName)
-        } else if(propName === "style") {
-            if(typeof propValue === "string") {
-                node.style.cssText = propValue
-            } else {
-                for (var s in propValue) {
-                    node.style[s] = propValue[s]
-                }
-            }
-        } else if (propName.substr(0, 5) === "data-") {
-            DataSet(node)[propName.substr(5)] = propValue
-        } else {
-            node[propName] = propValue
-        }
-    }
-}
-
-},{"./lib/is-string":49,"./lib/is-virtual-dom":50,"./lib/is-virtual-text":51,"data-set":56}],64:[function(require,module,exports){
+},{"./lib/dom-index":42,"./lib/is-array":43}],58:[function(require,module,exports){
 var semver = require("semver")
 
 module.exports = semver.clean("0.1.0")
 
-},{"semver":61}],65:[function(require,module,exports){
+},{"semver":56}],59:[function(require,module,exports){
 module.exports = addListener
 
 function addListener(observArray, observ) {
@@ -4559,7 +4516,7 @@ function addListener(observArray, observ) {
     })
 }
 
-},{}],66:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 var ObservArray = require("./index.js")
 
 var slice = Array.prototype.slice
@@ -4626,7 +4583,7 @@ function notImplemented() {
     throw new Error("Pull request welcome")
 }
 
-},{"./index.js":67}],67:[function(require,module,exports){
+},{"./index.js":61}],61:[function(require,module,exports){
 var Observ = require("observ")
 
 // circular dep between ArrayMethods & this file
@@ -4700,36 +4657,7 @@ function getLength() {
     return this._list.length
 }
 
-},{"./add-listener.js":65,"./array-methods.js":66,"./splice.js":69,"observ":68}],68:[function(require,module,exports){
-module.exports = Observable
-
-function Observable(value) {
-    var listeners = []
-    value = value === undefined ? null : value
-
-    observable.set = function (v) {
-        value = v
-        listeners.forEach(function (f) {
-            f(v)
-        })
-    }
-
-    return observable
-
-    function observable(listener) {
-        if (!listener) {
-            return value
-        }
-
-        listeners.push(listener)
-
-        return function remove() {
-            listeners.splice(listeners.indexOf(listener), 1)
-        }
-    }
-}
-
-},{}],69:[function(require,module,exports){
+},{"./add-listener.js":59,"./array-methods.js":60,"./splice.js":62,"observ":70}],62:[function(require,module,exports){
 var slice = Array.prototype.slice
 
 var addListener = require("./add-listener.js")
@@ -4780,7 +4708,7 @@ function splice(index, amount) {
     return removed
 }
 
-},{"./add-listener.js":65}],70:[function(require,module,exports){
+},{"./add-listener.js":59}],63:[function(require,module,exports){
 var Observ = require("observ")
 var extend = require("xtend")
 
@@ -4818,11 +4746,9 @@ function ObservHash(hash) {
     return obs
 }
 
-},{"observ":71,"xtend":73}],71:[function(require,module,exports){
-module.exports=require(68)
-},{}],72:[function(require,module,exports){
-module.exports=require(30)
-},{}],73:[function(require,module,exports){
+},{"observ":70,"xtend":65}],64:[function(require,module,exports){
+module.exports=require(36)
+},{}],65:[function(require,module,exports){
 var Keys = require("object-keys")
 var hasKeys = require("./has-keys")
 
@@ -4849,7 +4775,7 @@ function extend() {
     return target
 }
 
-},{"./has-keys":72,"object-keys":75}],74:[function(require,module,exports){
+},{"./has-keys":64,"object-keys":67}],66:[function(require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
 
@@ -4891,11 +4817,11 @@ module.exports = function forEach(obj, fn) {
 };
 
 
-},{}],75:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 module.exports = Object.keys || require('./shim');
 
 
-},{"./shim":77}],76:[function(require,module,exports){
+},{"./shim":69}],68:[function(require,module,exports){
 var toString = Object.prototype.toString;
 
 module.exports = function isArguments(value) {
@@ -4913,7 +4839,7 @@ module.exports = function isArguments(value) {
 };
 
 
-},{}],77:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 (function () {
 	"use strict";
 
@@ -4977,9 +4903,36 @@ module.exports = function isArguments(value) {
 }());
 
 
-},{"./foreach":74,"./isArguments":76}],78:[function(require,module,exports){
-module.exports=require(68)
-},{}],79:[function(require,module,exports){
+},{"./foreach":66,"./isArguments":68}],70:[function(require,module,exports){
+module.exports = Observable
+
+function Observable(value) {
+    var listeners = []
+    value = value === undefined ? null : value
+
+    observable.set = function (v) {
+        value = v
+        listeners.forEach(function (f) {
+            f(v)
+        })
+    }
+
+    return observable
+
+    function observable(listener) {
+        if (!listener) {
+            return value
+        }
+
+        listeners.push(listener)
+
+        return function remove() {
+            listeners.splice(listeners.indexOf(listener), 1)
+        }
+    }
+}
+
+},{}],71:[function(require,module,exports){
 var extend = require('xtend')
 
 var getFormData = require('./lib/get-form-data.js')
@@ -5021,7 +4974,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"./lib/get-form-data.js":81,"xtend":132}],80:[function(require,module,exports){
+},{"./lib/get-form-data.js":73,"xtend":124}],72:[function(require,module,exports){
 module.exports = SinkEventHandler
 
 function SinkEventHandler(sink, data) {
@@ -5044,7 +4997,7 @@ function handleEvent(ev) {
     }
 }
 
-},{}],81:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 var FormData = require('form-data-set')
 var walk = require('dom-walk')
 
@@ -5069,7 +5022,7 @@ function getFormData(rootElem) {
     return FormData(elements)
 }
 
-},{"dom-walk":82,"form-data-set":83}],82:[function(require,module,exports){
+},{"dom-walk":74,"form-data-set":75}],74:[function(require,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -5095,7 +5048,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],83:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 /*jshint maxcomplexity: 10*/
 
 module.exports = FormData
@@ -5172,7 +5125,7 @@ function filterNull(val) {
     return val !== null
 }
 
-},{}],84:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 var extend = require('xtend')
 
 var getFormData = require('./lib/get-form-data.js')
@@ -5219,7 +5172,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"./lib/get-form-data.js":81,"xtend":132}],85:[function(require,module,exports){
+},{"./lib/get-form-data.js":73,"xtend":124}],77:[function(require,module,exports){
 var extend = require('xtend')
 
 var getFormData = require('./lib/get-form-data.js')
@@ -5249,7 +5202,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"./lib/get-form-data.js":81,"xtend":132}],86:[function(require,module,exports){
+},{"./lib/get-form-data.js":73,"xtend":124}],78:[function(require,module,exports){
 var createElement = require("virtual-dom/render")
 var diff = require("virtual-dom/diff")
 var patch = require("virtual-dom/patch")
@@ -5294,21 +5247,21 @@ function init() {
     return createElement(this.vnode)
 }
 
-},{"virtual-dom/diff":87,"virtual-dom/patch":103,"virtual-dom/render":104}],87:[function(require,module,exports){
+},{"virtual-dom/diff":79,"virtual-dom/patch":95,"virtual-dom/render":96}],79:[function(require,module,exports){
+arguments[4][41][0].apply(exports,arguments)
+},{"./lib/is-array":81,"./lib/is-virtual-dom":83,"./lib/is-virtual-text":84,"./lib/is-widget":85,"./lib/patch-op":86}],80:[function(require,module,exports){
+module.exports=require(42)
+},{}],81:[function(require,module,exports){
+module.exports=require(43)
+},{}],82:[function(require,module,exports){
+module.exports=require(44)
+},{}],83:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"../version":97}],84:[function(require,module,exports){
 arguments[4][46][0].apply(exports,arguments)
-},{"./lib/is-array":89,"./lib/is-virtual-dom":91,"./lib/is-virtual-text":92,"./lib/is-widget":93,"./lib/patch-op":94}],88:[function(require,module,exports){
+},{"../version":97}],85:[function(require,module,exports){
 module.exports=require(47)
-},{}],89:[function(require,module,exports){
-module.exports=require(48)
-},{}],90:[function(require,module,exports){
-module.exports=require(49)
-},{}],91:[function(require,module,exports){
-arguments[4][50][0].apply(exports,arguments)
-},{"../version":105}],92:[function(require,module,exports){
-arguments[4][51][0].apply(exports,arguments)
-},{"../version":105}],93:[function(require,module,exports){
-module.exports=require(52)
-},{}],94:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 var DataSet = require("data-set")
 
 var render = require("../render")
@@ -5453,33 +5406,33 @@ function destroyWidget(domNode, w) {
     }
 }
 
-},{"../render":104,"./is-string":90,"./is-virtual-dom":91,"./is-widget":93,"./update-widget":95,"data-set":97}],95:[function(require,module,exports){
-module.exports=require(54)
-},{"./is-widget":93}],96:[function(require,module,exports){
-module.exports=require(23)
-},{}],97:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"./create-hash.js":96,"individual":98,"weakmap-shim/create-store":100}],98:[function(require,module,exports){
+},{"../render":96,"./is-string":82,"./is-virtual-dom":83,"./is-widget":85,"./update-widget":87,"data-set":89}],87:[function(require,module,exports){
+module.exports=require(49)
+},{"./is-widget":85}],88:[function(require,module,exports){
+module.exports=require(22)
+},{}],89:[function(require,module,exports){
+arguments[4][23][0].apply(exports,arguments)
+},{"./create-hash.js":88,"individual":90,"weakmap-shim/create-store":92}],90:[function(require,module,exports){
+module.exports=require(24)
+},{"global":91}],91:[function(require,module,exports){
 module.exports=require(25)
-},{"global":99}],99:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 module.exports=require(26)
-},{}],100:[function(require,module,exports){
+},{"./hidden-store.js":93}],93:[function(require,module,exports){
 module.exports=require(27)
-},{"./hidden-store.js":101}],101:[function(require,module,exports){
-module.exports=require(28)
-},{}],102:[function(require,module,exports){
-module.exports=require(61)
-},{}],103:[function(require,module,exports){
-module.exports=require(62)
-},{"./lib/dom-index":88,"./lib/is-array":89}],104:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./lib/is-string":90,"./lib/is-virtual-dom":91,"./lib/is-virtual-text":92,"data-set":97}],105:[function(require,module,exports){
-module.exports=require(64)
-},{"semver":102}],106:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./lib/is-string":111,"./lib/is-virtual-dom":112,"./lib/is-virtual-text":113,"data-set":120}],107:[function(require,module,exports){
-arguments[4][46][0].apply(exports,arguments)
-},{"./lib/is-array":110,"./lib/is-virtual-dom":112,"./lib/is-virtual-text":113,"./lib/is-widget":114,"./lib/patch-op":116}],108:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
+module.exports=require(56)
+},{}],95:[function(require,module,exports){
+module.exports=require(57)
+},{"./lib/dom-index":80,"./lib/is-array":81}],96:[function(require,module,exports){
+arguments[4][40][0].apply(exports,arguments)
+},{"./lib/is-string":82,"./lib/is-virtual-dom":83,"./lib/is-virtual-text":84,"data-set":89}],97:[function(require,module,exports){
+module.exports=require(58)
+},{"semver":94}],98:[function(require,module,exports){
+arguments[4][40][0].apply(exports,arguments)
+},{"./lib/is-string":103,"./lib/is-virtual-dom":104,"./lib/is-virtual-text":105,"data-set":112}],99:[function(require,module,exports){
+arguments[4][41][0].apply(exports,arguments)
+},{"./lib/is-array":102,"./lib/is-virtual-dom":104,"./lib/is-virtual-text":105,"./lib/is-widget":106,"./lib/patch-op":108}],100:[function(require,module,exports){
 var extend = require("extend")
 
 var isArray = require("./lib/is-array")
@@ -5538,19 +5491,19 @@ function isChildren(x) {
     return isChild(x) || isArray(x) || isString(x)
 }
 
-},{"./lib/is-array":110,"./lib/is-string":111,"./lib/is-virtual-dom":112,"./lib/is-virtual-text":113,"./lib/parse-tag":115,"./virtual-dom-node.js":129,"./virtual-text-node.js":130,"extend":125}],109:[function(require,module,exports){
+},{"./lib/is-array":102,"./lib/is-string":103,"./lib/is-virtual-dom":104,"./lib/is-virtual-text":105,"./lib/parse-tag":107,"./virtual-dom-node.js":121,"./virtual-text-node.js":122,"extend":117}],101:[function(require,module,exports){
+module.exports=require(42)
+},{}],102:[function(require,module,exports){
+module.exports=require(43)
+},{}],103:[function(require,module,exports){
+module.exports=require(44)
+},{}],104:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"../version":120}],105:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"../version":120}],106:[function(require,module,exports){
 module.exports=require(47)
-},{}],110:[function(require,module,exports){
-module.exports=require(48)
-},{}],111:[function(require,module,exports){
-module.exports=require(49)
-},{}],112:[function(require,module,exports){
-arguments[4][50][0].apply(exports,arguments)
-},{"../version":128}],113:[function(require,module,exports){
-arguments[4][51][0].apply(exports,arguments)
-},{"../version":128}],114:[function(require,module,exports){
-module.exports=require(52)
-},{}],115:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 var split = require("browser-split")
 
 var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
@@ -5603,154 +5556,11 @@ function parseTag(tag, props) {
     return tagName ? tagName.toLowerCase() : "div"
 }
 
-},{"browser-split":118}],116:[function(require,module,exports){
-var DataSet = require("data-set")
-
-var render = require("../create-element")
-var isWidget = require("./is-widget")
-var isString = require("./is-string")
-var isVNode = require("./is-virtual-dom")
-var updateWidget = require("./update-widget")
-
-module.exports = createPatch
-
-function createPatch(vNode, patch) {
-    return new PatchOp(vNode, patch)
-}
-
-function PatchOp(vNode, patch) {
-    this.vNode = vNode
-    this.patch = patch
-}
-
-PatchOp.prototype.apply = applyUpdate
-
-function applyUpdate(domNode, renderOptions) {
-    var vNode = this.vNode
-    var patch = this.patch
-
-    if (patch == null) {
-        return removeNode(domNode, vNode)
-    } else if (vNode == null) {
-        return insertNode(domNode, patch, renderOptions)
-    } else if (isString(patch)) {
-        return stringPatch(domNode, vNode, patch, renderOptions)
-    } else if (isWidget(patch)) {
-        return widgetPatch(domNode, vNode, patch, renderOptions)
-    } else if (isVNode(patch)) {
-        return vNodePatch(domNode, vNode, patch, renderOptions)
-    } else {
-        return propPatch(domNode, patch)
-    }
-}
-
-function removeNode(domNode, vNode) {
-    var parentNode = domNode.parentNode
-
-    if (parentNode) {
-        parentNode.removeChild(domNode)
-    }
-
-    destroyWidget(domNode, vNode);
-
-    return null
-}
-
-function insertNode(parentNode, vNode, renderOptions) {
-    var newNode = render(vNode, renderOptions)
-
-    if (parentNode) {
-        parentNode.appendChild(newNode)
-    }
-
-    return parentNode
-}
-
-function stringPatch(domNode, leftVNode, newString, renderOptions) {
-    if (domNode.nodeType === 3) {
-        domNode.replaceData(0, domNode.length, newString)
-        return domNode
-    }
-
-    var parentNode = domNode.parentNode
-    var newNode = render(newString, renderOptions)
-
-    if (parentNode) {
-        parentNode.replaceChild(newNode, domNode)
-    }
-
-    destroyWidget(domNode, leftVNode)
-
-    return newNode
-}
-
-function widgetPatch(domNode, leftVNode, widgetUpdate, renderOptions) {
-    if (isWidget(leftVNode)) {
-        if (updateWidget(leftVNode, widgetUpdate)) {
-            var updatedNode = widgetUpdate.update(leftVNode, domNode)
-            return updatedNode || domNode
-        }
-    }
-
-    var parentNode = domNode.parentNode
-    var newWidget = render(widgetUpdate, renderOptions)
-
-    if (parentNode) {
-        parentNode.replaceChild(newWidget, domNode)
-    }
-
-    destroyWidget(domNode, leftVNode)
-
-    return newWidget
-}
-
-function vNodePatch(domNode, leftVNode, rightVNode, renderOptions) {
-    var parentNode = domNode.parentNode
-    var newNode = render(rightVNode, renderOptions)
-
-    if (parentNode) {
-        parentNode.replaceChild(newNode, domNode)
-    }
-
-    destroyWidget(domNode, leftVNode)
-
-    return newNode
-}
-
-function propPatch(domNode, patch) {
-    for (var prop in patch) {
-        if (prop === "style") {
-            var stylePatch = patch.style
-            var domStyle = domNode.style
-            for (var s in stylePatch) {
-                domStyle[s] = stylePatch[s]
-            }
-        } else {
-            var patchValue = patch[prop]
-
-            if (typeof patchValue === "function") {
-                patchValue(domNode, prop)
-            } else if (prop.substr(0, 5) === "data-") {
-                DataSet(domNode)[prop.substr(5)] = patchValue
-            } else {
-                domNode[prop] = patchValue
-            }
-        }
-    }
-
-    return domNode
-}
-
-
-function destroyWidget(domNode, w) {
-    if (typeof w.destroy === "function" && isWidget(w)) {
-        w.destroy(domNode)
-    }
-}
-
-},{"../create-element":106,"./is-string":111,"./is-virtual-dom":112,"./is-widget":114,"./update-widget":117,"data-set":120}],117:[function(require,module,exports){
-module.exports=require(54)
-},{"./is-widget":114}],118:[function(require,module,exports){
+},{"browser-split":110}],108:[function(require,module,exports){
+arguments[4][48][0].apply(exports,arguments)
+},{"../create-element":98,"./is-string":103,"./is-virtual-dom":104,"./is-widget":106,"./update-widget":109,"data-set":112}],109:[function(require,module,exports){
+module.exports=require(49)
+},{"./is-widget":106}],110:[function(require,module,exports){
 /*!
  * Cross-Browser Split 1.1.1
  * Copyright 2007-2012 Steven Levithan <stevenlevithan.com>
@@ -5858,19 +5668,19 @@ module.exports = (function split(undef) {
   return self;
 })();
 
-},{}],119:[function(require,module,exports){
-module.exports=require(23)
-},{}],120:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"./create-hash.js":119,"individual":121,"weakmap-shim/create-store":123}],121:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
+module.exports=require(22)
+},{}],112:[function(require,module,exports){
+arguments[4][23][0].apply(exports,arguments)
+},{"./create-hash.js":111,"individual":113,"weakmap-shim/create-store":115}],113:[function(require,module,exports){
+module.exports=require(24)
+},{"global":114}],114:[function(require,module,exports){
 module.exports=require(25)
-},{"global":122}],122:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 module.exports=require(26)
-},{}],123:[function(require,module,exports){
+},{"./hidden-store.js":116}],116:[function(require,module,exports){
 module.exports=require(27)
-},{"./hidden-store.js":124}],124:[function(require,module,exports){
-module.exports=require(28)
-},{}],125:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
 
@@ -5950,13 +5760,13 @@ module.exports = function extend() {
 	return target;
 };
 
-},{}],126:[function(require,module,exports){
-module.exports=require(61)
-},{}],127:[function(require,module,exports){
-module.exports=require(62)
-},{"./lib/dom-index":109,"./lib/is-array":110}],128:[function(require,module,exports){
-module.exports=require(64)
-},{"semver":126}],129:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
+module.exports=require(56)
+},{}],119:[function(require,module,exports){
+module.exports=require(57)
+},{"./lib/dom-index":101,"./lib/is-array":102}],120:[function(require,module,exports){
+module.exports=require(58)
+},{"semver":118}],121:[function(require,module,exports){
 var version = require("./version")
 var isVDOM = require("./lib/is-virtual-dom")
 var isWidget = require("./lib/is-widget")
@@ -6013,7 +5823,7 @@ function hasWidgets(children) {
     return false
 }
 
-},{"./lib/is-virtual-dom":112,"./lib/is-widget":114,"./version":128}],130:[function(require,module,exports){
+},{"./lib/is-virtual-dom":104,"./lib/is-widget":106,"./version":120}],122:[function(require,module,exports){
 var version = require("./version")
 
 module.exports = VirtualTextNode
@@ -6025,9 +5835,32 @@ function VirtualTextNode(text) {
 VirtualTextNode.prototype.version = version.split(".")
 VirtualTextNode.prototype.type = "VirtualTextNode"
 
-},{"./version":128}],131:[function(require,module,exports){
-module.exports=require(30)
-},{}],132:[function(require,module,exports){
-module.exports=require(31)
-},{"./has-keys":131}]},{},[1])</script>
+},{"./version":120}],123:[function(require,module,exports){
+module.exports=require(36)
+},{}],124:[function(require,module,exports){
+var hasKeys = require("./has-keys")
+
+module.exports = extend
+
+function extend() {
+    var target = {}
+
+    for (var i = 0; i < arguments.length; i++) {
+        var source = arguments[i]
+
+        if (!hasKeys(source)) {
+            continue
+        }
+
+        for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+                target[key] = source[key]
+            }
+        }
+    }
+
+    return target
+}
+
+},{"./has-keys":123}]},{},[8])</script>
 </html>
