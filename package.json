@@ -26,13 +26,13 @@
   "dependencies": {
     "dom-delegator": "^6.2.1",
     "event-sinks": "^2.0.1",
-    "main-loop": "^1.0.1",
+    "main-loop": "^1.0.3",
     "observ": "^0.1.5",
     "observ-array": "^1.0.3",
     "observ-hash": "^1.1.1",
     "value-event": "^1.0.0",
     "vdom-thunk": "^1.1.0",
-    "virtual-dom": "git://github.com/Matt-Esch/virtual-dom"
+    "virtual-dom": "git://github.com/Matt-Esch/virtual-dom#bbd9ea04b9579e8cf14742ddb15ac3e4440652ef"
   },
   "devDependencies": {
     "browserify": "^3.38.0",
@@ -53,6 +53,7 @@
   ],
   "scripts": {
     "test": "node ./test/index.js",
+    "disc": "browserify index.js --full-paths | discify > disc.html && open disc.html",
     "build": "npm run count && npm run bmi-counter && npm run shared-state && npm run todomvc",
     "count": "node bin/browserify-editor.js examples/count.js | indexhtmlify > examples/count.html",
     "bmi-counter": "node bin/browserify-editor.js examples/bmi-counter.js | indexhtmlify > examples/bmi-counter.html",
