@@ -272,7 +272,7 @@ function todoItem(item) {
     })
 }
 
-},{"../../index.js":7,"cuid":15,"xtend":127}],6:[function(require,module,exports){
+},{"../../index.js":7,"cuid":15,"xtend":125}],6:[function(require,module,exports){
 var State = require("./state.js")
 
 module.exports = {
@@ -376,11 +376,11 @@ module.exports = {
     diff: require("virtual-dom/diff"),
     patch: require("virtual-dom/patch"),
     partial: require("vdom-thunk"),
-    create: require("virtual-dom/create-element"),
+    create: require("virtual-dom/render"),
     h: require("virtual-dom/h")
 }
 
-},{"dom-delegator":20,"event-sinks/geval":28,"main-loop":39,"observ":72,"observ-array":63,"observ-hash":65,"value-event/change":73,"value-event/event":74,"value-event/submit":78,"value-event/value":79,"vdom-thunk":80,"virtual-dom/create-element":100,"virtual-dom/diff":101,"virtual-dom/h":102,"virtual-dom/patch":122}],8:[function(require,module,exports){
+},{"dom-delegator":20,"event-sinks/geval":28,"main-loop":39,"observ":71,"observ-array":62,"observ-hash":64,"value-event/change":72,"value-event/event":73,"value-event/submit":77,"value-event/value":78,"vdom-thunk":79,"virtual-dom/diff":99,"virtual-dom/h":100,"virtual-dom/patch":119,"virtual-dom/render":120}],8:[function(require,module,exports){
 
 },{}],9:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
@@ -2289,7 +2289,7 @@ function listen(delegator, surface, eventName) {
     })
 }
 
-},{"./get-listener.js":19,"xtend":127}],22:[function(require,module,exports){
+},{"./get-listener.js":19,"xtend":125}],22:[function(require,module,exports){
 module.exports = createHash
 
 function createHash(elem) {
@@ -2751,7 +2751,7 @@ function extend(target) {
 
 },{"./has-keys":37}],39:[function(require,module,exports){
 var raf = require("raf").polyfill
-var vdomCreate = require("virtual-dom/create-element")
+var vdomCreate = require("virtual-dom/render")
 var vdomDiff = require("virtual-dom/diff")
 var vdomPatch = require("virtual-dom/patch")
 
@@ -2809,7 +2809,7 @@ function main(initialState, view, opts) {
     }
 }
 
-},{"raf":40,"virtual-dom/create-element":41,"virtual-dom/diff":42,"virtual-dom/patch":59}],40:[function(require,module,exports){
+},{"raf":40,"virtual-dom/diff":41,"virtual-dom/patch":57,"virtual-dom/render":58}],40:[function(require,module,exports){
 module.exports = raf
 
 var EE = require('events').EventEmitter
@@ -2874,77 +2874,9 @@ raf.now = now
 
 
 },{"events":9}],41:[function(require,module,exports){
-var DataSet = require("data-set")
-var document = require("global/document")
-
-var isVirtualDomNode = require("./lib/is-virtual-dom")
-var isVirtualTextNode = require("./lib/is-virtual-text")
-var isString = require("./lib/is-string")
-var isObject = require("./lib/is-object")
-
-module.exports = render
-
-function render(virtualDom, opts) {
-    var doc = opts ? opts.document || document : document
-    var warn = opts ? opts.warn : null
-
-    if (virtualDom && typeof virtualDom.init === "function") {
-        return virtualDom.init()
-    } else if (isVirtualTextNode(virtualDom)) {
-        return doc.createTextNode(virtualDom.text)
-    } else if (isString(virtualDom)) {
-        return doc.createTextNode(virtualDom)
-    } else if (!isVirtualDomNode(virtualDom)) {
-        if (warn) {
-            warn("Item is not a valid virtual dom node", virtualDom)
-        }
-        return null
-    }
-
-    var node = doc.createElement(virtualDom.tagName)
-    applyProperties(node, virtualDom.properties)
-    var children = virtualDom.children
-
-    for (var i = 0; i < children.length; i++) {
-        var childNode = render(children[i], opts)
-        if (childNode) {
-            node.appendChild(childNode)
-        }
-    }
-
-    return node
-}
-
-function applyProperties(node, props) {
-    for (var propName in props) {
-        var propValue = props[propName]
-
-        if (typeof propValue === "function") {
-            propValue(node, propName)
-        } else if(propName === "style" && typeof propValue === "string") {
-            node.style.cssText = propValue
-        } else if (propName.substr(0, 5) === "data-") {
-            DataSet(node)[propName.substr(5)] = propValue
-        } else if (isObject(propValue)) {
-            if (!node[propName]) {
-                node[propName] = {}
-            }
-
-            var nodeValue = node[propName]
-            for (var k in propValue) {
-                nodeValue[k] = propValue[k]
-            }
-        } else {
-            node[propName] = propValue
-        }
-    }
-}
-
-},{"./lib/is-object":45,"./lib/is-string":46,"./lib/is-virtual-dom":47,"./lib/is-virtual-text":48,"data-set":53,"global/document":32}],42:[function(require,module,exports){
 var createPatch = require("./lib/patch-op")
 
 var isArray = require("./lib/is-array")
-var isObject = require("./lib/is-object")
 var isVDOMNode = require("./lib/is-virtual-dom")
 var isVTextNode = require("./lib/is-virtual-text")
 var isWidget = require("./lib/is-widget")
@@ -3005,21 +2937,16 @@ function diffProps(a, b) {
     var diff
 
     for (var aKey in a) {
-        var aValue = a[aKey]
-        var bValue = b[aKey] || nullProps
-
-        if (isObject(aValue)) {
-            if (getPrototype(bValue) !== getPrototype(aValue)) {
+        if (aKey === "style") {
+            var styleDiff = diffProps(a.style, b.style || nullProps)
+            if (styleDiff) {
                 diff = diff || {}
-                diff[aKey] = bValue
-            } else {
-                var objectDiff = diffProps(aValue, bValue || nullProps)
-                if (objectDiff) {
-                    diff = diff || {}
-                    diff[aKey] = objectDiff
-                }
+                diff.style = styleDiff
             }
         } else {
+            var aValue = a[aKey]
+            var bValue = b[aKey]
+
             if (typeof aValue === "function" || aValue !== bValue) {
                 diff = diff || {}
                 diff[aKey] = bValue
@@ -3035,16 +2962,6 @@ function diffProps(a, b) {
     }
 
     return diff
-}
-
-function getPrototype(value) {
-    if (Object.getPrototypeOf) {
-        return Object.getPrototypeOf(value)
-    } else if (value.__proto__) {
-        return value.__proto__
-    } else if (value.constructor) {
-        return value.constructor.prototype
-    }
 }
 
 function diffChildren(a, b, patch, apply, index) {
@@ -3123,7 +3040,7 @@ function appendPatch(apply, patch) {
     }
 }
 
-},{"./lib/is-array":44,"./lib/is-object":45,"./lib/is-virtual-dom":47,"./lib/is-virtual-text":48,"./lib/is-widget":49,"./lib/patch-op":50}],43:[function(require,module,exports){
+},{"./lib/is-array":43,"./lib/is-virtual-dom":45,"./lib/is-virtual-text":46,"./lib/is-widget":47,"./lib/patch-op":48}],42:[function(require,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -3207,10 +3124,10 @@ function indexInRange(indices, left, right) {
 }
 
 function ascending(a, b) {
-    return a > b ? 1 : -1
+    return a > b
 }
 
-},{}],44:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 var nativeIsArray = Array.isArray
 var toString = Object.prototype.toString
 
@@ -3220,14 +3137,7 @@ function isArray(obj) {
     return toString.call(obj) === "[object Array]"
 }
 
-},{}],45:[function(require,module,exports){
-module.exports = isObject
-
-function isObject(x) {
-    return x === Object(x)
-}
-
-},{}],46:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 var toString = Object.prototype.toString
 
 module.exports = isString
@@ -3236,7 +3146,7 @@ function isString(obj) {
     return toString.call(obj) === "[object String]"
 }
 
-},{}],47:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 var version = require("../version")
 var major = version[0]
 
@@ -3250,7 +3160,7 @@ function isVirtualDomNode(x) {
     return x.type === "VirtualDOMNode" && x.version[0] === major
 }
 
-},{"../version":60}],48:[function(require,module,exports){
+},{"../version":59}],46:[function(require,module,exports){
 var version = require("../version")
 var major = version[0]
 
@@ -3264,20 +3174,19 @@ function isVirtualTextNode(x) {
     return x.type === "VirtualTextNode" && x.version[0] === major
 }
 
-},{"../version":60}],49:[function(require,module,exports){
+},{"../version":59}],47:[function(require,module,exports){
 module.exports = isWidget
 
 function isWidget(w) {
     return w && typeof w.init === "function" && typeof w.update === "function"
 }
 
-},{}],50:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 var DataSet = require("data-set")
 
-var render = require("../create-element")
+var render = require("../render")
 var isWidget = require("./is-widget")
 var isString = require("./is-string")
-var isObject = require("./is-object")
 var isVNode = require("./is-virtual-dom")
 var updateWidget = require("./update-widget")
 
@@ -3388,19 +3297,22 @@ function vNodePatch(domNode, leftVNode, rightVNode, renderOptions) {
 
 function propPatch(domNode, patch) {
     for (var prop in patch) {
-        var patchValue = patch[prop]
-
-        if (prop.substr(0, 5) === "data-") {
-            DataSet(domNode)[prop.substr(5)] = patchValue
-        } else if (isObject(patchValue)) {
-            var domValue = domNode[prop]
-            for (var key in patchValue) {
-                domValue[key] = patchValue[key]
+        if (prop === "style") {
+            var stylePatch = patch.style
+            var domStyle = domNode.style
+            for (var s in stylePatch) {
+                domStyle[s] = stylePatch[s]
             }
-        } else if (typeof patchValue === "function") {
-            patchValue(domNode, prop)
         } else {
-            domNode[prop] = patchValue
+            var patchValue = patch[prop]
+
+            if (typeof patchValue === "function") {
+                patchValue(domNode, prop)
+            } else if (prop.substr(0, 5) === "data-") {
+                DataSet(domNode)[prop.substr(5)] = patchValue
+            } else {
+                domNode[prop] = patchValue
+            }
         }
     }
 
@@ -3414,7 +3326,7 @@ function destroyWidget(domNode, w) {
     }
 }
 
-},{"../create-element":41,"./is-object":45,"./is-string":46,"./is-virtual-dom":47,"./is-widget":49,"./update-widget":51,"data-set":53}],51:[function(require,module,exports){
+},{"../render":58,"./is-string":44,"./is-virtual-dom":45,"./is-widget":47,"./update-widget":49,"data-set":51}],49:[function(require,module,exports){
 var isWidget = require("./is-widget")
 
 module.exports = updateWidget
@@ -3430,19 +3342,19 @@ function updateWidget(a, b) {
 
     return false
 }
-},{"./is-widget":49}],52:[function(require,module,exports){
+},{"./is-widget":47}],50:[function(require,module,exports){
 module.exports=require(22)
-},{}],53:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 arguments[4][23][0].apply(exports,arguments)
-},{"./create-hash.js":52,"individual":54,"weakmap-shim/create-store":56}],54:[function(require,module,exports){
+},{"./create-hash.js":50,"individual":52,"weakmap-shim/create-store":54}],52:[function(require,module,exports){
 module.exports=require(24)
-},{"global":55}],55:[function(require,module,exports){
+},{"global":53}],53:[function(require,module,exports){
 module.exports=require(25)
-},{}],56:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 module.exports=require(26)
-},{"./hidden-store.js":57}],57:[function(require,module,exports){
+},{"./hidden-store.js":55}],55:[function(require,module,exports){
 module.exports=require(27)
-},{}],58:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 ;(function(exports) {
 
 // export the class if we are in a Node-like system.
@@ -4451,9 +4363,7 @@ if (typeof define === 'function' && define.amd)
   semver = {}
 );
 
-},{}],59:[function(require,module,exports){
-var document = require("global/document")
-
+},{}],57:[function(require,module,exports){
 var domIndex = require("./lib/dom-index")
 var isArray = require("./lib/is-array")
 
@@ -4467,12 +4377,12 @@ function patch(rootNode, patches) {
     }
 
     var index = domIndex(rootNode, patches.a, indices)
-    var ownerDocument = rootNode.ownerDocument
-    var renderOptions
+    var ownerDocument, renderOptions
 
-    if (ownerDocument !== document) {
+    if (typeof document === "undefined" ||
+        (ownerDocument = rootNode.ownerDocument) !== document) {
         renderOptions = {
-            document: ownerDocument
+            document: ownerDocument || rootNode.ownerDocument
         }
     }
 
@@ -4525,12 +4435,74 @@ function patchIndices(patches) {
     return indices
 }
 
-},{"./lib/dom-index":43,"./lib/is-array":44,"global/document":32}],60:[function(require,module,exports){
+},{"./lib/dom-index":42,"./lib/is-array":43}],58:[function(require,module,exports){
+var DataSet = require("data-set")
+
+var isVirtualDomNode = require("./lib/is-virtual-dom")
+var isVirtualTextNode = require("./lib/is-virtual-text")
+var isString = require("./lib/is-string")
+
+module.exports = render
+
+function render(virtualDom, opts) {
+    var doc = opts ? opts.document || document : document
+    var warn = opts ? opts.warn : null
+
+    if (virtualDom && typeof virtualDom.init === "function") {
+        return virtualDom.init()
+    } else if (isVirtualTextNode(virtualDom)) {
+        return doc.createTextNode(virtualDom.text)
+    } else if (isString(virtualDom)) {
+        return doc.createTextNode(virtualDom)
+    } else if (!isVirtualDomNode(virtualDom)) {
+        if (warn) {
+            warn("Item is not a valid virtual dom node", virtualDom)
+        }
+        return null
+    }
+
+    var node = doc.createElement(virtualDom.tagName)
+    applyProperties(node, virtualDom.properties)
+    var children = virtualDom.children
+
+    for (var i = 0; i < children.length; i++) {
+        var childNode = render(children[i], opts)
+        if (childNode) {
+            node.appendChild(childNode)
+        }
+    }
+
+    return node
+}
+
+function applyProperties(node, props) {
+    for (var propName in props) {
+        var propValue = props[propName]
+
+        if (typeof propValue === "function") {
+            propValue(node, propName)
+        } else if(propName === "style") {
+            if(typeof propValue === "string") {
+                node.style.cssText = propValue
+            } else {
+                for (var s in propValue) {
+                    node.style[s] = propValue[s]
+                }
+            }
+        } else if (propName.substr(0, 5) === "data-") {
+            DataSet(node)[propName.substr(5)] = propValue
+        } else {
+            node[propName] = propValue
+        }
+    }
+}
+
+},{"./lib/is-string":44,"./lib/is-virtual-dom":45,"./lib/is-virtual-text":46,"data-set":51}],59:[function(require,module,exports){
 var semver = require("semver")
 
 module.exports = semver.clean("0.1.0")
 
-},{"semver":58}],61:[function(require,module,exports){
+},{"semver":56}],60:[function(require,module,exports){
 module.exports = addListener
 
 function addListener(observArray, observ) {
@@ -4558,7 +4530,7 @@ function addListener(observArray, observ) {
     })
 }
 
-},{}],62:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 var ObservArray = require("./index.js")
 
 var slice = Array.prototype.slice
@@ -4625,7 +4597,7 @@ function notImplemented() {
     throw new Error("Pull request welcome")
 }
 
-},{"./index.js":63}],63:[function(require,module,exports){
+},{"./index.js":62}],62:[function(require,module,exports){
 var Observ = require("observ")
 
 // circular dep between ArrayMethods & this file
@@ -4699,7 +4671,7 @@ function getLength() {
     return this._list.length
 }
 
-},{"./add-listener.js":61,"./array-methods.js":62,"./splice.js":64,"observ":72}],64:[function(require,module,exports){
+},{"./add-listener.js":60,"./array-methods.js":61,"./splice.js":63,"observ":71}],63:[function(require,module,exports){
 var slice = Array.prototype.slice
 
 var addListener = require("./add-listener.js")
@@ -4750,7 +4722,7 @@ function splice(index, amount) {
     return removed
 }
 
-},{"./add-listener.js":61}],65:[function(require,module,exports){
+},{"./add-listener.js":60}],64:[function(require,module,exports){
 var Observ = require("observ")
 var extend = require("xtend")
 
@@ -4788,9 +4760,9 @@ function ObservHash(hash) {
     return obs
 }
 
-},{"observ":72,"xtend":67}],66:[function(require,module,exports){
+},{"observ":71,"xtend":66}],65:[function(require,module,exports){
 module.exports=require(37)
-},{}],67:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 var Keys = require("object-keys")
 var hasKeys = require("./has-keys")
 
@@ -4817,7 +4789,7 @@ function extend() {
     return target
 }
 
-},{"./has-keys":66,"object-keys":69}],68:[function(require,module,exports){
+},{"./has-keys":65,"object-keys":68}],67:[function(require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
 
@@ -4859,11 +4831,11 @@ module.exports = function forEach(obj, fn) {
 };
 
 
-},{}],69:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 module.exports = Object.keys || require('./shim');
 
 
-},{"./shim":71}],70:[function(require,module,exports){
+},{"./shim":70}],69:[function(require,module,exports){
 var toString = Object.prototype.toString;
 
 module.exports = function isArguments(value) {
@@ -4881,7 +4853,7 @@ module.exports = function isArguments(value) {
 };
 
 
-},{}],71:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 (function () {
 	"use strict";
 
@@ -4945,7 +4917,7 @@ module.exports = function isArguments(value) {
 }());
 
 
-},{"./foreach":68,"./isArguments":70}],72:[function(require,module,exports){
+},{"./foreach":67,"./isArguments":69}],71:[function(require,module,exports){
 module.exports = Observable
 
 function Observable(value) {
@@ -4974,7 +4946,7 @@ function Observable(value) {
     }
 }
 
-},{}],73:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 var extend = require('xtend')
 
 var getFormData = require('./lib/get-form-data.js')
@@ -5016,7 +4988,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"./lib/get-form-data.js":75,"xtend":127}],74:[function(require,module,exports){
+},{"./lib/get-form-data.js":74,"xtend":125}],73:[function(require,module,exports){
 module.exports = SinkEventHandler
 
 function SinkEventHandler(sink, data) {
@@ -5039,7 +5011,7 @@ function handleEvent(ev) {
     }
 }
 
-},{}],75:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 var FormData = require('form-data-set')
 var walk = require('dom-walk')
 
@@ -5064,7 +5036,7 @@ function getFormData(rootElem) {
     return FormData(elements)
 }
 
-},{"dom-walk":76,"form-data-set":77}],76:[function(require,module,exports){
+},{"dom-walk":75,"form-data-set":76}],75:[function(require,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -5090,7 +5062,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],77:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 /*jshint maxcomplexity: 10*/
 
 module.exports = FormData
@@ -5167,7 +5139,7 @@ function filterNull(val) {
     return val !== null
 }
 
-},{}],78:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 var extend = require('xtend')
 
 var getFormData = require('./lib/get-form-data.js')
@@ -5214,7 +5186,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"./lib/get-form-data.js":75,"xtend":127}],79:[function(require,module,exports){
+},{"./lib/get-form-data.js":74,"xtend":125}],78:[function(require,module,exports){
 var extend = require('xtend')
 
 var getFormData = require('./lib/get-form-data.js')
@@ -5244,7 +5216,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"./lib/get-form-data.js":75,"xtend":127}],80:[function(require,module,exports){
+},{"./lib/get-form-data.js":74,"xtend":125}],79:[function(require,module,exports){
 var createElement = require("virtual-dom/render")
 var diff = require("virtual-dom/diff")
 var patch = require("virtual-dom/patch")
@@ -5289,572 +5261,47 @@ function init() {
     return createElement(this.vnode)
 }
 
-},{"virtual-dom/diff":81,"virtual-dom/patch":97,"virtual-dom/render":98}],81:[function(require,module,exports){
-var createPatch = require("./lib/patch-op")
-
-var isArray = require("./lib/is-array")
-var isVDOMNode = require("./lib/is-virtual-dom")
-var isVTextNode = require("./lib/is-virtual-text")
-var isWidget = require("./lib/is-widget")
-
-module.exports = diff
-
-function diff(a, b) {
-    var patch = { a: a }
-    walk(a, b, patch, 0)
-    return patch
-}
-
-function walk(a, b, patch, index) {
-    if (a === b) {
-        return b
-    }
-
-    var apply = patch[index]
-
-    if (isWidget(a)) {
-        // Update a widget
-        apply = appendPatch(apply, createPatch(a, b))
-    } else if (isWidget(b)) {
-        // Patch in a new widget
-        apply = appendPatch(apply, createPatch(a, b))
-    } else if (isVTextNode(a) && isVTextNode(b)) {
-        // Update a text node
-        if (a.text !== b.text) {
-            apply = appendPatch(apply, createPatch(a.text, b.text))
-        }
-    } else if (isVDOMNode(a) && isVDOMNode(b) && a.tagName === b.tagName) {
-        // Update a VDOMNode
-        var propsPatch = diffProps(a.properties, b.properties)
-        if (propsPatch) {
-            apply = appendPatch(apply, createPatch(a.properties, propsPatch))
-        }
-
-        apply = diffChildren(a, b, patch, apply, index)
-    } else if (a !== b) {
-        apply = appendPatch(apply, createPatch(a, b))
-
-        // We must detect a remove/replace of widgets here so that
-        // we can add patch records for any stateful widgets
-        if (isVDOMNode(a) && a.hasWidgets &&
-            (!isVDOMNode(b) || a.tagName !== b.tagName)) {
-            destroyWidgets(a, patch, index)
-        }
-    }
-
-    if (apply) {
-        patch[index] = apply
-    }
-}
-
-var nullProps = {}
-
-function diffProps(a, b) {
-    var diff
-
-    for (var aKey in a) {
-        if (aKey === "style") {
-            var styleDiff = diffProps(a.style, b.style || nullProps)
-            if (styleDiff) {
-                diff = diff || {}
-                diff.style = styleDiff
-            }
-        } else {
-            var aValue = a[aKey]
-            var bValue = b[aKey]
-
-            if (typeof aValue === "function" || aValue !== bValue) {
-                diff = diff || {}
-                diff[aKey] = bValue
-            }
-        }
-    }
-
-    for (var bKey in b) {
-        if (!(bKey in a)) {
-            diff = diff || {}
-            diff[bKey] = b[bKey]
-        }
-    }
-
-    return diff
-}
-
-function diffChildren(a, b, patch, apply, index) {
-    var aChildren = a.children
-    var bChildren = b.children
-    var aLen = aChildren.length
-    var bLen = bChildren.length
-    var len = aLen < bLen ? aLen : bLen
-
-    for (var i = 0; i < len; i++) {
-        var leftNode = aChildren[i]
-        var rightNode = bChildren[i]
-        index += 1
-        walk(leftNode, rightNode, patch, index)
-
-        if (isVDOMNode(leftNode) && leftNode.count) {
-            index += leftNode.count
-        }
-    }
-
-    // Excess nodes in a need to be removed
-    for (; i < aLen; i++) {
-        var excess = aChildren[i]
-        index += 1
-        patch[index] = createPatch(excess, null)
-        destroyWidgets(excess, patch, index)
-
-        if (isVDOMNode(excess) && excess.count) {
-            index += excess.count
-        }
-    }
-
-    // Excess nodes in b need to be added
-    for (; i < bLen; i++) {
-        var addition = bChildren[i]
-        apply = appendPatch(apply, createPatch(null, addition))
-    }
-
-    return apply
-}
-
-// Patch records for all destroyed widgets must be added because we need
-// a DOM node reference for the destroy function
-function destroyWidgets(vNode, patch, index) {
-    if (isWidget(vNode)) {
-        if (typeof vNode.destroy === "function") {
-            patch[index] = createPatch(vNode, null)
-        }
-    } else if (isVDOMNode(vNode) && vNode.hasWidgets) {
-        var children = vNode.children
-        var len = children.length
-        for (var i = 0; i < len; i++) {
-            var child = children[i]
-            index += 1
-
-            destroyWidgets(child, patch, index)
-
-            if (isVDOMNode(child) && child.count) {
-                index += child.count
-            }
-        }
-    }
-}
-
-function appendPatch(apply, patch) {
-    if (apply) {
-        if (isArray(apply)) {
-            apply.push(patch)
-        } else {
-            apply = [apply, patch]
-        }
-
-        return apply
-    } else {
-        return patch
-    }
-}
-
-},{"./lib/is-array":83,"./lib/is-virtual-dom":85,"./lib/is-virtual-text":86,"./lib/is-widget":87,"./lib/patch-op":88}],82:[function(require,module,exports){
-// Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
-// We don't want to read all of the DOM nodes in the tree so we use
-// the in-order tree indexing to eliminate recursion down certain branches.
-// We only recurse into a DOM node if we know that it contains a child of
-// interest.
-
-var noChild = {}
-
-module.exports = domIndex
-
-function domIndex(rootNode, tree, indices, nodes) {
-    if (!indices || indices.length === 0) {
-        return {}
-    } else {
-        indices.sort(ascending)
-        return recurse(rootNode, tree, indices, nodes, 0)
-    }
-}
-
-function recurse(rootNode, tree, indices, nodes, rootIndex) {
-    nodes = nodes || {}
-
-
-    if (rootNode) {
-        if (indexInRange(indices, rootIndex, rootIndex)) {
-            nodes[rootIndex] = rootNode
-        }
-
-        var vChildren = tree.children
-
-        if (vChildren) {
-
-            var childNodes = rootNode.childNodes
-
-            for (var i = 0; i < tree.children.length; i++) {
-                rootIndex += 1
-
-                var vChild = vChildren[i] || noChild
-                var nextIndex = rootIndex + (vChild.count || 0)
-
-                // skip recursion down the tree if there are no nodes down here
-                if (indexInRange(indices, rootIndex, nextIndex)) {
-                    recurse(childNodes[i], vChild, indices, nodes, rootIndex)
-                }
-
-                rootIndex = nextIndex
-            }
-        }
-    }
-
-    return nodes
-}
-
-// Binary search for an index in the interval [left, right]
-function indexInRange(indices, left, right) {
-    if (indices.length === 0) {
-        return false
-    }
-
-    var minIndex = 0
-    var maxIndex = indices.length - 1
-    var currentIndex
-    var currentItem
-
-    while (minIndex <= maxIndex) {
-        currentIndex = ((maxIndex + minIndex) / 2) >> 0
-        currentItem = indices[currentIndex]
-
-        if (minIndex === maxIndex) {
-            return currentItem >= left && currentItem <= right
-        } else if (currentItem < left) {
-            minIndex = currentIndex + 1
-        } else  if (currentItem > right) {
-            maxIndex = currentIndex - 1
-        } else {
-            return true
-        }
-    }
-
-    return false;
-}
-
-function ascending(a, b) {
-    return a > b
-}
-
+},{"virtual-dom/diff":80,"virtual-dom/patch":96,"virtual-dom/render":97}],80:[function(require,module,exports){
+arguments[4][41][0].apply(exports,arguments)
+},{"./lib/is-array":82,"./lib/is-virtual-dom":84,"./lib/is-virtual-text":85,"./lib/is-widget":86,"./lib/patch-op":87}],81:[function(require,module,exports){
+module.exports=require(42)
+},{}],82:[function(require,module,exports){
+module.exports=require(43)
 },{}],83:[function(require,module,exports){
 module.exports=require(44)
 },{}],84:[function(require,module,exports){
-module.exports=require(46)
-},{}],85:[function(require,module,exports){
-arguments[4][47][0].apply(exports,arguments)
-},{"../version":99}],86:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"../version":98}],85:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"../version":98}],86:[function(require,module,exports){
+module.exports=require(47)
+},{}],87:[function(require,module,exports){
 arguments[4][48][0].apply(exports,arguments)
-},{"../version":99}],87:[function(require,module,exports){
+},{"../render":97,"./is-string":83,"./is-virtual-dom":84,"./is-widget":86,"./update-widget":88,"data-set":90}],88:[function(require,module,exports){
 module.exports=require(49)
-},{}],88:[function(require,module,exports){
-var DataSet = require("data-set")
-
-var render = require("../render")
-var isWidget = require("./is-widget")
-var isString = require("./is-string")
-var isVNode = require("./is-virtual-dom")
-var updateWidget = require("./update-widget")
-
-module.exports = createPatch
-
-function createPatch(vNode, patch) {
-    return new PatchOp(vNode, patch)
-}
-
-function PatchOp(vNode, patch) {
-    this.vNode = vNode
-    this.patch = patch
-}
-
-PatchOp.prototype.apply = applyUpdate
-
-function applyUpdate(domNode, renderOptions) {
-    var vNode = this.vNode
-    var patch = this.patch
-
-    if (patch == null) {
-        return removeNode(domNode, vNode)
-    } else if (vNode == null) {
-        return insertNode(domNode, patch, renderOptions)
-    } else if (isString(patch)) {
-        return stringPatch(domNode, vNode, patch, renderOptions)
-    } else if (isWidget(patch)) {
-        return widgetPatch(domNode, vNode, patch, renderOptions)
-    } else if (isVNode(patch)) {
-        return vNodePatch(domNode, vNode, patch, renderOptions)
-    } else {
-        return propPatch(domNode, patch)
-    }
-}
-
-function removeNode(domNode, vNode) {
-    var parentNode = domNode.parentNode
-
-    if (parentNode) {
-        parentNode.removeChild(domNode)
-    }
-
-    destroyWidget(domNode, vNode);
-
-    return null
-}
-
-function insertNode(parentNode, vNode, renderOptions) {
-    var newNode = render(vNode, renderOptions)
-
-    if (parentNode) {
-        parentNode.appendChild(newNode)
-    }
-
-    return parentNode
-}
-
-function stringPatch(domNode, leftVNode, newString, renderOptions) {
-    if (domNode.nodeType === 3) {
-        domNode.replaceData(0, domNode.length, newString)
-        return domNode
-    }
-
-    var parentNode = domNode.parentNode
-    var newNode = render(newString, renderOptions)
-
-    if (parentNode) {
-        parentNode.replaceChild(newNode, domNode)
-    }
-
-    destroyWidget(domNode, leftVNode)
-
-    return newNode
-}
-
-function widgetPatch(domNode, leftVNode, widgetUpdate, renderOptions) {
-    if (isWidget(leftVNode)) {
-        if (updateWidget(leftVNode, widgetUpdate)) {
-            var updatedNode = widgetUpdate.update(leftVNode, domNode)
-            return updatedNode || domNode
-        }
-    }
-
-    var parentNode = domNode.parentNode
-    var newWidget = render(widgetUpdate, renderOptions)
-
-    if (parentNode) {
-        parentNode.replaceChild(newWidget, domNode)
-    }
-
-    destroyWidget(domNode, leftVNode)
-
-    return newWidget
-}
-
-function vNodePatch(domNode, leftVNode, rightVNode, renderOptions) {
-    var parentNode = domNode.parentNode
-    var newNode = render(rightVNode, renderOptions)
-
-    if (parentNode) {
-        parentNode.replaceChild(newNode, domNode)
-    }
-
-    destroyWidget(domNode, leftVNode)
-
-    return newNode
-}
-
-function propPatch(domNode, patch) {
-    for (var prop in patch) {
-        if (prop === "style") {
-            var stylePatch = patch.style
-            var domStyle = domNode.style
-            for (var s in stylePatch) {
-                domStyle[s] = stylePatch[s]
-            }
-        } else {
-            var patchValue = patch[prop]
-
-            if (typeof patchValue === "function") {
-                patchValue(domNode, prop)
-            } else if (prop.substr(0, 5) === "data-") {
-                DataSet(domNode)[prop.substr(5)] = patchValue
-            } else {
-                domNode[prop] = patchValue
-            }
-        }
-    }
-
-    return domNode
-}
-
-
-function destroyWidget(domNode, w) {
-    if (typeof w.destroy === "function" && isWidget(w)) {
-        w.destroy(domNode)
-    }
-}
-
-},{"../render":98,"./is-string":84,"./is-virtual-dom":85,"./is-widget":87,"./update-widget":89,"data-set":91}],89:[function(require,module,exports){
-module.exports=require(51)
-},{"./is-widget":87}],90:[function(require,module,exports){
+},{"./is-widget":86}],89:[function(require,module,exports){
 module.exports=require(22)
-},{}],91:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 arguments[4][23][0].apply(exports,arguments)
-},{"./create-hash.js":90,"individual":92,"weakmap-shim/create-store":94}],92:[function(require,module,exports){
+},{"./create-hash.js":89,"individual":91,"weakmap-shim/create-store":93}],91:[function(require,module,exports){
 module.exports=require(24)
-},{"global":93}],93:[function(require,module,exports){
+},{"global":92}],92:[function(require,module,exports){
 module.exports=require(25)
-},{}],94:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 module.exports=require(26)
-},{"./hidden-store.js":95}],95:[function(require,module,exports){
+},{"./hidden-store.js":94}],94:[function(require,module,exports){
 module.exports=require(27)
+},{}],95:[function(require,module,exports){
+module.exports=require(56)
 },{}],96:[function(require,module,exports){
-module.exports=require(58)
-},{}],97:[function(require,module,exports){
-var domIndex = require("./lib/dom-index")
-var isArray = require("./lib/is-array")
-
-module.exports = patch
-
-function patch(rootNode, patches) {
-    var indices = patchIndices(patches)
-
-    if (indices.length === 0) {
-        return rootNode
-    }
-
-    var index = domIndex(rootNode, patches.a, indices)
-    var ownerDocument, renderOptions
-
-    if (typeof document === "undefined" ||
-        (ownerDocument = rootNode.ownerDocument) !== document) {
-        renderOptions = {
-            document: ownerDocument || rootNode.ownerDocument
-        }
-    }
-
-    for (var i = 0; i < indices.length; i++) {
-        var nodeIndex = indices[i]
-        rootNode = applyPatch(rootNode,
-            index[nodeIndex],
-            patches[nodeIndex],
-            renderOptions)
-    }
-
-    return rootNode
-}
-
-function applyPatch(rootNode, domNode, patchList, renderOptions) {
-    if (!domNode) {
-        return rootNode
-    }
-
-    var newNode
-
-    if (isArray(patchList)) {
-        for (var i = 0; i < patchList.length; i++) {
-            newNode = patchList[i].apply(domNode, renderOptions)
-
-            if (domNode === rootNode) {
-                rootNode = newNode
-            }
-        }
-    } else {
-        newNode = patchList.apply(domNode, renderOptions)
-
-        if (domNode === rootNode) {
-            rootNode = newNode
-        }
-    }
-
-    return rootNode
-}
-
-function patchIndices(patches) {
-    var indices = []
-
-    for (var key in patches) {
-        if (key !== "a") {
-            indices.push(Number(key))
-        }
-    }
-
-    return indices
-}
-
-},{"./lib/dom-index":82,"./lib/is-array":83}],98:[function(require,module,exports){
-var DataSet = require("data-set")
-
-var isVirtualDomNode = require("./lib/is-virtual-dom")
-var isVirtualTextNode = require("./lib/is-virtual-text")
-var isString = require("./lib/is-string")
-
-module.exports = render
-
-function render(virtualDom, opts) {
-    var doc = opts ? opts.document || document : document
-    var warn = opts ? opts.warn : null
-
-    if (virtualDom && typeof virtualDom.init === "function") {
-        return virtualDom.init()
-    } else if (isVirtualTextNode(virtualDom)) {
-        return doc.createTextNode(virtualDom.text)
-    } else if (isString(virtualDom)) {
-        return doc.createTextNode(virtualDom)
-    } else if (!isVirtualDomNode(virtualDom)) {
-        if (warn) {
-            warn("Item is not a valid virtual dom node", virtualDom)
-        }
-        return null
-    }
-
-    var node = doc.createElement(virtualDom.tagName)
-    applyProperties(node, virtualDom.properties)
-    var children = virtualDom.children
-
-    for (var i = 0; i < children.length; i++) {
-        var childNode = render(children[i], opts)
-        if (childNode) {
-            node.appendChild(childNode)
-        }
-    }
-
-    return node
-}
-
-function applyProperties(node, props) {
-    for (var propName in props) {
-        var propValue = props[propName]
-
-        if (typeof propValue === "function") {
-            propValue(node, propName)
-        } else if(propName === "style") {
-            if(typeof propValue === "string") {
-                node.style.cssText = propValue
-            } else {
-                for (var s in propValue) {
-                    node.style[s] = propValue[s]
-                }
-            }
-        } else if (propName.substr(0, 5) === "data-") {
-            DataSet(node)[propName.substr(5)] = propValue
-        } else {
-            node[propName] = propValue
-        }
-    }
-}
-
-},{"./lib/is-string":84,"./lib/is-virtual-dom":85,"./lib/is-virtual-text":86,"data-set":91}],99:[function(require,module,exports){
-module.exports=require(60)
-},{"semver":96}],100:[function(require,module,exports){
+module.exports=require(57)
+},{"./lib/dom-index":81,"./lib/is-array":82}],97:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"./lib/is-string":83,"./lib/is-virtual-dom":84,"./lib/is-virtual-text":85,"data-set":90}],98:[function(require,module,exports){
+module.exports=require(59)
+},{"semver":95}],99:[function(require,module,exports){
 arguments[4][41][0].apply(exports,arguments)
-},{"./lib/is-object":105,"./lib/is-string":106,"./lib/is-virtual-dom":107,"./lib/is-virtual-text":108,"data-set":115,"global/document":32}],101:[function(require,module,exports){
-arguments[4][42][0].apply(exports,arguments)
-},{"./lib/is-array":104,"./lib/is-object":105,"./lib/is-virtual-dom":107,"./lib/is-virtual-text":108,"./lib/is-widget":109,"./lib/patch-op":111}],102:[function(require,module,exports){
+},{"./lib/is-array":102,"./lib/is-virtual-dom":104,"./lib/is-virtual-text":105,"./lib/is-widget":106,"./lib/patch-op":108}],100:[function(require,module,exports){
 var extend = require("extend")
 
 var isArray = require("./lib/is-array")
@@ -5913,21 +5360,19 @@ function isChildren(x) {
     return isChild(x) || isArray(x) || isString(x)
 }
 
-},{"./lib/is-array":104,"./lib/is-string":106,"./lib/is-virtual-dom":107,"./lib/is-virtual-text":108,"./lib/parse-tag":110,"./virtual-dom-node.js":124,"./virtual-text-node.js":125,"extend":120}],103:[function(require,module,exports){
+},{"./lib/is-array":102,"./lib/is-string":103,"./lib/is-virtual-dom":104,"./lib/is-virtual-text":105,"./lib/parse-tag":107,"./virtual-dom-node.js":122,"./virtual-text-node.js":123,"extend":117}],101:[function(require,module,exports){
+module.exports=require(42)
+},{}],102:[function(require,module,exports){
 module.exports=require(43)
-},{}],104:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 module.exports=require(44)
-},{}],105:[function(require,module,exports){
-module.exports=require(45)
-},{}],106:[function(require,module,exports){
-module.exports=require(46)
+},{}],104:[function(require,module,exports){
+arguments[4][45][0].apply(exports,arguments)
+},{"../version":121}],105:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"../version":121}],106:[function(require,module,exports){
+module.exports=require(47)
 },{}],107:[function(require,module,exports){
-arguments[4][47][0].apply(exports,arguments)
-},{"../version":123}],108:[function(require,module,exports){
-arguments[4][48][0].apply(exports,arguments)
-},{"../version":123}],109:[function(require,module,exports){
-module.exports=require(49)
-},{}],110:[function(require,module,exports){
 var split = require("browser-split")
 
 var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
@@ -5980,11 +5425,11 @@ function parseTag(tag, props) {
     return tagName ? tagName.toLowerCase() : "div"
 }
 
-},{"browser-split":113}],111:[function(require,module,exports){
-arguments[4][50][0].apply(exports,arguments)
-},{"../create-element":100,"./is-object":105,"./is-string":106,"./is-virtual-dom":107,"./is-widget":109,"./update-widget":112,"data-set":115}],112:[function(require,module,exports){
-module.exports=require(51)
-},{"./is-widget":109}],113:[function(require,module,exports){
+},{"browser-split":110}],108:[function(require,module,exports){
+arguments[4][48][0].apply(exports,arguments)
+},{"../render":120,"./is-string":103,"./is-virtual-dom":104,"./is-widget":106,"./update-widget":109,"data-set":112}],109:[function(require,module,exports){
+module.exports=require(49)
+},{"./is-widget":106}],110:[function(require,module,exports){
 /*!
  * Cross-Browser Split 1.1.1
  * Copyright 2007-2012 Steven Levithan <stevenlevithan.com>
@@ -6092,19 +5537,19 @@ module.exports = (function split(undef) {
   return self;
 })();
 
-},{}],114:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 module.exports=require(22)
-},{}],115:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 arguments[4][23][0].apply(exports,arguments)
-},{"./create-hash.js":114,"individual":116,"weakmap-shim/create-store":118}],116:[function(require,module,exports){
+},{"./create-hash.js":111,"individual":113,"weakmap-shim/create-store":115}],113:[function(require,module,exports){
 module.exports=require(24)
-},{"global":117}],117:[function(require,module,exports){
+},{"global":114}],114:[function(require,module,exports){
 module.exports=require(25)
-},{}],118:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 module.exports=require(26)
-},{"./hidden-store.js":119}],119:[function(require,module,exports){
+},{"./hidden-store.js":116}],116:[function(require,module,exports){
 module.exports=require(27)
-},{}],120:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
 
@@ -6184,13 +5629,15 @@ module.exports = function extend() {
 	return target;
 };
 
-},{}],121:[function(require,module,exports){
-module.exports=require(58)
-},{}],122:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
+module.exports=require(56)
+},{}],119:[function(require,module,exports){
+module.exports=require(57)
+},{"./lib/dom-index":101,"./lib/is-array":102}],120:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"./lib/is-string":103,"./lib/is-virtual-dom":104,"./lib/is-virtual-text":105,"data-set":112}],121:[function(require,module,exports){
 module.exports=require(59)
-},{"./lib/dom-index":103,"./lib/is-array":104,"global/document":32}],123:[function(require,module,exports){
-module.exports=require(60)
-},{"semver":121}],124:[function(require,module,exports){
+},{"semver":118}],122:[function(require,module,exports){
 var version = require("./version")
 var isVDOM = require("./lib/is-virtual-dom")
 var isWidget = require("./lib/is-widget")
@@ -6247,7 +5694,7 @@ function hasWidgets(children) {
     return false
 }
 
-},{"./lib/is-virtual-dom":107,"./lib/is-widget":109,"./version":123}],125:[function(require,module,exports){
+},{"./lib/is-virtual-dom":104,"./lib/is-widget":106,"./version":121}],123:[function(require,module,exports){
 var version = require("./version")
 
 module.exports = VirtualTextNode
@@ -6259,9 +5706,9 @@ function VirtualTextNode(text) {
 VirtualTextNode.prototype.version = version.split(".")
 VirtualTextNode.prototype.type = "VirtualTextNode"
 
-},{"./version":123}],126:[function(require,module,exports){
+},{"./version":121}],124:[function(require,module,exports){
 module.exports=require(37)
-},{}],127:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 var hasKeys = require("./has-keys")
 
 module.exports = extend
@@ -6286,5 +5733,5 @@ function extend() {
     return target
 }
 
-},{"./has-keys":126}]},{},[1])</script>
+},{"./has-keys":124}]},{},[1])</script>
 </html>
