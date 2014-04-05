@@ -23,6 +23,6 @@ module.exports = {
     diff: require("virtual-dom/diff"),
     patch: require("virtual-dom/patch"),
     partial: require("vdom-thunk"),
-    create: require("virtual-dom/create-element"),
+    create: require("virtual-dom/render"),
     h: require("virtual-dom/h")
 }
