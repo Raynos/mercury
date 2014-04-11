@@ -272,7 +272,7 @@ function todoItem(item) {
     })
 }
 
-},{"../../index.js":7,"cuid":15,"xtend":132}],6:[function(require,module,exports){
+},{"../../index.js":7,"cuid":15,"xtend":139}],6:[function(require,module,exports){
 var State = require("./state.js")
 
 module.exports = {
@@ -377,10 +377,10 @@ module.exports = {
     patch: require("virtual-dom/patch"),
     partial: require("vdom-thunk"),
     create: require("virtual-dom/create-element"),
-    h: require("virtual-dom/h")
+    h: require("virtual-hyperscript")
 }
 
-},{"dom-delegator":20,"event-sinks/geval":32,"main-loop":44,"observ":78,"observ-array":67,"observ-hash":70,"value-event/change":79,"value-event/event":80,"value-event/submit":84,"value-event/value":85,"vdom-thunk":86,"virtual-dom/create-element":106,"virtual-dom/diff":107,"virtual-dom/h":108,"virtual-dom/patch":127}],8:[function(require,module,exports){
+},{"dom-delegator":20,"event-sinks/geval":32,"main-loop":44,"observ":78,"observ-array":67,"observ-hash":70,"value-event/change":79,"value-event/event":80,"value-event/submit":84,"value-event/value":85,"vdom-thunk":86,"virtual-dom/create-element":106,"virtual-dom/diff":107,"virtual-dom/patch":112,"virtual-hyperscript":129}],8:[function(require,module,exports){
 
 },{}],9:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
@@ -2784,7 +2784,7 @@ function extend(target) {
 
 },{"./has-keys":42}],44:[function(require,module,exports){
 var raf = require("raf").polyfill
-var vdomCreate = require("virtual-dom/render")
+var vdomCreate = require("virtual-dom/create-element")
 var vdomDiff = require("virtual-dom/diff")
 var vdomPatch = require("virtual-dom/patch")
 
@@ -2842,7 +2842,7 @@ function main(initialState, view, opts) {
     }
 }
 
-},{"raf":45,"virtual-dom/diff":46,"virtual-dom/patch":62,"virtual-dom/render":63}],45:[function(require,module,exports){
+},{"raf":45,"virtual-dom/create-element":46,"virtual-dom/diff":47,"virtual-dom/patch":52}],45:[function(require,module,exports){
 module.exports = raf
 
 var EE = require('events').EventEmitter
@@ -2907,173 +2907,113 @@ raf.now = now
 
 
 },{"events":9}],46:[function(require,module,exports){
-var createPatch = require("./lib/patch-op")
+var createElement = require("./vdom/create-element")
 
-var isArray = require("./lib/is-array")
-var isVDOMNode = require("./lib/is-virtual-dom")
-var isVTextNode = require("./lib/is-virtual-text")
-var isWidget = require("./lib/is-widget")
+module.exports = createElement
+
+},{"./vdom/create-element":53}],47:[function(require,module,exports){
+var diff = require("./vtree/diff")
 
 module.exports = diff
 
-function diff(a, b) {
-    var patch = { a: a }
-    walk(a, b, patch, 0)
-    return patch
+},{"./vtree/diff":58}],48:[function(require,module,exports){
+module.exports=require(29)
+},{"min-document":8}],49:[function(require,module,exports){
+module.exports = isObject
+
+function isObject(x) {
+    return typeof x === "object" && x !== null
 }
 
-function walk(a, b, patch, index) {
-    if (a === b) {
-        return b
-    }
+},{}],50:[function(require,module,exports){
+var nativeIsArray = Array.isArray
+var toString = Object.prototype.toString
 
-    var apply = patch[index]
+module.exports = nativeIsArray || isArray
 
-    if (isWidget(a)) {
-        // Update a widget
-        apply = appendPatch(apply, createPatch(a, b))
-    } else if (isWidget(b)) {
-        // Patch in a new widget
-        apply = appendPatch(apply, createPatch(a, b))
-    } else if (isVTextNode(a) && isVTextNode(b)) {
-        // Update a text node
-        if (a.text !== b.text) {
-            apply = appendPatch(apply, createPatch(a.text, b.text))
-        }
-    } else if (isVDOMNode(a) && isVDOMNode(b) && a.tagName === b.tagName) {
-        // Update a VDOMNode
-        var propsPatch = diffProps(a.properties, b.properties)
-        if (propsPatch) {
-            apply = appendPatch(apply, createPatch(a.properties, propsPatch))
-        }
-
-        apply = diffChildren(a, b, patch, apply, index)
-    } else if (a !== b) {
-        apply = appendPatch(apply, createPatch(a, b))
-
-        // We must detect a remove/replace of widgets here so that
-        // we can add patch records for any stateful widgets
-        if (isVDOMNode(a) && a.hasWidgets &&
-            (!isVDOMNode(b) || a.tagName !== b.tagName)) {
-            destroyWidgets(a, patch, index)
-        }
-    }
-
-    if (apply) {
-        patch[index] = apply
-    }
+function isArray(obj) {
+    return toString.call(obj) === "[object Array]"
 }
 
-var nullProps = {}
+},{}],51:[function(require,module,exports){
+var toString = Object.prototype.toString
 
-function diffProps(a, b) {
-    var diff
+module.exports = isString
 
-    for (var aKey in a) {
-        if (aKey === "style") {
-            var styleDiff = diffProps(a.style, b.style || nullProps)
-            if (styleDiff) {
-                diff = diff || {}
-                diff.style = styleDiff
+function isString(obj) {
+    return toString.call(obj) === "[object String]"
+}
+
+},{}],52:[function(require,module,exports){
+var patch = require("./vdom/patch")
+
+module.exports = patch
+
+},{"./vdom/patch":56}],53:[function(require,module,exports){
+var document = require("global/document")
+var isObject = require("is-object")
+
+var isVNode = require("../vtree/is-vnode")
+var isVText = require("../vtree/is-vtext")
+var isWidget = require("../vtree/is-widget")
+var isHook = require("../vtree/is-vhook")
+
+module.exports = createElement
+
+function createElement(vnode, opts) {
+    var doc = opts ? opts.document || document : document
+    var warn = opts ? opts.warn : null
+
+    if (isWidget(vnode)) {
+        return vnode.init()
+    } else if (isVText(vnode)) {
+        return doc.createTextNode(vnode.text)
+    } else if (!isVNode(vnode)) {
+        if (warn) {
+            warn("Item is not a valid virtual dom node", vnode)
+        }
+        return null
+    }
+
+    var node = (vnode.namespace === null) ?
+        doc.createElement(vnode.tagName) :
+        doc.createElementNS(vnode.namespace, vnode.tagName)
+
+    applyProperties(node, vnode.properties)
+    var children = vnode.children
+
+    for (var i = 0; i < children.length; i++) {
+        var childNode = createElement(children[i], opts)
+        if (childNode) {
+            node.appendChild(childNode)
+        }
+    }
+
+    return node
+}
+
+function applyProperties(node, props) {
+    for (var propName in props) {
+        var propValue = props[propName]
+
+        if (isHook(propValue)) {
+            propValue.hook(node, propName)
+        } else if (isObject(propValue)) {
+            if (!node[propName]) {
+                node[propName] = {}
+            }
+
+            var nodeValue = node[propName]
+            for (var k in propValue) {
+                nodeValue[k] = propValue[k]
             }
         } else {
-            var aValue = a[aKey]
-            var bValue = b[aKey]
-
-            if (typeof aValue === "function" || aValue !== bValue) {
-                diff = diff || {}
-                diff[aKey] = bValue
-            }
-        }
-    }
-
-    for (var bKey in b) {
-        if (!(bKey in a)) {
-            diff = diff || {}
-            diff[bKey] = b[bKey]
-        }
-    }
-
-    return diff
-}
-
-function diffChildren(a, b, patch, apply, index) {
-    var aChildren = a.children
-    var bChildren = b.children
-    var aLen = aChildren.length
-    var bLen = bChildren.length
-    var len = aLen < bLen ? aLen : bLen
-
-    for (var i = 0; i < len; i++) {
-        var leftNode = aChildren[i]
-        var rightNode = bChildren[i]
-        index += 1
-        walk(leftNode, rightNode, patch, index)
-
-        if (isVDOMNode(leftNode) && leftNode.count) {
-            index += leftNode.count
-        }
-    }
-
-    // Excess nodes in a need to be removed
-    for (; i < aLen; i++) {
-        var excess = aChildren[i]
-        index += 1
-        patch[index] = createPatch(excess, null)
-        destroyWidgets(excess, patch, index)
-
-        if (isVDOMNode(excess) && excess.count) {
-            index += excess.count
-        }
-    }
-
-    // Excess nodes in b need to be added
-    for (; i < bLen; i++) {
-        var addition = bChildren[i]
-        apply = appendPatch(apply, createPatch(null, addition))
-    }
-
-    return apply
-}
-
-// Patch records for all destroyed widgets must be added because we need
-// a DOM node reference for the destroy function
-function destroyWidgets(vNode, patch, index) {
-    if (isWidget(vNode)) {
-        if (typeof vNode.destroy === "function") {
-            patch[index] = createPatch(vNode, null)
-        }
-    } else if (isVDOMNode(vNode) && vNode.hasWidgets) {
-        var children = vNode.children
-        var len = children.length
-        for (var i = 0; i < len; i++) {
-            var child = children[i]
-            index += 1
-
-            destroyWidgets(child, patch, index)
-
-            if (isVDOMNode(child) && child.count) {
-                index += child.count
-            }
+            node[propName] = propValue
         }
     }
 }
 
-function appendPatch(apply, patch) {
-    if (apply) {
-        if (isArray(apply)) {
-            apply.push(patch)
-        } else {
-            apply = [apply, patch]
-        }
-
-        return apply
-    } else {
-        return patch
-    }
-}
-
-},{"./lib/is-array":48,"./lib/is-virtual-dom":50,"./lib/is-virtual-text":51,"./lib/is-widget":52,"./lib/patch-op":53}],47:[function(require,module,exports){
+},{"../vtree/is-vhook":59,"../vtree/is-vnode":60,"../vtree/is-vtext":61,"../vtree/is-widget":62,"global/document":48,"is-object":49}],54:[function(require,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -3157,90 +3097,29 @@ function indexInRange(indices, left, right) {
 }
 
 function ascending(a, b) {
-    return a > b
+    return a > b ? 1 : -1
 }
 
-},{}],48:[function(require,module,exports){
-var nativeIsArray = Array.isArray
-var toString = Object.prototype.toString
+},{}],55:[function(require,module,exports){
+var isString = require("x-is-string")
+var isObject = require("is-object")
 
-module.exports = nativeIsArray || isArray
+var isWidget = require("../vtree/is-widget")
+var isVNode = require("../vtree/is-vnode")
+var isHook = require("../vtree/is-vhook")
 
-function isArray(obj) {
-    return toString.call(obj) === "[object Array]"
-}
-
-},{}],49:[function(require,module,exports){
-var toString = Object.prototype.toString
-
-module.exports = isString
-
-function isString(obj) {
-    return toString.call(obj) === "[object String]"
-}
-
-},{}],50:[function(require,module,exports){
-var version = require("../version")
-var major = version[0]
-
-module.exports = isVirtualDomNode
-
-function isVirtualDomNode(x) {
-    if (!x) {
-        return false;
-    }
-
-    return x.type === "VirtualDOMNode" && x.version[0] === major
-}
-
-},{"../version":64}],51:[function(require,module,exports){
-var version = require("../version")
-var major = version[0]
-
-module.exports = isVirtualTextNode
-
-function isVirtualTextNode(x) {
-    if (!x) {
-        return false;
-    }
-
-    return x.type === "VirtualTextNode" && x.version[0] === major
-}
-
-},{"../version":64}],52:[function(require,module,exports){
-module.exports = isWidget
-
-function isWidget(w) {
-    return w && typeof w.init === "function" && typeof w.update === "function"
-}
-
-},{}],53:[function(require,module,exports){
-var render = require("../render")
-var isWidget = require("./is-widget")
-var isString = require("./is-string")
-var isVNode = require("./is-virtual-dom")
+var render = require("./create-element")
 var updateWidget = require("./update-widget")
 
-module.exports = createPatch
+module.exports = applyPatch
 
-function createPatch(vNode, patch) {
-    return new PatchOp(vNode, patch)
-}
+function applyPatch(vpatch, domNode, renderOptions) {
+    var vNode = vpatch.vNode
+    var patch = vpatch.patch
 
-function PatchOp(vNode, patch) {
-    this.vNode = vNode
-    this.patch = patch
-}
-
-PatchOp.prototype.apply = applyUpdate
-
-function applyUpdate(domNode, renderOptions) {
-    var vNode = this.vNode
-    var patch = this.patch
-
-    if (patch == null) {
+    if (patch === null || patch === undefined) {
         return removeNode(domNode, vNode)
-    } else if (vNode == null) {
+    } else if (vNode === null || vNode === undefined) {
         return insertNode(domNode, patch, renderOptions)
     } else if (isString(patch)) {
         return stringPatch(domNode, vNode, patch, renderOptions)
@@ -3328,20 +3207,22 @@ function vNodePatch(domNode, leftVNode, rightVNode, renderOptions) {
 
 function propPatch(domNode, patch) {
     for (var prop in patch) {
-        if (prop === "style") {
-            var stylePatch = patch.style
-            var domStyle = domNode.style
-            for (var s in stylePatch) {
-                domStyle[s] = stylePatch[s]
+        var patchValue = patch[prop]
+
+        if (isHook(patchValue)) {
+            patchValue.hook(domNode, prop)
+        } else if (isObject(patchValue)) {
+            var domValue = domNode[prop]
+
+            if (!domValue) {
+                domValue = domNode[prop] = {}
+            }
+
+            for (var key in patchValue) {
+                domValue[key] = patchValue[key]
             }
         } else {
-            var patchValue = patch[prop]
-
-            if (typeof patchValue === "function") {
-                patchValue(domNode, prop)
-            } else {
-                domNode[prop] = patchValue
-            }
+            domNode[prop] = patchValue
         }
     }
 
@@ -3355,1046 +3236,12 @@ function destroyWidget(domNode, w) {
     }
 }
 
-},{"../render":63,"./is-string":49,"./is-virtual-dom":50,"./is-widget":52,"./update-widget":54}],54:[function(require,module,exports){
-var isWidget = require("./is-widget")
-
-module.exports = updateWidget
-
-function updateWidget(a, b) {
-    if (isWidget(a) && isWidget(b)) {
-        if ("type" in a && "type" in b) {
-            return a.type === b.type
-        } else {
-            return a.init === b.init
-        }
-    }
-
-    return false
-}
-},{"./is-widget":52}],55:[function(require,module,exports){
-module.exports=require(23)
-},{}],56:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"./create-hash.js":55,"individual":57,"weakmap-shim/create-store":59}],57:[function(require,module,exports){
-module.exports=require(25)
-},{"global":58}],58:[function(require,module,exports){
-module.exports=require(26)
-},{}],59:[function(require,module,exports){
-module.exports=require(27)
-},{"./hidden-store.js":60}],60:[function(require,module,exports){
-module.exports=require(28)
-},{}],61:[function(require,module,exports){
-;(function(exports) {
-
-// export the class if we are in a Node-like system.
-if (typeof module === 'object' && module.exports === exports)
-  exports = module.exports = SemVer;
-
-// The debug function is excluded entirely from the minified version.
-
-// Note: this is the semver.org version of the spec that it implements
-// Not necessarily the package version of this code.
-exports.SEMVER_SPEC_VERSION = '2.0.0';
-
-// The actual regexps go on exports.re
-var re = exports.re = [];
-var src = exports.src = [];
-var R = 0;
-
-// The following Regular Expressions can be used for tokenizing,
-// validating, and parsing SemVer version strings.
-
-// ## Numeric Identifier
-// A single `0`, or a non-zero digit followed by zero or more digits.
-
-var NUMERICIDENTIFIER = R++;
-src[NUMERICIDENTIFIER] = '0|[1-9]\\d*';
-var NUMERICIDENTIFIERLOOSE = R++;
-src[NUMERICIDENTIFIERLOOSE] = '[0-9]+';
-
-
-// ## Non-numeric Identifier
-// Zero or more digits, followed by a letter or hyphen, and then zero or
-// more letters, digits, or hyphens.
-
-var NONNUMERICIDENTIFIER = R++;
-src[NONNUMERICIDENTIFIER] = '\\d*[a-zA-Z-][a-zA-Z0-9-]*';
-
-
-// ## Main Version
-// Three dot-separated numeric identifiers.
-
-var MAINVERSION = R++;
-src[MAINVERSION] = '(' + src[NUMERICIDENTIFIER] + ')\\.' +
-                   '(' + src[NUMERICIDENTIFIER] + ')\\.' +
-                   '(' + src[NUMERICIDENTIFIER] + ')';
-
-var MAINVERSIONLOOSE = R++;
-src[MAINVERSIONLOOSE] = '(' + src[NUMERICIDENTIFIERLOOSE] + ')\\.' +
-                        '(' + src[NUMERICIDENTIFIERLOOSE] + ')\\.' +
-                        '(' + src[NUMERICIDENTIFIERLOOSE] + ')';
-
-// ## Pre-release Version Identifier
-// A numeric identifier, or a non-numeric identifier.
-
-var PRERELEASEIDENTIFIER = R++;
-src[PRERELEASEIDENTIFIER] = '(?:' + src[NUMERICIDENTIFIER] +
-                            '|' + src[NONNUMERICIDENTIFIER] + ')';
-
-var PRERELEASEIDENTIFIERLOOSE = R++;
-src[PRERELEASEIDENTIFIERLOOSE] = '(?:' + src[NUMERICIDENTIFIERLOOSE] +
-                                 '|' + src[NONNUMERICIDENTIFIER] + ')';
-
-
-// ## Pre-release Version
-// Hyphen, followed by one or more dot-separated pre-release version
-// identifiers.
-
-var PRERELEASE = R++;
-src[PRERELEASE] = '(?:-(' + src[PRERELEASEIDENTIFIER] +
-                  '(?:\\.' + src[PRERELEASEIDENTIFIER] + ')*))';
-
-var PRERELEASELOOSE = R++;
-src[PRERELEASELOOSE] = '(?:-?(' + src[PRERELEASEIDENTIFIERLOOSE] +
-                       '(?:\\.' + src[PRERELEASEIDENTIFIERLOOSE] + ')*))';
-
-// ## Build Metadata Identifier
-// Any combination of digits, letters, or hyphens.
-
-var BUILDIDENTIFIER = R++;
-src[BUILDIDENTIFIER] = '[0-9A-Za-z-]+';
-
-// ## Build Metadata
-// Plus sign, followed by one or more period-separated build metadata
-// identifiers.
-
-var BUILD = R++;
-src[BUILD] = '(?:\\+(' + src[BUILDIDENTIFIER] +
-             '(?:\\.' + src[BUILDIDENTIFIER] + ')*))';
-
-
-// ## Full Version String
-// A main version, followed optionally by a pre-release version and
-// build metadata.
-
-// Note that the only major, minor, patch, and pre-release sections of
-// the version string are capturing groups.  The build metadata is not a
-// capturing group, because it should not ever be used in version
-// comparison.
-
-var FULL = R++;
-var FULLPLAIN = 'v?' + src[MAINVERSION] +
-                src[PRERELEASE] + '?' +
-                src[BUILD] + '?';
-
-src[FULL] = '^' + FULLPLAIN + '$';
-
-// like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
-// also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
-// common in the npm registry.
-var LOOSEPLAIN = '[v=\\s]*' + src[MAINVERSIONLOOSE] +
-                 src[PRERELEASELOOSE] + '?' +
-                 src[BUILD] + '?';
-
-var LOOSE = R++;
-src[LOOSE] = '^' + LOOSEPLAIN + '$';
-
-var GTLT = R++;
-src[GTLT] = '((?:<|>)?=?)';
-
-// Something like "2.*" or "1.2.x".
-// Note that "x.x" is a valid xRange identifer, meaning "any version"
-// Only the first item is strictly required.
-var XRANGEIDENTIFIERLOOSE = R++;
-src[XRANGEIDENTIFIERLOOSE] = src[NUMERICIDENTIFIERLOOSE] + '|x|X|\\*';
-var XRANGEIDENTIFIER = R++;
-src[XRANGEIDENTIFIER] = src[NUMERICIDENTIFIER] + '|x|X|\\*';
-
-var XRANGEPLAIN = R++;
-src[XRANGEPLAIN] = '[v=\\s]*(' + src[XRANGEIDENTIFIER] + ')' +
-                   '(?:\\.(' + src[XRANGEIDENTIFIER] + ')' +
-                   '(?:\\.(' + src[XRANGEIDENTIFIER] + ')' +
-                   '(?:(' + src[PRERELEASE] + ')' +
-                   ')?)?)?';
-
-var XRANGEPLAINLOOSE = R++;
-src[XRANGEPLAINLOOSE] = '[v=\\s]*(' + src[XRANGEIDENTIFIERLOOSE] + ')' +
-                        '(?:\\.(' + src[XRANGEIDENTIFIERLOOSE] + ')' +
-                        '(?:\\.(' + src[XRANGEIDENTIFIERLOOSE] + ')' +
-                        '(?:(' + src[PRERELEASELOOSE] + ')' +
-                        ')?)?)?';
-
-// >=2.x, for example, means >=2.0.0-0
-// <1.x would be the same as "<1.0.0-0", though.
-var XRANGE = R++;
-src[XRANGE] = '^' + src[GTLT] + '\\s*' + src[XRANGEPLAIN] + '$';
-var XRANGELOOSE = R++;
-src[XRANGELOOSE] = '^' + src[GTLT] + '\\s*' + src[XRANGEPLAINLOOSE] + '$';
-
-// Tilde ranges.
-// Meaning is "reasonably at or greater than"
-var LONETILDE = R++;
-src[LONETILDE] = '(?:~>?)';
-
-var TILDETRIM = R++;
-src[TILDETRIM] = '(\\s*)' + src[LONETILDE] + '\\s+';
-re[TILDETRIM] = new RegExp(src[TILDETRIM], 'g');
-var tildeTrimReplace = '$1~';
-
-var TILDE = R++;
-src[TILDE] = '^' + src[LONETILDE] + src[XRANGEPLAIN] + '$';
-var TILDELOOSE = R++;
-src[TILDELOOSE] = '^' + src[LONETILDE] + src[XRANGEPLAINLOOSE] + '$';
-
-// Caret ranges.
-// Meaning is "at least and backwards compatible with"
-var LONECARET = R++;
-src[LONECARET] = '(?:\\^)';
-
-var CARETTRIM = R++;
-src[CARETTRIM] = '(\\s*)' + src[LONECARET] + '\\s+';
-re[CARETTRIM] = new RegExp(src[CARETTRIM], 'g');
-var caretTrimReplace = '$1^';
-
-var CARET = R++;
-src[CARET] = '^' + src[LONECARET] + src[XRANGEPLAIN] + '$';
-var CARETLOOSE = R++;
-src[CARETLOOSE] = '^' + src[LONECARET] + src[XRANGEPLAINLOOSE] + '$';
-
-// A simple gt/lt/eq thing, or just "" to indicate "any version"
-var COMPARATORLOOSE = R++;
-src[COMPARATORLOOSE] = '^' + src[GTLT] + '\\s*(' + LOOSEPLAIN + ')$|^$';
-var COMPARATOR = R++;
-src[COMPARATOR] = '^' + src[GTLT] + '\\s*(' + FULLPLAIN + ')$|^$';
-
-
-// An expression to strip any whitespace between the gtlt and the thing
-// it modifies, so that `> 1.2.3` ==> `>1.2.3`
-var COMPARATORTRIM = R++;
-src[COMPARATORTRIM] = '(\\s*)' + src[GTLT] +
-                      '\\s*(' + LOOSEPLAIN + '|' + src[XRANGEPLAIN] + ')';
-
-// this one has to use the /g flag
-re[COMPARATORTRIM] = new RegExp(src[COMPARATORTRIM], 'g');
-var comparatorTrimReplace = '$1$2$3';
-
-
-// Something like `1.2.3 - 1.2.4`
-// Note that these all use the loose form, because they'll be
-// checked against either the strict or loose comparator form
-// later.
-var HYPHENRANGE = R++;
-src[HYPHENRANGE] = '^\\s*(' + src[XRANGEPLAIN] + ')' +
-                   '\\s+-\\s+' +
-                   '(' + src[XRANGEPLAIN] + ')' +
-                   '\\s*$';
-
-var HYPHENRANGELOOSE = R++;
-src[HYPHENRANGELOOSE] = '^\\s*(' + src[XRANGEPLAINLOOSE] + ')' +
-                        '\\s+-\\s+' +
-                        '(' + src[XRANGEPLAINLOOSE] + ')' +
-                        '\\s*$';
-
-// Star ranges basically just allow anything at all.
-var STAR = R++;
-src[STAR] = '(<|>)?=?\\s*\\*';
-
-// Compile to actual regexp objects.
-// All are flag-free, unless they were created above with a flag.
-for (var i = 0; i < R; i++) {
-  ;
-  if (!re[i])
-    re[i] = new RegExp(src[i]);
-}
-
-exports.parse = parse;
-function parse(version, loose) {
-  var r = loose ? re[LOOSE] : re[FULL];
-  return (r.test(version)) ? new SemVer(version, loose) : null;
-}
-
-exports.valid = valid;
-function valid(version, loose) {
-  var v = parse(version, loose);
-  return v ? v.version : null;
-}
-
-
-exports.clean = clean;
-function clean(version, loose) {
-  var s = parse(version, loose);
-  return s ? s.version : null;
-}
-
-exports.SemVer = SemVer;
-
-function SemVer(version, loose) {
-  if (version instanceof SemVer) {
-    if (version.loose === loose)
-      return version;
-    else
-      version = version.version;
-  }
-
-  if (!(this instanceof SemVer))
-    return new SemVer(version, loose);
-
-  ;
-  this.loose = loose;
-  var m = version.trim().match(loose ? re[LOOSE] : re[FULL]);
-
-  if (!m)
-    throw new TypeError('Invalid Version: ' + version);
-
-  this.raw = version;
-
-  // these are actually numbers
-  this.major = +m[1];
-  this.minor = +m[2];
-  this.patch = +m[3];
-
-  // numberify any prerelease numeric ids
-  if (!m[4])
-    this.prerelease = [];
-  else
-    this.prerelease = m[4].split('.').map(function(id) {
-      return (/^[0-9]+$/.test(id)) ? +id : id;
-    });
-
-  this.build = m[5] ? m[5].split('.') : [];
-  this.format();
-}
-
-SemVer.prototype.format = function() {
-  this.version = this.major + '.' + this.minor + '.' + this.patch;
-  if (this.prerelease.length)
-    this.version += '-' + this.prerelease.join('.');
-  return this.version;
-};
-
-SemVer.prototype.inspect = function() {
-  return '<SemVer "' + this + '">';
-};
-
-SemVer.prototype.toString = function() {
-  return this.version;
-};
-
-SemVer.prototype.compare = function(other) {
-  ;
-  if (!(other instanceof SemVer))
-    other = new SemVer(other, this.loose);
-
-  return this.compareMain(other) || this.comparePre(other);
-};
-
-SemVer.prototype.compareMain = function(other) {
-  if (!(other instanceof SemVer))
-    other = new SemVer(other, this.loose);
-
-  return compareIdentifiers(this.major, other.major) ||
-         compareIdentifiers(this.minor, other.minor) ||
-         compareIdentifiers(this.patch, other.patch);
-};
-
-SemVer.prototype.comparePre = function(other) {
-  if (!(other instanceof SemVer))
-    other = new SemVer(other, this.loose);
-
-  // NOT having a prerelease is > having one
-  if (this.prerelease.length && !other.prerelease.length)
-    return -1;
-  else if (!this.prerelease.length && other.prerelease.length)
-    return 1;
-  else if (!this.prerelease.lenth && !other.prerelease.length)
-    return 0;
-
-  var i = 0;
-  do {
-    var a = this.prerelease[i];
-    var b = other.prerelease[i];
-    ;
-    if (a === undefined && b === undefined)
-      return 0;
-    else if (b === undefined)
-      return 1;
-    else if (a === undefined)
-      return -1;
-    else if (a === b)
-      continue;
-    else
-      return compareIdentifiers(a, b);
-  } while (++i);
-};
-
-SemVer.prototype.inc = function(release) {
-  switch (release) {
-    case 'major':
-      this.major++;
-      this.minor = -1;
-    case 'minor':
-      this.minor++;
-      this.patch = -1;
-    case 'patch':
-      this.patch++;
-      this.prerelease = [];
-      break;
-    case 'prerelease':
-      if (this.prerelease.length === 0)
-        this.prerelease = [0];
-      else {
-        var i = this.prerelease.length;
-        while (--i >= 0) {
-          if (typeof this.prerelease[i] === 'number') {
-            this.prerelease[i]++;
-            i = -2;
-          }
-        }
-        if (i === -1) // didn't increment anything
-          this.prerelease.push(0);
-      }
-      break;
-
-    default:
-      throw new Error('invalid increment argument: ' + release);
-  }
-  this.format();
-  return this;
-};
-
-exports.inc = inc;
-function inc(version, release, loose) {
-  try {
-    return new SemVer(version, loose).inc(release).version;
-  } catch (er) {
-    return null;
-  }
-}
-
-exports.compareIdentifiers = compareIdentifiers;
-
-var numeric = /^[0-9]+$/;
-function compareIdentifiers(a, b) {
-  var anum = numeric.test(a);
-  var bnum = numeric.test(b);
-
-  if (anum && bnum) {
-    a = +a;
-    b = +b;
-  }
-
-  return (anum && !bnum) ? -1 :
-         (bnum && !anum) ? 1 :
-         a < b ? -1 :
-         a > b ? 1 :
-         0;
-}
-
-exports.rcompareIdentifiers = rcompareIdentifiers;
-function rcompareIdentifiers(a, b) {
-  return compareIdentifiers(b, a);
-}
-
-exports.compare = compare;
-function compare(a, b, loose) {
-  return new SemVer(a, loose).compare(b);
-}
-
-exports.compareLoose = compareLoose;
-function compareLoose(a, b) {
-  return compare(a, b, true);
-}
-
-exports.rcompare = rcompare;
-function rcompare(a, b, loose) {
-  return compare(b, a, loose);
-}
-
-exports.sort = sort;
-function sort(list, loose) {
-  return list.sort(function(a, b) {
-    return exports.compare(a, b, loose);
-  });
-}
-
-exports.rsort = rsort;
-function rsort(list, loose) {
-  return list.sort(function(a, b) {
-    return exports.rcompare(a, b, loose);
-  });
-}
-
-exports.gt = gt;
-function gt(a, b, loose) {
-  return compare(a, b, loose) > 0;
-}
-
-exports.lt = lt;
-function lt(a, b, loose) {
-  return compare(a, b, loose) < 0;
-}
-
-exports.eq = eq;
-function eq(a, b, loose) {
-  return compare(a, b, loose) === 0;
-}
-
-exports.neq = neq;
-function neq(a, b, loose) {
-  return compare(a, b, loose) !== 0;
-}
-
-exports.gte = gte;
-function gte(a, b, loose) {
-  return compare(a, b, loose) >= 0;
-}
-
-exports.lte = lte;
-function lte(a, b, loose) {
-  return compare(a, b, loose) <= 0;
-}
-
-exports.cmp = cmp;
-function cmp(a, op, b, loose) {
-  var ret;
-  switch (op) {
-    case '===': ret = a === b; break;
-    case '!==': ret = a !== b; break;
-    case '': case '=': case '==': ret = eq(a, b, loose); break;
-    case '!=': ret = neq(a, b, loose); break;
-    case '>': ret = gt(a, b, loose); break;
-    case '>=': ret = gte(a, b, loose); break;
-    case '<': ret = lt(a, b, loose); break;
-    case '<=': ret = lte(a, b, loose); break;
-    default: throw new TypeError('Invalid operator: ' + op);
-  }
-  return ret;
-}
-
-exports.Comparator = Comparator;
-function Comparator(comp, loose) {
-  if (comp instanceof Comparator) {
-    if (comp.loose === loose)
-      return comp;
-    else
-      comp = comp.value;
-  }
-
-  if (!(this instanceof Comparator))
-    return new Comparator(comp, loose);
-
-  ;
-  this.loose = loose;
-  this.parse(comp);
-
-  if (this.semver === ANY)
-    this.value = '';
-  else
-    this.value = this.operator + this.semver.version;
-}
-
-var ANY = {};
-Comparator.prototype.parse = function(comp) {
-  var r = this.loose ? re[COMPARATORLOOSE] : re[COMPARATOR];
-  var m = comp.match(r);
-
-  if (!m)
-    throw new TypeError('Invalid comparator: ' + comp);
-
-  this.operator = m[1];
-  // if it literally is just '>' or '' then allow anything.
-  if (!m[2])
-    this.semver = ANY;
-  else {
-    this.semver = new SemVer(m[2], this.loose);
-
-    // <1.2.3-rc DOES allow 1.2.3-beta (has prerelease)
-    // >=1.2.3 DOES NOT allow 1.2.3-beta
-    // <=1.2.3 DOES allow 1.2.3-beta
-    // However, <1.2.3 does NOT allow 1.2.3-beta,
-    // even though `1.2.3-beta < 1.2.3`
-    // The assumption is that the 1.2.3 version has something you
-    // *don't* want, so we push the prerelease down to the minimum.
-    if (this.operator === '<' && !this.semver.prerelease.length) {
-      this.semver.prerelease = ['0'];
-      this.semver.format();
-    }
-  }
-};
-
-Comparator.prototype.inspect = function() {
-  return '<SemVer Comparator "' + this + '">';
-};
-
-Comparator.prototype.toString = function() {
-  return this.value;
-};
-
-Comparator.prototype.test = function(version) {
-  ;
-  return (this.semver === ANY) ? true :
-         cmp(version, this.operator, this.semver, this.loose);
-};
-
-
-exports.Range = Range;
-function Range(range, loose) {
-  if ((range instanceof Range) && range.loose === loose)
-    return range;
-
-  if (!(this instanceof Range))
-    return new Range(range, loose);
-
-  this.loose = loose;
-
-  // First, split based on boolean or ||
-  this.raw = range;
-  this.set = range.split(/\s*\|\|\s*/).map(function(range) {
-    return this.parseRange(range.trim());
-  }, this).filter(function(c) {
-    // throw out any that are not relevant for whatever reason
-    return c.length;
-  });
-
-  if (!this.set.length) {
-    throw new TypeError('Invalid SemVer Range: ' + range);
-  }
-
-  this.format();
-}
-
-Range.prototype.inspect = function() {
-  return '<SemVer Range "' + this.range + '">';
-};
-
-Range.prototype.format = function() {
-  this.range = this.set.map(function(comps) {
-    return comps.join(' ').trim();
-  }).join('||').trim();
-  return this.range;
-};
-
-Range.prototype.toString = function() {
-  return this.range;
-};
-
-Range.prototype.parseRange = function(range) {
-  var loose = this.loose;
-  range = range.trim();
-  ;
-  // `1.2.3 - 1.2.4` => `>=1.2.3 <=1.2.4`
-  var hr = loose ? re[HYPHENRANGELOOSE] : re[HYPHENRANGE];
-  range = range.replace(hr, hyphenReplace);
-  ;
-  // `> 1.2.3 < 1.2.5` => `>1.2.3 <1.2.5`
-  range = range.replace(re[COMPARATORTRIM], comparatorTrimReplace);
-  ;
-
-  // `~ 1.2.3` => `~1.2.3`
-  range = range.replace(re[TILDETRIM], tildeTrimReplace);
-
-  // `^ 1.2.3` => `^1.2.3`
-  range = range.replace(re[CARETTRIM], caretTrimReplace);
-
-  // normalize spaces
-  range = range.split(/\s+/).join(' ');
-
-  // At this point, the range is completely trimmed and
-  // ready to be split into comparators.
-
-  var compRe = loose ? re[COMPARATORLOOSE] : re[COMPARATOR];
-  var set = range.split(' ').map(function(comp) {
-    return parseComparator(comp, loose);
-  }).join(' ').split(/\s+/);
-  if (this.loose) {
-    // in loose mode, throw out any that are not valid comparators
-    set = set.filter(function(comp) {
-      return !!comp.match(compRe);
-    });
-  }
-  set = set.map(function(comp) {
-    return new Comparator(comp, loose);
-  });
-
-  return set;
-};
-
-// Mostly just for testing and legacy API reasons
-exports.toComparators = toComparators;
-function toComparators(range, loose) {
-  return new Range(range, loose).set.map(function(comp) {
-    return comp.map(function(c) {
-      return c.value;
-    }).join(' ').trim().split(' ');
-  });
-}
-
-// comprised of xranges, tildes, stars, and gtlt's at this point.
-// already replaced the hyphen ranges
-// turn into a set of JUST comparators.
-function parseComparator(comp, loose) {
-  ;
-  comp = replaceCarets(comp, loose);
-  ;
-  comp = replaceTildes(comp, loose);
-  ;
-  comp = replaceXRanges(comp, loose);
-  ;
-  comp = replaceStars(comp, loose);
-  ;
-  return comp;
-}
-
-function isX(id) {
-  return !id || id.toLowerCase() === 'x' || id === '*';
-}
-
-// ~, ~> --> * (any, kinda silly)
-// ~2, ~2.x, ~2.x.x, ~>2, ~>2.x ~>2.x.x --> >=2.0.0 <3.0.0
-// ~2.0, ~2.0.x, ~>2.0, ~>2.0.x --> >=2.0.0 <2.1.0
-// ~1.2, ~1.2.x, ~>1.2, ~>1.2.x --> >=1.2.0 <1.3.0
-// ~1.2.3, ~>1.2.3 --> >=1.2.3 <1.3.0
-// ~1.2.0, ~>1.2.0 --> >=1.2.0 <1.3.0
-function replaceTildes(comp, loose) {
-  return comp.trim().split(/\s+/).map(function(comp) {
-    return replaceTilde(comp, loose);
-  }).join(' ');
-}
-
-function replaceTilde(comp, loose) {
-  var r = loose ? re[TILDELOOSE] : re[TILDE];
-  return comp.replace(r, function(_, M, m, p, pr) {
-    ;
-    var ret;
-
-    if (isX(M))
-      ret = '';
-    else if (isX(m))
-      ret = '>=' + M + '.0.0-0 <' + (+M + 1) + '.0.0-0';
-    else if (isX(p))
-      // ~1.2 == >=1.2.0- <1.3.0-
-      ret = '>=' + M + '.' + m + '.0-0 <' + M + '.' + (+m + 1) + '.0-0';
-    else if (pr) {
-      ;
-      if (pr.charAt(0) !== '-')
-        pr = '-' + pr;
-      ret = '>=' + M + '.' + m + '.' + p + pr +
-            ' <' + M + '.' + (+m + 1) + '.0-0';
-    } else
-      // ~1.2.3 == >=1.2.3-0 <1.3.0-0
-      ret = '>=' + M + '.' + m + '.' + p + '-0' +
-            ' <' + M + '.' + (+m + 1) + '.0-0';
-
-    ;
-    return ret;
-  });
-}
-
-// ^ --> * (any, kinda silly)
-// ^2, ^2.x, ^2.x.x --> >=2.0.0 <3.0.0
-// ^2.0, ^2.0.x --> >=2.0.0 <3.0.0
-// ^1.2, ^1.2.x --> >=1.2.0 <2.0.0
-// ^1.2.3 --> >=1.2.3 <2.0.0
-// ^1.2.0 --> >=1.2.0 <2.0.0
-function replaceCarets(comp, loose) {
-  return comp.trim().split(/\s+/).map(function(comp) {
-    return replaceCaret(comp, loose);
-  }).join(' ');
-}
-
-function replaceCaret(comp, loose) {
-  var r = loose ? re[CARETLOOSE] : re[CARET];
-  return comp.replace(r, function(_, M, m, p, pr) {
-    ;
-    var ret;
-
-    if (isX(M))
-      ret = '';
-    else if (isX(m))
-      ret = '>=' + M + '.0.0-0 <' + (+M + 1) + '.0.0-0';
-    else if (isX(p)) {
-      if (M === '0')
-        ret = '>=' + M + '.' + m + '.0-0 <' + M + '.' + (+m + 1) + '.0-0';
-      else
-        ret = '>=' + M + '.' + m + '.0-0 <' + (+M + 1) + '.0.0-0';
-    } else if (pr) {
-      ;
-      if (pr.charAt(0) !== '-')
-        pr = '-' + pr;
-      if (M === '0') {
-        if (m === '0')
-          ret = '=' + M + '.' + m + '.' + p + pr;
-        else
-          ret = '>=' + M + '.' + m + '.' + p + pr +
-                ' <' + M + '.' + (+m + 1) + '.0-0';
-      } else
-        ret = '>=' + M + '.' + m + '.' + p + pr +
-              ' <' + (+M + 1) + '.0.0-0';
-    } else {
-      if (M === '0') {
-        if (m === '0')
-          ret = '=' + M + '.' + m + '.' + p;
-        else
-          ret = '>=' + M + '.' + m + '.' + p + '-0' +
-                ' <' + M + '.' + (+m + 1) + '.0-0';
-      } else
-        ret = '>=' + M + '.' + m + '.' + p + '-0' +
-              ' <' + (+M + 1) + '.0.0-0';
-    }
-
-    ;
-    return ret;
-  });
-}
-
-function replaceXRanges(comp, loose) {
-  ;
-  return comp.split(/\s+/).map(function(comp) {
-    return replaceXRange(comp, loose);
-  }).join(' ');
-}
-
-function replaceXRange(comp, loose) {
-  comp = comp.trim();
-  var r = loose ? re[XRANGELOOSE] : re[XRANGE];
-  return comp.replace(r, function(ret, gtlt, M, m, p, pr) {
-    ;
-    var xM = isX(M);
-    var xm = xM || isX(m);
-    var xp = xm || isX(p);
-    var anyX = xp;
-
-    if (gtlt === '=' && anyX)
-      gtlt = '';
-
-    if (gtlt && anyX) {
-      // replace X with 0, and then append the -0 min-prerelease
-      if (xM)
-        M = 0;
-      if (xm)
-        m = 0;
-      if (xp)
-        p = 0;
-
-      if (gtlt === '>') {
-        // >1 => >=2.0.0-0
-        // >1.2 => >=1.3.0-0
-        // >1.2.3 => >= 1.2.4-0
-        gtlt = '>=';
-        if (xM) {
-          // no change
-        } else if (xm) {
-          M = +M + 1;
-          m = 0;
-          p = 0;
-        } else if (xp) {
-          m = +m + 1;
-          p = 0;
-        }
-      }
-
-
-      ret = gtlt + M + '.' + m + '.' + p + '-0';
-    } else if (xM) {
-      // allow any
-      ret = '*';
-    } else if (xm) {
-      // append '-0' onto the version, otherwise
-      // '1.x.x' matches '2.0.0-beta', since the tag
-      // *lowers* the version value
-      ret = '>=' + M + '.0.0-0 <' + (+M + 1) + '.0.0-0';
-    } else if (xp) {
-      ret = '>=' + M + '.' + m + '.0-0 <' + M + '.' + (+m + 1) + '.0-0';
-    }
-
-    ;
-
-    return ret;
-  });
-}
-
-// Because * is AND-ed with everything else in the comparator,
-// and '' means "any version", just remove the *s entirely.
-function replaceStars(comp, loose) {
-  ;
-  // Looseness is ignored here.  star is always as loose as it gets!
-  return comp.trim().replace(re[STAR], '');
-}
-
-// This function is passed to string.replace(re[HYPHENRANGE])
-// M, m, patch, prerelease, build
-// 1.2 - 3.4.5 => >=1.2.0-0 <=3.4.5
-// 1.2.3 - 3.4 => >=1.2.0-0 <3.5.0-0 Any 3.4.x will do
-// 1.2 - 3.4 => >=1.2.0-0 <3.5.0-0
-function hyphenReplace($0,
-                       from, fM, fm, fp, fpr, fb,
-                       to, tM, tm, tp, tpr, tb) {
-
-  if (isX(fM))
-    from = '';
-  else if (isX(fm))
-    from = '>=' + fM + '.0.0-0';
-  else if (isX(fp))
-    from = '>=' + fM + '.' + fm + '.0-0';
-  else
-    from = '>=' + from;
-
-  if (isX(tM))
-    to = '';
-  else if (isX(tm))
-    to = '<' + (+tM + 1) + '.0.0-0';
-  else if (isX(tp))
-    to = '<' + tM + '.' + (+tm + 1) + '.0-0';
-  else if (tpr)
-    to = '<=' + tM + '.' + tm + '.' + tp + '-' + tpr;
-  else
-    to = '<=' + to;
-
-  return (from + ' ' + to).trim();
-}
-
-
-// if ANY of the sets match ALL of its comparators, then pass
-Range.prototype.test = function(version) {
-  if (!version)
-    return false;
-  for (var i = 0; i < this.set.length; i++) {
-    if (testSet(this.set[i], version))
-      return true;
-  }
-  return false;
-};
-
-function testSet(set, version) {
-  for (var i = 0; i < set.length; i++) {
-    if (!set[i].test(version))
-      return false;
-  }
-  return true;
-}
-
-exports.satisfies = satisfies;
-function satisfies(version, range, loose) {
-  try {
-    range = new Range(range, loose);
-  } catch (er) {
-    return false;
-  }
-  return range.test(version);
-}
-
-exports.maxSatisfying = maxSatisfying;
-function maxSatisfying(versions, range, loose) {
-  return versions.filter(function(version) {
-    return satisfies(version, range, loose);
-  }).sort(function(a, b) {
-    return rcompare(a, b, loose);
-  })[0] || null;
-}
-
-exports.validRange = validRange;
-function validRange(range, loose) {
-  try {
-    // Return '*' instead of '' so that truthiness works.
-    // This will throw if it's invalid anyway
-    return new Range(range, loose).range || '*';
-  } catch (er) {
-    return null;
-  }
-}
-
-// Determine if version is less than all the versions possible in the range
-exports.ltr = ltr;
-function ltr(version, range, loose) {
-  return outside(version, range, '<', loose);
-}
-
-// Determine if version is greater than all the versions possible in the range.
-exports.gtr = gtr;
-function gtr(version, range, loose) {
-  return outside(version, range, '>', loose);
-}
-
-exports.outside = outside;
-function outside(version, range, hilo, loose) {
-  version = new SemVer(version, loose);
-  range = new Range(range, loose);
-
-  var gtfn, ltefn, ltfn, comp, ecomp;
-  switch (hilo) {
-    case '>':
-      gtfn = gt;
-      ltefn = lte;
-      ltfn = lt;
-      comp = '>';
-      ecomp = '>=';
-      break;
-    case '<':
-      gtfn = lt;
-      ltefn = gte;
-      ltfn = gt;
-      comp = '<';
-      ecomp = '<=';
-      break;
-    default:
-      throw new TypeError('Must provide a hilo val of "<" or ">"');
-  }
-
-  // If it satisifes the range it is not outside
-  if (satisfies(version, range, loose)) {
-    return false;
-  }
-
-  // From now on, variable terms are as if we're in "gtr" mode.
-  // but note that everything is flipped for the "ltr" function.
-
-  for (var i = 0; i < range.set.length; ++i) {
-    var comparators = range.set[i];
-
-    var high = null;
-    var low = null;
-
-    comparators.forEach(function(comparator) {
-      high = high || comparator;
-      low = low || comparator;
-      if (gtfn(comparator.semver, high.semver, loose)) {
-        high = comparator;
-      } else if (ltfn(comparator.semver, low.semver, loose)) {
-        low = comparator;
-      }
-    });
-
-    // If the edge version comparator has a operator then our version
-    // isn't outside it
-    if (high.operator === comp || high.operator === ecomp) {
-      return false;
-    }
-
-    // If the lowest version comparator has an operator and our version
-    // is less than it then it isn't higher than the range
-    if ((!low.operator || low.operator === comp) &&
-        ltefn(version, low.semver)) {
-      return false;
-    } else if (low.operator === ecomp && ltfn(version, low.semver)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// Use the define() function if we're in AMD land
-if (typeof define === 'function' && define.amd)
-  define(exports);
-
-})(
-  typeof exports === 'object' ? exports :
-  typeof define === 'function' && define.amd ? {} :
-  semver = {}
-);
-
-},{}],62:[function(require,module,exports){
-var domIndex = require("./lib/dom-index")
-var isArray = require("./lib/is-array")
+},{"../vtree/is-vhook":59,"../vtree/is-vnode":60,"../vtree/is-widget":62,"./create-element":53,"./update-widget":57,"is-object":49,"x-is-string":51}],56:[function(require,module,exports){
+var document = require("global/document")
+var isArray = require("x-is-array")
+
+var domIndex = require("./dom-index")
+var patchOp = require("./patch-op")
 
 module.exports = patch
 
@@ -4406,12 +3253,12 @@ function patch(rootNode, patches) {
     }
 
     var index = domIndex(rootNode, patches.a, indices)
-    var ownerDocument, renderOptions
+    var ownerDocument = rootNode.ownerDocument
+    var renderOptions
 
-    if (typeof document === "undefined" ||
-        (ownerDocument = rootNode.ownerDocument) !== document) {
+    if (ownerDocument !== document) {
         renderOptions = {
-            document: ownerDocument || rootNode.ownerDocument
+            document: ownerDocument
         }
     }
 
@@ -4435,14 +3282,14 @@ function applyPatch(rootNode, domNode, patchList, renderOptions) {
 
     if (isArray(patchList)) {
         for (var i = 0; i < patchList.length; i++) {
-            newNode = patchList[i].apply(domNode, renderOptions)
+            newNode = patchOp(patchList[i], domNode, renderOptions)
 
             if (domNode === rootNode) {
                 rootNode = newNode
             }
         }
     } else {
-        newNode = patchList.apply(domNode, renderOptions)
+        newNode = patchOp(patchList, domNode, renderOptions)
 
         if (domNode === rootNode) {
             rootNode = newNode
@@ -4464,74 +3311,277 @@ function patchIndices(patches) {
     return indices
 }
 
-},{"./lib/dom-index":47,"./lib/is-array":48}],63:[function(require,module,exports){
-var DataSet = require("data-set")
+},{"./dom-index":54,"./patch-op":55,"global/document":48,"x-is-array":50}],57:[function(require,module,exports){
+var isWidget = require("../vtree/is-widget")
 
-var isVirtualDomNode = require("./lib/is-virtual-dom")
-var isVirtualTextNode = require("./lib/is-virtual-text")
-var isString = require("./lib/is-string")
+module.exports = updateWidget
 
-module.exports = render
-
-function render(virtualDom, opts) {
-    var doc = opts ? opts.document || document : document
-    var warn = opts ? opts.warn : null
-
-    if (virtualDom && typeof virtualDom.init === "function") {
-        return virtualDom.init()
-    } else if (isVirtualTextNode(virtualDom)) {
-        return doc.createTextNode(virtualDom.text)
-    } else if (isString(virtualDom)) {
-        return doc.createTextNode(virtualDom)
-    } else if (!isVirtualDomNode(virtualDom)) {
-        if (warn) {
-            warn("Item is not a valid virtual dom node", virtualDom)
-        }
-        return null
-    }
-
-    var node = doc.createElement(virtualDom.tagName)
-    applyProperties(node, virtualDom.properties)
-    var children = virtualDom.children
-
-    for (var i = 0; i < children.length; i++) {
-        var childNode = render(children[i], opts)
-        if (childNode) {
-            node.appendChild(childNode)
+function updateWidget(a, b) {
+    if (isWidget(a) && isWidget(b)) {
+        if ("type" in a && "type" in b) {
+            return a.type === b.type
+        } else {
+            return a.init === b.init
         }
     }
 
-    return node
+    return false
 }
 
-function applyProperties(node, props) {
-    for (var propName in props) {
-        var propValue = props[propName]
+},{"../vtree/is-widget":62}],58:[function(require,module,exports){
+/*jshint maxcomplexity: 25 */
+var isArray = require("x-is-array")
+var isObject = require("is-object")
 
-        if (typeof propValue === "function") {
-            propValue(node, propName)
-        } else if(propName === "style") {
-            if(typeof propValue === "string") {
-                node.style.cssText = propValue
+var VPatch = require("./vpatch")
+var isVNode = require("./is-vnode")
+var isVText = require("./is-vtext")
+var isWidget = require("./is-widget")
+var isHook = require("./is-vhook")
+
+module.exports = diff
+
+function diff(a, b) {
+    var patch = { a: a }
+    walk(a, b, patch, 0)
+    return patch
+}
+
+function walk(a, b, patch, index) {
+    if (a === b) {
+        return
+    }
+
+    var apply = patch[index]
+
+    if (isWidget(a)) {
+        // Update a widget
+        apply = appendPatch(apply, new VPatch(a, b))
+    } else if (isWidget(b)) {
+        // Patch in a new widget
+        apply = appendPatch(apply, new VPatch(a, b))
+    } else if (isVText(a) && isVText(b)) {
+        // Update a text node
+        if (a.text !== b.text) {
+            apply = appendPatch(apply, new VPatch(a.text, b.text))
+        }
+    } else if (isVNode(a) && isVNode(b) &&
+        a.tagName === b.tagName &&
+        a.namespace === b.namespace) {
+        // Update a VDOMNode
+        var propsPatch = diffProps(a.properties, b.properties)
+        if (propsPatch) {
+            apply = appendPatch(apply, new VPatch(a.properties, propsPatch))
+        }
+
+        apply = diffChildren(a, b, patch, apply, index)
+    } else if (a !== b) {
+        apply = appendPatch(apply, new VPatch(a, b))
+
+        // We must detect a remove/replace of widgets here so that
+        // we can add patch records for any stateful widgets
+        if (isVNode(a) && a.hasWidgets &&
+            (!isVNode(b) ||
+                a.tagName !== b.tagName ||
+                a.namespace !== b.namespace)) {
+            destroyWidgets(a, patch, index)
+        }
+    }
+
+    if (apply) {
+        patch[index] = apply
+    }
+}
+
+var nullProps = {}
+
+function diffProps(a, b) {
+    var diff
+
+    for (var aKey in a) {
+        var aValue = a[aKey]
+        var bValue = aKey in b ? b[aKey] : nullProps
+
+        if (isHook(bValue)) {
+            diff = diff || {}
+            diff[aKey] = bValue
+        } else if (isObject(aValue)) {
+            if (getPrototype(bValue) !== getPrototype(aValue)) {
+                diff = diff || {}
+                diff[aKey] = bValue === nullProps ? undefined : bValue
+            } else if (bValue === nullProps) {
+                diff = diff || {}
+                diff[aKey] = undefined
             } else {
-                for (var s in propValue) {
-                    node.style[s] = propValue[s]
+                var objectDiff = diffProps(aValue, bValue || nullProps)
+                if (objectDiff) {
+                    diff = diff || {}
+                    diff[aKey] = objectDiff
                 }
             }
-        } else if (propName.substr(0, 5) === "data-") {
-            DataSet(node)[propName.substr(5)] = propValue
         } else {
-            node[propName] = propValue
+            if (typeof aValue === "function" || aValue !== bValue) {
+                diff = diff || {}
+                diff[aKey] = bValue === nullProps ? undefined : bValue
+            }
+        }
+    }
+
+    for (var bKey in b) {
+        if (!(bKey in a)) {
+            diff = diff || {}
+            diff[bKey] = b[bKey]
+        }
+    }
+
+    return diff
+}
+
+function getPrototype(value) {
+    var proto = "__proto__"
+
+    if (Object.getPrototypeOf) {
+        return Object.getPrototypeOf(value)
+    } else if (value[proto]) {
+        return value[proto]
+    } else if (value.constructor) {
+        return value.constructor.prototype
+    }
+}
+
+function diffChildren(a, b, patch, apply, index) {
+    var aChildren = a.children
+    var bChildren = b.children
+    var aLen = aChildren.length
+    var bLen = bChildren.length
+    var len = aLen < bLen ? aLen : bLen
+
+    for (var i = 0; i < len; i++) {
+        var leftNode = aChildren[i]
+        var rightNode = bChildren[i]
+        index += 1
+        walk(leftNode, rightNode, patch, index)
+
+        if (isVNode(leftNode) && leftNode.count) {
+            index += leftNode.count
+        }
+    }
+
+    // Excess nodes in a need to be removed
+    for (; i < aLen; i++) {
+        var excess = aChildren[i]
+        index += 1
+        patch[index] = new VPatch(excess, null)
+        destroyWidgets(excess, patch, index)
+
+        if (isVNode(excess) && excess.count) {
+            index += excess.count
+        }
+    }
+
+    // Excess nodes in b need to be added
+    for (; i < bLen; i++) {
+        var addition = bChildren[i]
+        apply = appendPatch(apply, new VPatch(null, addition))
+    }
+
+    return apply
+}
+
+// Patch records for all destroyed widgets must be added because we need
+// a DOM node reference for the destroy function
+function destroyWidgets(vNode, patch, index) {
+    if (isWidget(vNode)) {
+        if (typeof vNode.destroy === "function") {
+            patch[index] = new VPatch(vNode, null)
+        }
+    } else if (isVNode(vNode) && vNode.hasWidgets) {
+        var children = vNode.children
+        var len = children.length
+        for (var i = 0; i < len; i++) {
+            var child = children[i]
+            index += 1
+
+            destroyWidgets(child, patch, index)
+
+            if (isVNode(child) && child.count) {
+                index += child.count
+            }
         }
     }
 }
 
-},{"./lib/is-string":49,"./lib/is-virtual-dom":50,"./lib/is-virtual-text":51,"data-set":56}],64:[function(require,module,exports){
-var semver = require("semver")
+function appendPatch(apply, patch) {
+    if (apply) {
+        if (isArray(apply)) {
+            apply.push(patch)
+        } else {
+            apply = [apply, patch]
+        }
 
-module.exports = semver.clean("0.1.0")
+        return apply
+    } else {
+        return patch
+    }
+}
 
-},{"semver":61}],65:[function(require,module,exports){
+},{"./is-vhook":59,"./is-vnode":60,"./is-vtext":61,"./is-widget":62,"./vpatch":64,"is-object":49,"x-is-array":50}],59:[function(require,module,exports){
+module.exports = isHook
+
+function isHook(hook) {
+    return hook && typeof hook.hook === "function" &&
+        !hook.hasOwnProperty("hook")
+}
+
+},{}],60:[function(require,module,exports){
+var version = require("./version")
+
+module.exports = isVirtualNode
+
+function isVirtualNode(x) {
+    if (!x) {
+        return false;
+    }
+
+    return x.type === "VirtualNode" && x.version === version
+}
+
+},{"./version":63}],61:[function(require,module,exports){
+var version = require("./version")
+
+module.exports = isVirtualText
+
+function isVirtualText(x) {
+    if (!x) {
+        return false;
+    }
+
+    return x.type === "VirtualText" && x.version === version
+}
+
+},{"./version":63}],62:[function(require,module,exports){
+module.exports = isWidget
+
+function isWidget(w) {
+    return w && typeof w.init === "function" && typeof w.update === "function"
+}
+
+},{}],63:[function(require,module,exports){
+module.exports = "1"
+},{}],64:[function(require,module,exports){
+var version = require("./version")
+
+module.exports = VirtualPatch
+
+function VirtualPatch(vNode, patch) {
+    this.vNode = vNode
+    this.patch = patch
+}
+
+VirtualPatch.prototype.version = version.split(".")
+VirtualPatch.prototype.type = "VirtualPatch"
+
+},{"./version":63}],65:[function(require,module,exports){
 module.exports = addListener
 
 function addListener(observArray, observ) {
@@ -5021,7 +4071,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"./lib/get-form-data.js":81,"xtend":132}],80:[function(require,module,exports){
+},{"./lib/get-form-data.js":81,"xtend":139}],80:[function(require,module,exports){
 module.exports = SinkEventHandler
 
 function SinkEventHandler(sink, data) {
@@ -5219,7 +4269,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"./lib/get-form-data.js":81,"xtend":132}],85:[function(require,module,exports){
+},{"./lib/get-form-data.js":81,"xtend":139}],85:[function(require,module,exports){
 var extend = require('xtend')
 
 var getFormData = require('./lib/get-form-data.js')
@@ -5249,8 +4299,8 @@ function handleEvent(ev) {
     }
 }
 
-},{"./lib/get-form-data.js":81,"xtend":132}],86:[function(require,module,exports){
-var createElement = require("virtual-dom/render")
+},{"./lib/get-form-data.js":81,"xtend":139}],86:[function(require,module,exports){
+var createElement = require("virtual-dom/create-element")
 var diff = require("virtual-dom/diff")
 var patch = require("virtual-dom/patch")
 
@@ -5294,202 +4344,204 @@ function init() {
     return createElement(this.vnode)
 }
 
-},{"virtual-dom/diff":87,"virtual-dom/patch":103,"virtual-dom/render":104}],87:[function(require,module,exports){
+},{"virtual-dom/create-element":87,"virtual-dom/diff":88,"virtual-dom/patch":93}],87:[function(require,module,exports){
 arguments[4][46][0].apply(exports,arguments)
-},{"./lib/is-array":89,"./lib/is-virtual-dom":91,"./lib/is-virtual-text":92,"./lib/is-widget":93,"./lib/patch-op":94}],88:[function(require,module,exports){
-module.exports=require(47)
-},{}],89:[function(require,module,exports){
-module.exports=require(48)
-},{}],90:[function(require,module,exports){
+},{"./vdom/create-element":94}],88:[function(require,module,exports){
+arguments[4][47][0].apply(exports,arguments)
+},{"./vtree/diff":99}],89:[function(require,module,exports){
+module.exports=require(29)
+},{"min-document":8}],90:[function(require,module,exports){
 module.exports=require(49)
 },{}],91:[function(require,module,exports){
-arguments[4][50][0].apply(exports,arguments)
-},{"../version":105}],92:[function(require,module,exports){
-arguments[4][51][0].apply(exports,arguments)
-},{"../version":105}],93:[function(require,module,exports){
-module.exports=require(52)
-},{}],94:[function(require,module,exports){
+module.exports=require(50)
+},{}],92:[function(require,module,exports){
+module.exports=require(51)
+},{}],93:[function(require,module,exports){
+arguments[4][52][0].apply(exports,arguments)
+},{"./vdom/patch":97}],94:[function(require,module,exports){
+arguments[4][53][0].apply(exports,arguments)
+},{"../vtree/is-vhook":100,"../vtree/is-vnode":101,"../vtree/is-vtext":102,"../vtree/is-widget":103,"global/document":89,"is-object":90}],95:[function(require,module,exports){
+module.exports=require(54)
+},{}],96:[function(require,module,exports){
+arguments[4][55][0].apply(exports,arguments)
+},{"../vtree/is-vhook":100,"../vtree/is-vnode":101,"../vtree/is-widget":103,"./create-element":94,"./update-widget":98,"is-object":90,"x-is-string":92}],97:[function(require,module,exports){
+arguments[4][56][0].apply(exports,arguments)
+},{"./dom-index":95,"./patch-op":96,"global/document":89,"x-is-array":91}],98:[function(require,module,exports){
+module.exports=require(57)
+},{"../vtree/is-widget":103}],99:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"./is-vhook":100,"./is-vnode":101,"./is-vtext":102,"./is-widget":103,"./vpatch":105,"is-object":90,"x-is-array":91}],100:[function(require,module,exports){
+module.exports=require(59)
+},{}],101:[function(require,module,exports){
+module.exports=require(60)
+},{"./version":104}],102:[function(require,module,exports){
+module.exports=require(61)
+},{"./version":104}],103:[function(require,module,exports){
+module.exports=require(62)
+},{}],104:[function(require,module,exports){
+module.exports=require(63)
+},{}],105:[function(require,module,exports){
+module.exports=require(64)
+},{"./version":104}],106:[function(require,module,exports){
+arguments[4][46][0].apply(exports,arguments)
+},{"./vdom/create-element":113}],107:[function(require,module,exports){
+arguments[4][47][0].apply(exports,arguments)
+},{"./vtree/diff":118}],108:[function(require,module,exports){
+module.exports=require(29)
+},{"min-document":8}],109:[function(require,module,exports){
+module.exports=require(49)
+},{}],110:[function(require,module,exports){
+module.exports=require(50)
+},{}],111:[function(require,module,exports){
+module.exports=require(51)
+},{}],112:[function(require,module,exports){
+arguments[4][52][0].apply(exports,arguments)
+},{"./vdom/patch":116}],113:[function(require,module,exports){
+arguments[4][53][0].apply(exports,arguments)
+},{"../vtree/is-vhook":119,"../vtree/is-vnode":120,"../vtree/is-vtext":121,"../vtree/is-widget":122,"global/document":108,"is-object":109}],114:[function(require,module,exports){
+module.exports=require(54)
+},{}],115:[function(require,module,exports){
+arguments[4][55][0].apply(exports,arguments)
+},{"../vtree/is-vhook":119,"../vtree/is-vnode":120,"../vtree/is-widget":122,"./create-element":113,"./update-widget":117,"is-object":109,"x-is-string":111}],116:[function(require,module,exports){
+arguments[4][56][0].apply(exports,arguments)
+},{"./dom-index":114,"./patch-op":115,"global/document":108,"x-is-array":110}],117:[function(require,module,exports){
+module.exports=require(57)
+},{"../vtree/is-widget":122}],118:[function(require,module,exports){
+arguments[4][58][0].apply(exports,arguments)
+},{"./is-vhook":119,"./is-vnode":120,"./is-vtext":121,"./is-widget":122,"./vpatch":125,"is-object":109,"x-is-array":110}],119:[function(require,module,exports){
+module.exports=require(59)
+},{}],120:[function(require,module,exports){
+module.exports=require(60)
+},{"./version":123}],121:[function(require,module,exports){
+module.exports=require(61)
+},{"./version":123}],122:[function(require,module,exports){
+module.exports=require(62)
+},{}],123:[function(require,module,exports){
+module.exports=require(63)
+},{}],124:[function(require,module,exports){
+/*jshint maxcomplexity: 20 */
+var version = require("./version")
+var isVNode = require("./is-vnode")
+var isWidget = require("./is-widget")
+var isVHook = require("./is-vhook")
+
+module.exports = VirtualNode
+
+function VirtualNode(tagName, properties, children, key, namespace) {
+    this.tagName = tagName
+    this.properties = properties
+    this.children = children
+    this.key = (typeof key === "string") ? key : null
+    this.namespace = (typeof namespace === "string") ? namespace : null
+
+    var count = (children && children.length) || 0
+    var descendants = 0
+    var hasWidgets = false
+    var hooks = null
+    var descendantHooks = false
+
+    for (var propName in properties) {
+        if (properties.hasOwnProperty(propName)) {
+            var val = properties[propName]
+            if (isVHook(val)) {
+                if (!hooks) {
+                    hooks = []
+                }
+
+                hooks.push(propName)
+            }
+        }
+    }
+
+    for (var i = 0; i < count; i++) {
+        var child = children[i]
+        if (isVNode(child)) {
+            descendants += child.count || 0
+
+            if (!hasWidgets && child.hasWidgets) {
+                hasWidgets = true
+            }
+
+            if (!descendantHooks && (child.hooks || child.descendantHooks)) {
+                descendantHooks = true
+            }
+        } else if (!hasWidgets && isWidget(child)) {
+            if (typeof child.destroy === "function") {
+                hasWidgets = true
+            }
+        }
+    }
+
+    this.count = count + descendants
+    this.hasWidgets = hasWidgets
+    this.hooks = hooks
+    this.descendantHooks = descendantHooks
+}
+
+VirtualNode.prototype.version = version
+VirtualNode.prototype.type = "VirtualNode"
+
+},{"./is-vhook":119,"./is-vnode":120,"./is-widget":122,"./version":123}],125:[function(require,module,exports){
+module.exports=require(64)
+},{"./version":123}],126:[function(require,module,exports){
+var version = require("./version")
+
+module.exports = VirtualText
+
+function VirtualText(text) {
+    this.text = String(text)
+}
+
+VirtualText.prototype.version = version
+VirtualText.prototype.type = "VirtualText"
+
+},{"./version":123}],127:[function(require,module,exports){
 var DataSet = require("data-set")
 
-var render = require("../render")
-var isWidget = require("./is-widget")
-var isString = require("./is-string")
-var isVNode = require("./is-virtual-dom")
-var updateWidget = require("./update-widget")
+module.exports = DataSetHook;
 
-module.exports = createPatch
-
-function createPatch(vNode, patch) {
-    return new PatchOp(vNode, patch)
-}
-
-function PatchOp(vNode, patch) {
-    this.vNode = vNode
-    this.patch = patch
-}
-
-PatchOp.prototype.apply = applyUpdate
-
-function applyUpdate(domNode, renderOptions) {
-    var vNode = this.vNode
-    var patch = this.patch
-
-    if (patch == null) {
-        return removeNode(domNode, vNode)
-    } else if (vNode == null) {
-        return insertNode(domNode, patch, renderOptions)
-    } else if (isString(patch)) {
-        return stringPatch(domNode, vNode, patch, renderOptions)
-    } else if (isWidget(patch)) {
-        return widgetPatch(domNode, vNode, patch, renderOptions)
-    } else if (isVNode(patch)) {
-        return vNodePatch(domNode, vNode, patch, renderOptions)
-    } else {
-        return propPatch(domNode, patch)
-    }
-}
-
-function removeNode(domNode, vNode) {
-    var parentNode = domNode.parentNode
-
-    if (parentNode) {
-        parentNode.removeChild(domNode)
+function DataSetHook(value) {
+    if (!(this instanceof DataSetHook)) {
+        return new DataSetHook(value);
     }
 
-    destroyWidget(domNode, vNode);
-
-    return null
+    this.value = value;
 }
 
-function insertNode(parentNode, vNode, renderOptions) {
-    var newNode = render(vNode, renderOptions)
+DataSetHook.prototype.hook = function (node, propertyName) {
+    var ds = DataSet(node)
+    var propName = propertyName.substr(5)
 
-    if (parentNode) {
-        parentNode.appendChild(newNode)
+    ds[propName] = this.value;
+};
+
+},{"data-set":132}],128:[function(require,module,exports){
+module.exports = SoftSetHook;
+
+function SoftSetHook(value) {
+    if (!(this instanceof SoftSetHook)) {
+        return new SoftSetHook(value);
     }
 
-    return parentNode
+    this.value = value;
 }
 
-function stringPatch(domNode, leftVNode, newString, renderOptions) {
-    if (domNode.nodeType === 3) {
-        domNode.replaceData(0, domNode.length, newString)
-        return domNode
+SoftSetHook.prototype.hook = function (node, propertyName) {
+    if (node[propertyName] !== this.value) {
+        node[propertyName] = this.value;
     }
+};
 
-    var parentNode = domNode.parentNode
-    var newNode = render(newString, renderOptions)
+},{}],129:[function(require,module,exports){
+var VNode = require("virtual-dom/vtree/vnode.js")
+var VText = require("virtual-dom/vtree/vtext.js")
+var isVNode = require("virtual-dom/vtree/is-vnode")
+var isVText = require("virtual-dom/vtree/is-vtext")
+var isWidget = require("virtual-dom/vtree/is-widget")
 
-    if (parentNode) {
-        parentNode.replaceChild(newNode, domNode)
-    }
-
-    destroyWidget(domNode, leftVNode)
-
-    return newNode
-}
-
-function widgetPatch(domNode, leftVNode, widgetUpdate, renderOptions) {
-    if (isWidget(leftVNode)) {
-        if (updateWidget(leftVNode, widgetUpdate)) {
-            var updatedNode = widgetUpdate.update(leftVNode, domNode)
-            return updatedNode || domNode
-        }
-    }
-
-    var parentNode = domNode.parentNode
-    var newWidget = render(widgetUpdate, renderOptions)
-
-    if (parentNode) {
-        parentNode.replaceChild(newWidget, domNode)
-    }
-
-    destroyWidget(domNode, leftVNode)
-
-    return newWidget
-}
-
-function vNodePatch(domNode, leftVNode, rightVNode, renderOptions) {
-    var parentNode = domNode.parentNode
-    var newNode = render(rightVNode, renderOptions)
-
-    if (parentNode) {
-        parentNode.replaceChild(newNode, domNode)
-    }
-
-    destroyWidget(domNode, leftVNode)
-
-    return newNode
-}
-
-function propPatch(domNode, patch) {
-    for (var prop in patch) {
-        if (prop === "style") {
-            var stylePatch = patch.style
-            var domStyle = domNode.style
-            for (var s in stylePatch) {
-                domStyle[s] = stylePatch[s]
-            }
-        } else {
-            var patchValue = patch[prop]
-
-            if (typeof patchValue === "function") {
-                patchValue(domNode, prop)
-            } else if (prop.substr(0, 5) === "data-") {
-                DataSet(domNode)[prop.substr(5)] = patchValue
-            } else {
-                domNode[prop] = patchValue
-            }
-        }
-    }
-
-    return domNode
-}
-
-
-function destroyWidget(domNode, w) {
-    if (typeof w.destroy === "function" && isWidget(w)) {
-        w.destroy(domNode)
-    }
-}
-
-},{"../render":104,"./is-string":90,"./is-virtual-dom":91,"./is-widget":93,"./update-widget":95,"data-set":97}],95:[function(require,module,exports){
-module.exports=require(54)
-},{"./is-widget":93}],96:[function(require,module,exports){
-module.exports=require(23)
-},{}],97:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"./create-hash.js":96,"individual":98,"weakmap-shim/create-store":100}],98:[function(require,module,exports){
-module.exports=require(25)
-},{"global":99}],99:[function(require,module,exports){
-module.exports=require(26)
-},{}],100:[function(require,module,exports){
-module.exports=require(27)
-},{"./hidden-store.js":101}],101:[function(require,module,exports){
-module.exports=require(28)
-},{}],102:[function(require,module,exports){
-module.exports=require(61)
-},{}],103:[function(require,module,exports){
-module.exports=require(62)
-},{"./lib/dom-index":88,"./lib/is-array":89}],104:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./lib/is-string":90,"./lib/is-virtual-dom":91,"./lib/is-virtual-text":92,"data-set":97}],105:[function(require,module,exports){
-module.exports=require(64)
-},{"semver":102}],106:[function(require,module,exports){
-arguments[4][63][0].apply(exports,arguments)
-},{"./lib/is-string":111,"./lib/is-virtual-dom":112,"./lib/is-virtual-text":113,"data-set":120}],107:[function(require,module,exports){
-arguments[4][46][0].apply(exports,arguments)
-},{"./lib/is-array":110,"./lib/is-virtual-dom":112,"./lib/is-virtual-text":113,"./lib/is-widget":114,"./lib/patch-op":116}],108:[function(require,module,exports){
-var extend = require("extend")
-
-var isArray = require("./lib/is-array")
-var isString = require("./lib/is-string")
-var parseTag = require("./lib/parse-tag")
-var isVirtualDOMNode = require("./lib/is-virtual-dom")
-var isVirtualTextNode = require("./lib/is-virtual-text")
-
-var VirtualDOMNode = require("./virtual-dom-node.js")
-var VirtualTextNode = require("./virtual-text-node.js")
+var parseTag = require("./parse-tag.js")
+var softSetHook = require("./hooks/soft-set-hook.js")
+var dataSetHook = require("./hooks/data-set-hook.js")
 
 module.exports = h
 
@@ -5504,12 +4556,11 @@ function h(tagName, properties, children) {
         }
     }
 
-    props = props || extend({}, properties)
+    props = props || properties || {}
     tag = parseTag(tagName, props)
 
-
-    if (children != null) {
-        if (isArray(children)) {
+    if (children) {
+        if (Array.isArray(children)) {
             for (var i = 0; i < children.length; i++) {
                 addChild(children[i], childNodes)
             }
@@ -5518,239 +4569,40 @@ function h(tagName, properties, children) {
         }
     }
 
-    return new VirtualDOMNode(tag, props, childNodes)
+    // fix cursor bug
+    if (tag === "input" && "value" in props) {
+        props.value = softSetHook(props.value)
+    }
+
+    // add data-set support
+    var keys = Object.keys(props)
+    for (var j = 0; j < keys.length; j++) {
+        var propName = keys[j]
+        if (propName.substr(0, 5) === "data-") {
+            props[propName] = dataSetHook(props[propName])
+        }
+    }
+
+    return new VNode(tag, props, childNodes)
 }
 
 function addChild(c, childNodes) {
-    if (isString(c)) {
-        childNodes.push(new VirtualTextNode(c))
-    } else {
-        // For now, we push all objects regardless of type
+    if (typeof c === "string") {
+        childNodes.push(new VText(c))
+    } else if (isChild(c)) {
         childNodes.push(c)
     }
 }
 
 function isChild(x) {
-    return isVirtualDOMNode(x) || isVirtualTextNode(x)
+    return isVNode(x) || isVText(x) || isWidget(x)
 }
 
 function isChildren(x) {
-    return isChild(x) || isArray(x) || isString(x)
+    return typeof x === "string" || Array.isArray(x) || isChild(x)
 }
 
-},{"./lib/is-array":110,"./lib/is-string":111,"./lib/is-virtual-dom":112,"./lib/is-virtual-text":113,"./lib/parse-tag":115,"./virtual-dom-node.js":129,"./virtual-text-node.js":130,"extend":125}],109:[function(require,module,exports){
-module.exports=require(47)
-},{}],110:[function(require,module,exports){
-module.exports=require(48)
-},{}],111:[function(require,module,exports){
-module.exports=require(49)
-},{}],112:[function(require,module,exports){
-arguments[4][50][0].apply(exports,arguments)
-},{"../version":128}],113:[function(require,module,exports){
-arguments[4][51][0].apply(exports,arguments)
-},{"../version":128}],114:[function(require,module,exports){
-module.exports=require(52)
-},{}],115:[function(require,module,exports){
-var split = require("browser-split")
-
-var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
-var notClassId = /^\.|#/
-
-module.exports = parseTag
-
-function parseTag(tag, props) {
-    if (!tag) {
-        return "div"
-    }
-
-    var noId = !("id" in props)
-
-    var tagParts = split(tag, classIdSplit)
-    var tagName = null
-
-    if(notClassId.test(tagParts[1])) {
-        tagName = "div"
-    }
-
-    var classes, part, type, i
-    for (i = 0; i < tagParts.length; i++) {
-        part = tagParts[i]
-
-        if (!part) {
-            continue
-        }
-
-        type = part.charAt(0)
-
-        if (!tagName) {
-            tagName = part
-        } else if (type === ".") {
-            classes = classes || []
-            classes.push(part.substring(1, part.length))
-        } else if (type === "#" && noId) {
-            props.id = part.substring(1, part.length)
-        }
-    }
-
-    if (classes) {
-        if (props.className) {
-            classes.push(props.className)
-        }
-
-        props.className = classes.join(" ")
-    }
-
-    return tagName ? tagName.toLowerCase() : "div"
-}
-
-},{"browser-split":118}],116:[function(require,module,exports){
-var DataSet = require("data-set")
-
-var render = require("../create-element")
-var isWidget = require("./is-widget")
-var isString = require("./is-string")
-var isVNode = require("./is-virtual-dom")
-var updateWidget = require("./update-widget")
-
-module.exports = createPatch
-
-function createPatch(vNode, patch) {
-    return new PatchOp(vNode, patch)
-}
-
-function PatchOp(vNode, patch) {
-    this.vNode = vNode
-    this.patch = patch
-}
-
-PatchOp.prototype.apply = applyUpdate
-
-function applyUpdate(domNode, renderOptions) {
-    var vNode = this.vNode
-    var patch = this.patch
-
-    if (patch == null) {
-        return removeNode(domNode, vNode)
-    } else if (vNode == null) {
-        return insertNode(domNode, patch, renderOptions)
-    } else if (isString(patch)) {
-        return stringPatch(domNode, vNode, patch, renderOptions)
-    } else if (isWidget(patch)) {
-        return widgetPatch(domNode, vNode, patch, renderOptions)
-    } else if (isVNode(patch)) {
-        return vNodePatch(domNode, vNode, patch, renderOptions)
-    } else {
-        return propPatch(domNode, patch)
-    }
-}
-
-function removeNode(domNode, vNode) {
-    var parentNode = domNode.parentNode
-
-    if (parentNode) {
-        parentNode.removeChild(domNode)
-    }
-
-    destroyWidget(domNode, vNode);
-
-    return null
-}
-
-function insertNode(parentNode, vNode, renderOptions) {
-    var newNode = render(vNode, renderOptions)
-
-    if (parentNode) {
-        parentNode.appendChild(newNode)
-    }
-
-    return parentNode
-}
-
-function stringPatch(domNode, leftVNode, newString, renderOptions) {
-    if (domNode.nodeType === 3) {
-        domNode.replaceData(0, domNode.length, newString)
-        return domNode
-    }
-
-    var parentNode = domNode.parentNode
-    var newNode = render(newString, renderOptions)
-
-    if (parentNode) {
-        parentNode.replaceChild(newNode, domNode)
-    }
-
-    destroyWidget(domNode, leftVNode)
-
-    return newNode
-}
-
-function widgetPatch(domNode, leftVNode, widgetUpdate, renderOptions) {
-    if (isWidget(leftVNode)) {
-        if (updateWidget(leftVNode, widgetUpdate)) {
-            var updatedNode = widgetUpdate.update(leftVNode, domNode)
-            return updatedNode || domNode
-        }
-    }
-
-    var parentNode = domNode.parentNode
-    var newWidget = render(widgetUpdate, renderOptions)
-
-    if (parentNode) {
-        parentNode.replaceChild(newWidget, domNode)
-    }
-
-    destroyWidget(domNode, leftVNode)
-
-    return newWidget
-}
-
-function vNodePatch(domNode, leftVNode, rightVNode, renderOptions) {
-    var parentNode = domNode.parentNode
-    var newNode = render(rightVNode, renderOptions)
-
-    if (parentNode) {
-        parentNode.replaceChild(newNode, domNode)
-    }
-
-    destroyWidget(domNode, leftVNode)
-
-    return newNode
-}
-
-function propPatch(domNode, patch) {
-    for (var prop in patch) {
-        if (prop === "style") {
-            var stylePatch = patch.style
-            var domStyle = domNode.style
-            for (var s in stylePatch) {
-                domStyle[s] = stylePatch[s]
-            }
-        } else {
-            var patchValue = patch[prop]
-
-            if (typeof patchValue === "function") {
-                patchValue(domNode, prop)
-            } else if (prop.substr(0, 5) === "data-") {
-                DataSet(domNode)[prop.substr(5)] = patchValue
-            } else {
-                domNode[prop] = patchValue
-            }
-        }
-    }
-
-    return domNode
-}
-
-
-function destroyWidget(domNode, w) {
-    if (typeof w.destroy === "function" && isWidget(w)) {
-        w.destroy(domNode)
-    }
-}
-
-},{"../create-element":106,"./is-string":111,"./is-virtual-dom":112,"./is-widget":114,"./update-widget":117,"data-set":120}],117:[function(require,module,exports){
-module.exports=require(54)
-},{"./is-widget":114}],118:[function(require,module,exports){
+},{"./hooks/data-set-hook.js":127,"./hooks/soft-set-hook.js":128,"./parse-tag.js":137,"virtual-dom/vtree/is-vnode":120,"virtual-dom/vtree/is-vtext":121,"virtual-dom/vtree/is-widget":122,"virtual-dom/vtree/vnode.js":124,"virtual-dom/vtree/vtext.js":126}],130:[function(require,module,exports){
 /*!
  * Cross-Browser Split 1.1.1
  * Copyright 2007-2012 Steven Levithan <stevenlevithan.com>
@@ -5858,176 +4710,74 @@ module.exports = (function split(undef) {
   return self;
 })();
 
-},{}],119:[function(require,module,exports){
+},{}],131:[function(require,module,exports){
 module.exports=require(23)
-},{}],120:[function(require,module,exports){
-arguments[4][24][0].apply(exports,arguments)
-},{"./create-hash.js":119,"individual":121,"weakmap-shim/create-store":123}],121:[function(require,module,exports){
-module.exports=require(25)
-},{"global":122}],122:[function(require,module,exports){
-module.exports=require(26)
-},{}],123:[function(require,module,exports){
-module.exports=require(27)
-},{"./hidden-store.js":124}],124:[function(require,module,exports){
-module.exports=require(28)
-},{}],125:[function(require,module,exports){
-var hasOwn = Object.prototype.hasOwnProperty;
-var toString = Object.prototype.toString;
-
-function isPlainObject(obj) {
-	if (!obj || toString.call(obj) !== '[object Object]' || obj.nodeType || obj.setInterval)
-		return false;
-
-	var has_own_constructor = hasOwn.call(obj, 'constructor');
-	var has_is_property_of_method = hasOwn.call(obj.constructor.prototype, 'isPrototypeOf');
-	// Not own constructor property must be Object
-	if (obj.constructor && !has_own_constructor && !has_is_property_of_method)
-		return false;
-
-	// Own properties are enumerated firstly, so to speed up,
-	// if last one is own, then all properties are own.
-	var key;
-	for ( key in obj ) {}
-
-	return key === undefined || hasOwn.call( obj, key );
-};
-
-module.exports = function extend() {
-	var options, name, src, copy, copyIsArray, clone,
-	    target = arguments[0] || {},
-	    i = 1,
-	    length = arguments.length,
-	    deep = false;
-
-	// Handle a deep copy situation
-	if ( typeof target === "boolean" ) {
-		deep = target;
-		target = arguments[1] || {};
-		// skip the boolean and the target
-		i = 2;
-	}
-
-	// Handle case when target is a string or something (possible in deep copy)
-	if ( typeof target !== "object" && typeof target !== "function") {
-		target = {};
-	}
-
-	for ( ; i < length; i++ ) {
-		// Only deal with non-null/undefined values
-		if ( (options = arguments[ i ]) != null ) {
-			// Extend the base object
-			for ( name in options ) {
-				src = target[ name ];
-				copy = options[ name ];
-
-				// Prevent never-ending loop
-				if ( target === copy ) {
-					continue;
-				}
-
-				// Recurse if we're merging plain objects or arrays
-				if ( deep && copy && ( isPlainObject(copy) || (copyIsArray = Array.isArray(copy)) ) ) {
-					if ( copyIsArray ) {
-						copyIsArray = false;
-						clone = src && Array.isArray(src) ? src : [];
-
-					} else {
-						clone = src && isPlainObject(src) ? src : {};
-					}
-
-					// Never move original objects, clone them
-					target[ name ] = extend( deep, clone, copy );
-
-				// Don't bring in undefined values
-				} else if ( copy !== undefined ) {
-					target[ name ] = copy;
-				}
-			}
-		}
-	}
-
-	// Return the modified object
-	return target;
-};
-
-},{}],126:[function(require,module,exports){
-module.exports=require(61)
-},{}],127:[function(require,module,exports){
-module.exports=require(62)
-},{"./lib/dom-index":109,"./lib/is-array":110}],128:[function(require,module,exports){
-module.exports=require(64)
-},{"semver":126}],129:[function(require,module,exports){
-var version = require("./version")
-var isVDOM = require("./lib/is-virtual-dom")
-var isWidget = require("./lib/is-widget")
-
-module.exports = VirtualDOMNode
-
-function VirtualDOMNode(tagName, properties, children) {
-    this.tagName = tagName
-    this.properties = properties
-    this.children = children
-    this.count = countDescendants(children)
-    this.hasWidgets = hasWidgets(children)
-}
-
-VirtualDOMNode.prototype.version = version.split(".")
-VirtualDOMNode.prototype.type = "VirtualDOMNode"
-
-function countDescendants(children) {
-    if (!children) {
-        return 0
-    }
-
-    var count = children.length || 0
-    var descendants = 0
-
-    for (var i = 0; i < count; i++) {
-        var child = children[i]
-        if (isVDOM(child)) {
-            descendants += child.count || 0
-        }
-    }
-
-    return count + descendants
-}
-
-function hasWidgets(children) {
-    if (!children) {
-        return false
-    }
-
-    var count = children.length
-
-    for (var i = 0; i < count; i++) {
-        var child = children[i]
-        if (isWidget(child)) {
-            if (typeof child.destroy === "function") {
-                return true
-            }
-        } else if (isVDOM(child) && child.hasWidgets) {
-            return true
-        }
-    }
-
-    return false
-}
-
-},{"./lib/is-virtual-dom":112,"./lib/is-widget":114,"./version":128}],130:[function(require,module,exports){
-var version = require("./version")
-
-module.exports = VirtualTextNode
-
-function VirtualTextNode(text) {
-    this.text = String(text)
-}
-
-VirtualTextNode.prototype.version = version.split(".")
-VirtualTextNode.prototype.type = "VirtualTextNode"
-
-},{"./version":128}],131:[function(require,module,exports){
-module.exports=require(30)
 },{}],132:[function(require,module,exports){
+arguments[4][24][0].apply(exports,arguments)
+},{"./create-hash.js":131,"individual":133,"weakmap-shim/create-store":135}],133:[function(require,module,exports){
+module.exports=require(25)
+},{"global":134}],134:[function(require,module,exports){
+module.exports=require(26)
+},{}],135:[function(require,module,exports){
+module.exports=require(27)
+},{"./hidden-store.js":136}],136:[function(require,module,exports){
+module.exports=require(28)
+},{}],137:[function(require,module,exports){
+var split = require("browser-split")
+
+var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
+var notClassId = /^\.|#/
+
+module.exports = parseTag
+
+function parseTag(tag, props) {
+    if (!tag) {
+        return "div"
+    }
+
+    var noId = !("id" in props)
+
+    var tagParts = split(tag, classIdSplit)
+    var tagName = null
+
+    if(notClassId.test(tagParts[1])) {
+        tagName = "div"
+    }
+
+    var classes, part, type, i
+    for (i = 0; i < tagParts.length; i++) {
+        part = tagParts[i]
+
+        if (!part) {
+            continue
+        }
+
+        type = part.charAt(0)
+
+        if (!tagName) {
+            tagName = part
+        } else if (type === ".") {
+            classes = classes || []
+            classes.push(part.substring(1, part.length))
+        } else if (type === "#" && noId) {
+            props.id = part.substring(1, part.length)
+        }
+    }
+
+    if (classes) {
+        if (props.className) {
+            classes.push(props.className)
+        }
+
+        props.className = classes.join(" ")
+    }
+
+    return tagName ? tagName.toLowerCase() : "div"
+}
+
+},{"browser-split":130}],138:[function(require,module,exports){
+module.exports=require(30)
+},{}],139:[function(require,module,exports){
 module.exports=require(31)
-},{"./has-keys":131}]},{},[1])</script>
+},{"./has-keys":138}]},{},[1])</script>
 </html>

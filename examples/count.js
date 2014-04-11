@@ -10,7 +10,7 @@ inputs.events.clicks(function () {
 })
 
 function render(clickCount) {
-    return h("div", [
+    var tree = h("div", [
         "The state ",
         h("code", "clickCount"),
         " has value: " + clickCount + ".",
@@ -20,6 +20,8 @@ function render(clickCount) {
             "data-click": mercury.event(inputs.sinks.clicks)
         })
     ])
+    console.log("tree", tree)
+    return tree
 }
 
 var loop = mercury.main(clickCount(), render)
