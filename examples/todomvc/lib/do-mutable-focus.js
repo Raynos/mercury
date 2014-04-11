@@ -1,8 +1,14 @@
 var document = require("global/document")
 
-module.exports = doMutableFocus
+module.exports = MutableFocusHook
 
-function doMutableFocus(node, property) {
+function MutableFocusHook() {
+    if (!(this instanceof MutableFocusHook)) {
+        return new MutableFocusHook()
+    }
+}
+
+MutableFocusHook.prototype.hook = function (node, property) {
     if (document.activeElement !== node) {
         node.focus();
     }

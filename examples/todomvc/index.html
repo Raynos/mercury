@@ -81,9 +81,15 @@ function EventRouter() {
 },{"../../index.js":7,"geval":36,"global/window":38,"hash-router":39}],3:[function(require,module,exports){
 var document = require("global/document")
 
-module.exports = doMutableFocus
+module.exports = MutableFocusHook
 
-function doMutableFocus(node, property) {
+function MutableFocusHook() {
+    if (!(this instanceof MutableFocusHook)) {
+        return new MutableFocusHook()
+    }
+}
+
+MutableFocusHook.prototype.hook = function (node, property) {
     if (document.activeElement !== node) {
         node.focus();
     }
