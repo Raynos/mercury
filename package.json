@@ -30,7 +30,7 @@
     "observ": "^0.1.5",
     "observ-array": "^1.0.3",
     "observ-hash": "^1.1.1",
-    "value-event": "^1.0.0",
+    "value-event": "^1.1.0",
     "vdom-thunk": "^1.2.0",
     "virtual-dom": "git://github.com/Raynos/virtual-dom#0.0.4-hooks",
     "virtual-hyperscript": "^1.1.1"
