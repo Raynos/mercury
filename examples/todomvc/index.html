@@ -4014,8 +4014,7 @@ function Observable(value) {
 
 },{}],72:[function(require,module,exports){
 var extend = require('xtend')
-
-var getFormData = require('./lib/get-form-data.js')
+var getFormData = require('form-data-set/element')
 
 module.exports = ChangeSinkHandler
 
@@ -4054,7 +4053,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"./lib/get-form-data.js":74,"xtend":132}],73:[function(require,module,exports){
+},{"form-data-set/element":75,"xtend":132}],73:[function(require,module,exports){
 module.exports = SinkEventHandler
 
 function SinkEventHandler(sink, data) {
@@ -4078,31 +4077,6 @@ function handleEvent(ev) {
 }
 
 },{}],74:[function(require,module,exports){
-var FormData = require('form-data-set')
-var walk = require('dom-walk')
-
-module.exports = getFormData
-
-function buildElems(rootElem) {
-    var hash = {}
-
-    walk(rootElem, function (child) {
-        if (child.name) {
-            hash[child.name] = child
-        }
-    })
-
-
-    return hash
-}
-
-function getFormData(rootElem) {
-    var elements = buildElems(rootElem)
-
-    return FormData(elements)
-}
-
-},{"dom-walk":75,"form-data-set":76}],75:[function(require,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -4128,7 +4102,33 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],76:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
+var walk = require('dom-walk')
+
+var FormData = require('./index.js')
+
+module.exports = getFormData
+
+function buildElems(rootElem) {
+    var hash = {}
+
+    walk(rootElem, function (child) {
+        if (child.name) {
+            hash[child.name] = child
+        }
+    })
+
+
+    return hash
+}
+
+function getFormData(rootElem) {
+    var elements = buildElems(rootElem)
+
+    return FormData(elements)
+}
+
+},{"./index.js":76,"dom-walk":74}],76:[function(require,module,exports){
 /*jshint maxcomplexity: 10*/
 
 module.exports = FormData
@@ -4207,8 +4207,7 @@ function filterNull(val) {
 
 },{}],77:[function(require,module,exports){
 var extend = require('xtend')
-
-var getFormData = require('./lib/get-form-data.js')
+var getFormData = require('form-data-set/element')
 
 var ENTER = 13
 
@@ -4252,10 +4251,9 @@ function handleEvent(ev) {
     }
 }
 
-},{"./lib/get-form-data.js":74,"xtend":132}],78:[function(require,module,exports){
+},{"form-data-set/element":75,"xtend":132}],78:[function(require,module,exports){
 var extend = require('xtend')
-
-var getFormData = require('./lib/get-form-data.js')
+var getFormData = require('form-data-set/element')
 
 module.exports = ValueEventHandler
 
@@ -4282,7 +4280,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"./lib/get-form-data.js":74,"xtend":132}],79:[function(require,module,exports){
+},{"form-data-set/element":75,"xtend":132}],79:[function(require,module,exports){
 var createElement = require("virtual-dom/create-element")
 var diff = require("virtual-dom/diff")
 var patch = require("virtual-dom/patch")
