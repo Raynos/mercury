@@ -53,6 +53,7 @@
     }
   ],
   "scripts": {
+    "disc": "browserify index.js --full-paths | discify > disc.html && open disc.html",
     "test": "node ./test/index.js",
     "build": "npm run count && npm run bmi-counter && npm run shared-state && npm run todomvc && npm run field-reset",
     "count": "node bin/browserify-editor.js examples/count.js | indexhtmlify > examples/count.html",
