@@ -1,8 +1,7 @@
 var mercury = require("../index.js")
 var h = mercury.h
 
-var delegator = mercury.Delegator()
-var inputs = mercury.EventSinks(delegator.id, ["clicks"])
+var inputs = mercury.input(["clicks"])
 var clickCount = mercury.value(0)
 
 inputs.events.clicks(function () {
@@ -10,7 +9,7 @@ inputs.events.clicks(function () {
 })
 
 function render(clickCount) {
-    var tree = h("div", [
+    return h("div", [
         "The state ",
         h("code", "clickCount"),
         " has value: " + clickCount + ".",
@@ -20,10 +19,6 @@ function render(clickCount) {
             "data-click": mercury.event(inputs.sinks.clicks)
         })
     ])
-    console.log("tree", tree)
-    return tree
 }
 
-var loop = mercury.main(clickCount(), render)
-clickCount(loop.update)
-document.body.appendChild(loop.target)
+mercury.app(document.body, clickCount, render)

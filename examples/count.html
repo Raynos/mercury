@@ -10,7 +10,7 @@ var createEditor = require('javascript-editor')
 window.addEventListener('load', function () {
     var editor = createEditor({
         container: elem,
-        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar delegator = mercury.Delegator()\nvar inputs = mercury.EventSinks(delegator.id, [\"clicks\"])\nvar clickCount = mercury.value(0)\n\ninputs.events.clicks(function () {\n    clickCount.set(clickCount() + 1)\n})\n\nfunction render(clickCount) {\n    var tree = h(\"div\", [\n        \"The state \",\n        h(\"code\", \"clickCount\"),\n        \" has value: \" + clickCount + \".\",\n        h(\"input\", {\n            type: \"button\",\n            value: \"Click me!\",\n            \"data-click\": mercury.event(inputs.sinks.clicks)\n        })\n    ])\n    console.log(\"tree\", tree)\n    return tree\n}\n\nvar loop = mercury.main(clickCount(), render)\nclickCount(loop.update)\ndocument.body.appendChild(loop.target)\n",
+        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar inputs = mercury.input([\"clicks\"])\nvar clickCount = mercury.value(0)\n\ninputs.events.clicks(function () {\n    clickCount.set(clickCount() + 1)\n})\n\nfunction render(clickCount) {\n    return h(\"div\", [\n        \"The state \",\n        h(\"code\", \"clickCount\"),\n        \" has value: \" + clickCount + \".\",\n        h(\"input\", {\n            type: \"button\",\n            value: \"Click me!\",\n            \"data-click\": mercury.event(inputs.sinks.clicks)\n        })\n    ])\n}\n\nmercury.app(document.body, clickCount, render)\n",
         readOnly: true
     })
 })
@@ -29,8 +29,7 @@ document.head.appendChild(link)
 var mercury = require("../index.js")
 var h = mercury.h
 
-var delegator = mercury.Delegator()
-var inputs = mercury.EventSinks(delegator.id, ["clicks"])
+var inputs = mercury.input(["clicks"])
 var clickCount = mercury.value(0)
 
 inputs.events.clicks(function () {
@@ -38,7 +37,7 @@ inputs.events.clicks(function () {
 })
 
 function render(clickCount) {
-    var tree = h("div", [
+    return h("div", [
         "The state ",
         h("code", "clickCount"),
         " has value: " + clickCount + ".",
@@ -48,20 +47,16 @@ function render(clickCount) {
             "data-click": mercury.event(inputs.sinks.clicks)
         })
     ])
-    console.log("tree", tree)
-    return tree
 }
 
-var loop = mercury.main(clickCount(), render)
-clickCount(loop.update)
-document.body.appendChild(loop.target)
+mercury.app(document.body, clickCount, render)
 
 },{"../index.js":3}],3:[function(require,module,exports){
 /*
     Pro tip: Don't require `mercury` itself.
       require and depend on all these modules directly!
 */
-module.exports = {
+var mercury = module.exports = {
     // Entry
     main: require("main-loop"),
 
@@ -83,7 +78,22 @@ module.exports = {
     patch: require("virtual-dom/patch"),
     partial: require("vdom-thunk"),
     create: require("virtual-dom/create-element"),
-    h: require("virtual-hyperscript")
+    h: require("virtual-hyperscript"),
+
+    // Utility
+    app: app,
+    input: input
+}
+
+function app(elem, observ, render) {
+    var loop = mercury.main(observ(), render)
+    observ(loop.update)
+    elem.appendChild(loop.target)
+}
+
+function input(names) {
+    var delegator = mercury.Delegator()
+    return mercury.EventSinks(delegator.id, names)
 }
 
 },{"dom-delegator":11,"event-sinks/geval":19,"main-loop":29,"observ":61,"observ-array":52,"observ-hash":54,"value-event/change":62,"value-event/event":63,"value-event/submit":67,"value-event/value":68,"vdom-thunk":69,"virtual-dom/create-element":89,"virtual-dom/diff":90,"virtual-dom/patch":95,"virtual-hyperscript":112}],4:[function(require,module,exports){

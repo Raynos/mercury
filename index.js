@@ -2,7 +2,7 @@
     Pro tip: Don't require `mercury` itself.
       require and depend on all these modules directly!
 */
-module.exports = {
+var mercury = module.exports = {
     // Entry
     main: require("main-loop"),
 
@@ -24,5 +24,20 @@ module.exports = {
     patch: require("virtual-dom/patch"),
     partial: require("vdom-thunk"),
     create: require("virtual-dom/create-element"),
-    h: require("virtual-hyperscript")
+    h: require("virtual-hyperscript"),
+
+    // Utility
+    app: app,
+    input: input
+}
+
+function app(elem, observ, render) {
+    var loop = mercury.main(observ(), render)
+    observ(loop.update)
+    elem.appendChild(loop.target)
+}
+
+function input(names) {
+    var delegator = mercury.Delegator()
+    return mercury.EventSinks(delegator.id, names)
 }
