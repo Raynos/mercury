@@ -26,13 +26,13 @@
   "dependencies": {
     "dom-delegator": "^6.2.1",
     "event-sinks": "^2.0.1",
-    "main-loop": "^1.0.1",
+    "main-loop": "^1.2.0",
     "observ": "^0.1.5",
     "observ-array": "^1.0.3",
     "observ-hash": "^1.1.1",
     "value-event": "^1.0.0",
-    "vdom-thunk": "^1.1.0",
-    "virtual-dom": "git://github.com/Matt-Esch/virtual-dom"
+    "vdom-thunk": "^1.2.0",
+    "virtual-dom": "git://github.com/Raynos/virtual-dom#0.0.4-hooks"
   },
   "devDependencies": {
     "browserify": "^3.38.0",
