@@ -24,5 +24,5 @@ module.exports = {
     patch: require("virtual-dom/patch"),
     partial: require("vdom-thunk"),
     create: require("virtual-dom/create-element"),
-    h: require("virtual-dom/h")
+    h: require("virtual-hyperscript")
 }

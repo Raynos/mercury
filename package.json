@@ -32,7 +32,8 @@
     "observ-hash": "^1.1.1",
     "value-event": "^1.0.0",
     "vdom-thunk": "^1.2.0",
-    "virtual-dom": "git://github.com/Raynos/virtual-dom#0.0.4-hooks"
+    "virtual-dom": "git://github.com/Raynos/virtual-dom#0.0.4-hooks",
+    "virtual-hyperscript": "^1.1.1"
   },
   "devDependencies": {
     "browserify": "^3.38.0",
@@ -53,8 +54,9 @@
   ],
   "scripts": {
     "test": "node ./test/index.js",
-    "build": "npm run count && npm run bmi-counter && npm run shared-state && npm run todomvc",
+    "build": "npm run count && npm run bmi-counter && npm run shared-state && npm run todomvc && npm run field-reset",
     "count": "node bin/browserify-editor.js examples/count.js | indexhtmlify > examples/count.html",
+    "field-reset": "node bin/browserify-editor.js examples/field-reset.js | indexhtmlify > examples/field-reset.html",
     "bmi-counter": "node bin/browserify-editor.js examples/bmi-counter.js | indexhtmlify > examples/bmi-counter.html",
     "shared-state": "node bin/browserify-editor.js examples/shared-state.js | indexhtmlify > examples/shared-state.html",
     "todomvc": "browserify examples/todomvc/browser.js | indexhtmlify > examples/todomvc/index.html"
