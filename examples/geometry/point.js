@@ -1,8 +1,6 @@
-var pointDefaults = {
-    "stroke": "black",
-    "strokeWidth": "2",
-    "fill": "blue"
-}
+Point.dist = dist
+
+module.exports = Point
 
 function Point(x, y) {
     return [x, y]
