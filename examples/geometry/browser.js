@@ -1,61 +1,62 @@
 var mercury = require('../../mercury.js')
 var h = require('../../mercury.js').h
-var s = require('../../mercury.js').s
+var svg = require('../../mercury.js').svg
 
 var shapes = require('./shapes.js')
+var dragEvent = require('./drag-handler.js')
 
 var inputs = mercury.input(['movePoint'])
 var state = mercury.hash({
     p1: mercury.value([100, 200]),
     p2: mercury.value([200, 200]),
     p3: mercury.value([100, 200]),
-    c: mercury.valu([250, 250]),
+    c: mercury.value([250, 250]),
     p: mercury.value([250, 300]),
     width: mercury.value(800),
     height: mercury.value(600),
     sinks: inputs.sinks
 })
 
-inputs.sources.movePoint(function (ev) {
-    var point = state[ev.name]()
+inputs.movePoint(function (data) {
+    var point = state[data.name]()
 
-    state[ev.name].set([
-        point.x + ev.x,
-        point.y + ev.y
+    state[data.name].set([
+        point.x + data.x,
+        point.y + data.y
     ])
 })
 
 // wire up inputs
 function rootScene(state) {
-    return s('g', [
+    return svg('g', [
         shapes.triangle(state.p1, state.p2, state.p3),
         shapes.circle(state.p, state.c),
         shapes.segment(state.p, state.c),
-        shapes.point(state.c, state.sinks.movePoint, {
+        shapes.point(state.c, dragEvent(state.movePoint.emit, {
             name: 'c'
-        }),
-        shapes.point(state.p, state.sinks.movePoint, {
+        })),
+        shapes.point(state.p, dragEvent(state.movePoint.emit, {
             name: 'p'
-        }),
-        shapes.point(state.p1, state.sinks.movePoint, {
+        })),
+        shapes.point(state.p1, dragEvent(state.movePoint.emit, {
             name: 'p1'
-        }),
-        shapes.point(state.p2, state.sinks.movePoint, {
+        })),
+        shapes.point(state.p2, dragEvent(state.movePoint.emit, {
             name: 'p2'
-        }),
-        shapes.point(state.p3, state.sinks.movePoint, {
+        })),
+        shapes.point(state.p3, dragEvent(state.movePoint.emit, {
             name: 'p3'
-        })
+        }))
     ])
 }
 
 function render(state) {
-    return h('svg', {
+    return svg('svg', {
         'width': state.width,
         'height': state.height,
         'style': { 'border': '1px solid black' }
     }, [
-        s('text', {
+        svg('text', {
             style: {
                 '-webkit-user-select': 'none',
                 '-moz-user-select': 'none'

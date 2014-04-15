@@ -1,7 +1,7 @@
 var extend = require("xtend")
 
 var dragEvent = require("./drag-handler.js")
-var s = require("../../index.js").s
+var svg = require("../../index.js").svg
 var dist = require("./point.js").dist
 
 var pointDefaults = {
@@ -30,23 +30,23 @@ module.exports = {
 }
 
 
-function point(pos, dragSink, value) {
-    return s("circle", extend(pointDefaults, {
+function point(pos, event) {
+    return svg("circle", extend(pointDefaults, {
         "cx": pos[0],
         "cy": pos[1],
-        "data-mousedown": dragEvent(dragSink, value)
+        "data-mousedown": event
     }))
 }
 
 function segment(start, end) {
-    return s("line", extend(segmentDefaults, {
+    return svg("line", extend(segmentDefaults, {
         "x1": start[0], "y1": start[1],
         "x2": end[0], "y2": end[1]
     }))
 }
 
 function triangle(a, b, c) {
-    return s("g", [
+    return svg("g", [
         segment(a, b),
         segment(b, c),
         segment(c, a)
@@ -54,7 +54,7 @@ function triangle(a, b, c) {
 }
 
 function circle(center, radius) {
-    return s("circle", extend(circleDefaults, {
+    return svg("circle", extend(circleDefaults, {
         "cx": center[0],
         "cy": center[1],
         "r": dist(center, radius)
