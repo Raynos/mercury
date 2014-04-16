@@ -5,7 +5,7 @@ var svg = require('../../mercury.js').svg
 var shapes = require('./shapes.js')
 var dragEvent = require('./drag-handler.js')
 
-var inputs = mercury.input(['movePoint'])
+var events = mercury.input(['movePoint'])
 var state = mercury.hash({
     p1: mercury.value([100, 200]),
     p2: mercury.value([200, 200]),
@@ -14,10 +14,10 @@ var state = mercury.hash({
     p: mercury.value([250, 300]),
     width: mercury.value(800),
     height: mercury.value(600),
-    sinks: inputs.sinks
+    events: events
 })
 
-inputs.movePoint(function (data) {
+events.movePoint(function (data) {
     var point = state[data.name]()
 
     state[data.name].set([
@@ -26,7 +26,6 @@ inputs.movePoint(function (data) {
     ])
 })
 
-// wire up inputs
 function rootScene(state) {
     return svg('g', [
         shapes.triangle(state.p1, state.p2, state.p3),
@@ -35,35 +34,35 @@ function rootScene(state) {
         shapes.point({
             cx: state.c[0],
             cy: state.c[1],
-            'data-mousedown': dragEvent(state.movePoint, {
+            'data-mousedown': dragEvent(state.events.movePoint, {
                 name: 'c'
             })
         }),
         shapes.point({
             cx: state.p[0],
             cy: state.p[1],
-            'data-mousedown': dragEvent(state.movePoint, {
+            'data-mousedown': dragEvent(state.events.movePoint, {
                 name: 'p'
             })
         }),
         shapes.point({
             cx: state.p1[0],
             cy: state.p1[1],
-            'data-mousedown': dragEvent(state.movePoint, {
+            'data-mousedown': dragEvent(state.events.movePoint, {
                 name: 'p1'
             })
         }),
         shapes.point({
             cx: state.p2[0],
             cy: state.p2[1],
-            'data-mousedown': dragEvent(state.movePoint, {
+            'data-mousedown': dragEvent(state.events.movePoint, {
                 name: 'p2'
             })
         }),
         shapes.point({
             cx: state.p3[0],
             cy: state.p3[1],
-            'data-mousedown': dragEvent(state.movePoint, {
+            'data-mousedown': dragEvent(state.events.movePoint, {
                 name: 'p3'
             })
         })

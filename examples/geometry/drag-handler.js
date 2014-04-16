@@ -3,18 +3,17 @@ var extend = require("xtend")
 
 module.exports = DragEventHandler
 
-function DragEventHandler(sink, value) {
+function DragEventHandler(fn, value) {
     if (!(this instanceof DragEventHandler)) {
-        return new DragEventHandler(sink)
+        return new DragEventHandler(fn, value)
     }
 
-    this.id = sink.id
-    this.sink = sink
+    this.fn = fn
     this.value = value || {}
 }
 
 DragEventHandler.prototype.handleEvent = function (ev) {
-    var sink = this.sink
+    var fn = this.fn
     var value = this.value
 
     var currentX = ev.offsetX
@@ -26,7 +25,7 @@ DragEventHandler.prototype.handleEvent = function (ev) {
             y: ev.clientY - currentY
         }
 
-        sink.write(extend(value, delta))
+        fn(extend(value, delta))
 
         currentX = ev.clientX
         currentY = ev.clientY
