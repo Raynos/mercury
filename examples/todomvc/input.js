@@ -7,15 +7,14 @@ var mercury = require("../../index.js")
 module.exports = createInput
 
 function createInput() {
-    var del = mercury.Delegator()
-    var tuple = mercury.EventSinks(del.id, [
+    var events = mercury.input([
         "toggleAll", "add", "setTodoField", "toggle", "destroy",
         "startEdit", "finishEdit"
     ])
 
-    tuple.events.setRoute = EventRouter()
+    events.setRoute = EventRouter()
 
-    return { sinks: tuple.sinks, events: tuple.events }
+    return events
 }
 
 function EventRouter() {

@@ -8,25 +8,18 @@ var Update = require("./update.js")
 
 module.exports = createApp
 
-var rootNode = createApp()
-document.body.appendChild(rootNode)
+mercury.app(document.body, createApp(), Render)
 
 function createApp() {
     // load from localStorage
     var initialState = null
 
-    var input = Input()
-    var state = State.todoApp(input.sinks, initialState)
+    var events = Input()
+    var state = State.todoApp(events, initialState)
 
-    wireUpEvents(state, input.events)
+    wireUpEvents(state, events)
 
-    var loop = mercury.main(state(), Render)
-
-    state(function (newState) {
-        loop.update(newState)
-    })
-
-    return loop.target
+    return state
 }
 
 function wireUpEvents(state, events) {

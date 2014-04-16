@@ -39,5 +39,5 @@ function app(elem, observ, render) {
 
 function input(names) {
     var delegator = mercury.Delegator()
-    return mercury.EventSinks(delegator.id, names)
+    return mercury.Events(names)
 }

@@ -1,15 +1,14 @@
 var mercury = require("../index.js")
 var h = mercury.h
 
-var delegator = mercury.Delegator()
-var input = mercury.EventSinks(delegator.id, ["reset"])
+var events = mercury.input(["reset"])
 
 var state = mercury.hash({
     isReset: mercury.value(false),
-    sinks: input.sinks
+    events: events
 })
 
-input.events.reset(function (bool) {
+events.reset(function (bool) {
     state.isReset.set(bool)
 })
 
@@ -19,20 +18,18 @@ function render(state) {
         "Text field: ",
         h("input", {
             value: state.isReset ?
-                resetHook("", state.sinks.reset) :
+                resetHook("", state.events.reset) :
                 undefined
         }),
         h("input", {
             type: "button",
             value: "Reset text field",
-            "data-click": mercury.event(state.sinks.reset, true)
+            "data-click": mercury.event(state.events.reset, true)
         })
     ])
 }
 
-var loop = mercury.main(state(), render)
-state(loop.update)
-require("global/document").body.appendChild(loop.target)
+mercury.app(document.body, state, render)
 
 function resetHook(value, sink) {
     if (!(this instanceof resetHook)) {

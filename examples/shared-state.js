@@ -1,11 +1,10 @@
 var mercury = require("../index.js")
 var h = mercury.h
 
-var delegator = mercury.Delegator()
-var inputs = mercury.EventSinks(delegator.id, ["change"])
+var events = mercury.input(["change"])
 var textValue = mercury.value("")
 
-inputs.events.change(function (data) {
+events.change(function (data) {
     textValue.set(data.text)
 })
 
@@ -22,11 +21,9 @@ function render(textValue) {
         h("p", "The value is now: " + textValue),
         h("p", [
             "Change it here: ",
-            inputBox(textValue, inputs.sinks.change)
+            inputBox(textValue, events.change)
         ])
     ])
 }
 
-var loop = mercury.main(textValue(), render)
-textValue(loop.update)
-document.body.appendChild(loop.target)
+mercury.app(document.body, textValue, render)

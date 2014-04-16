@@ -20,14 +20,14 @@ module.exports = {
     todoItem: todoItem
 }
 
-function todoApp(sinks, initialState) {
+function todoApp(events, initialState) {
     var state = extend(TodoApp, initialState)
 
     return mercury.hash({
         todos: mercury.array(state.todos),
         route: mercury.value(state.route),
         todoField: mercury.value(state.todoField),
-        sinks: sinks
+        events: events
     })
 }
 
