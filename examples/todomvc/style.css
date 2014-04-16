@@ -38,10 +38,12 @@ input[type="checkbox"] {
 
 #todoapp {
     width: 550px;
-    margin: 0 auto;
+    margin-left: 0 auto;
+    margin-right: 0 auto;
+    margin-top: 130px;
+    margin-bottom: 40px;
     background: #fff;
     background: rgba(255, 255, 255, 0.9);
-    margin: 130px 0 40px 0;
     border: 1px solid #ccc;
     position: relative;
     border-top-left-radius: 2px;
