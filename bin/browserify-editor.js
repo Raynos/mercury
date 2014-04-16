@@ -14,17 +14,27 @@ function addLink(href) {
         "document.head.appendChild(link)\n"
 }
 
+function floatElement(name, float) {
+    return "" +
+        name + ".style.float = '" + float + "'\n" +
+        name + ".style.padding = 0\n" +
+        name + ".style.margin = 0\n" +
+        name + ".style.width = '50%'\n"
+}
+
 var code = "" +
+    "var container = document.createElement('div')\n" +
+    floatElement("document.body", "left") +
+    floatElement("container", "right") +
     "var createEditor = require('javascript-editor')\n" +
     "window.addEventListener('load', function () {\n" +
     "    var editor = createEditor({\n" +
-    "        container: elem,\n" +
+    "        container: container,\n" +
     "        value: " + JSON.stringify(src) + ",\n" +
     "        readOnly: true\n" +
     "    })\n" +
     "})\n" +
-    "var elem = document.createElement('div')\n" +
-    "document.body.appendChild(elem)\n" +
+    "document.documentElement.appendChild(container)\n" +
     addLink("https://rawgithub.com/maxogden/" +
         "javascript-editor/master/css/codemirror.css") +
     addLink("https://rawgithub.com/maxogden/" +
