@@ -42,5 +42,5 @@ function resetHook(value, sink) {
 
 resetHook.prototype.hook = function (elem, propName) {
     elem[propName] = this.value
-    this.sink.write(false)
+    this.sink(false)
 }
