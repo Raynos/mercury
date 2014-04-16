@@ -30,12 +30,8 @@ module.exports = {
 }
 
 
-function point(pos, event) {
-    return svg("circle", extend(pointDefaults, {
-        "cx": pos[0],
-        "cy": pos[1],
-        "data-mousedown": event
-    }))
+function point(opts) {
+    return svg("circle", extend(pointDefaults, opts))
 }
 
 function segment(start, end) {

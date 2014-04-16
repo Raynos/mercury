@@ -32,21 +32,41 @@ function rootScene(state) {
         shapes.triangle(state.p1, state.p2, state.p3),
         shapes.circle(state.p, state.c),
         shapes.segment(state.p, state.c),
-        shapes.point(state.c, dragEvent(state.movePoint.emit, {
-            name: 'c'
-        })),
-        shapes.point(state.p, dragEvent(state.movePoint.emit, {
-            name: 'p'
-        })),
-        shapes.point(state.p1, dragEvent(state.movePoint.emit, {
-            name: 'p1'
-        })),
-        shapes.point(state.p2, dragEvent(state.movePoint.emit, {
-            name: 'p2'
-        })),
-        shapes.point(state.p3, dragEvent(state.movePoint.emit, {
-            name: 'p3'
-        }))
+        shapes.point({
+            cx: state.c[0],
+            cy: state.c[1],
+            'data-mousedown': dragEvent(state.movePoint, {
+                name: 'c'
+            })
+        }),
+        shapes.point({
+            cx: state.p[0],
+            cy: state.p[1],
+            'data-mousedown': dragEvent(state.movePoint, {
+                name: 'p'
+            })
+        }),
+        shapes.point({
+            cx: state.p1[0],
+            cy: state.p1[1],
+            'data-mousedown': dragEvent(state.movePoint, {
+                name: 'p1'
+            })
+        }),
+        shapes.point({
+            cx: state.p2[0],
+            cy: state.p2[1],
+            'data-mousedown': dragEvent(state.movePoint, {
+                name: 'p2'
+            })
+        }),
+        shapes.point({
+            cx: state.p3[0],
+            cy: state.p3[1],
+            'data-mousedown': dragEvent(state.movePoint, {
+                name: 'p3'
+            })
+        })
     ])
 }
 
