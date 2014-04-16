@@ -24,8 +24,8 @@
     "email": "raynos2@gmail.com"
   },
   "dependencies": {
-    "dom-delegator": "^6.2.1",
-    "event-sinks": "^2.0.1",
+    "dom-delegator": "^7.0.0",
+    "geval": "^2.1.1",
     "main-loop": "^1.2.0",
     "observ": "^0.1.5",
     "observ-array": "^1.0.3",
@@ -33,12 +33,11 @@
     "value-event": "^1.1.0",
     "vdom-thunk": "^1.2.0",
     "virtual-dom": "git://github.com/Raynos/virtual-dom#0.0.4-hooks",
-    "virtual-hyperscript": "^1.1.1"
+    "virtual-hyperscript": "^1.2.0"
   },
   "devDependencies": {
     "browserify": "^3.38.0",
     "cuid": "^1.2.1",
-    "geval": "^2.0.3",
     "global": "^3.0.0",
     "hash-router": "^0.3.4",
     "indexhtmlify": "^1.1.1",

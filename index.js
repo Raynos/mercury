@@ -8,7 +8,7 @@ var mercury = module.exports = {
 
     // Input
     Delegator: require("dom-delegator"),
-    EventSinks: require("event-sinks/geval"),
+    Events: require("geval/multiple"),
     event: require("value-event/event"),
     valueEvent: require("value-event/value"),
     submitEvent: require("value-event/submit"),
