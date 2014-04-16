@@ -20,11 +20,10 @@ To understand what I mean by anti framework just [read the source](https://githu
 var mercury = require("mercury")
 var h = mercury.h
 
-var delegator = mercury.Delegator()
-var inputs = mercury.EventSinks(delegator.id, ["clicks"])
+var events = mercury.input(["click"])
 var clickCount = mercury.value(0)
 
-inputs.events.clicks(function () {
+events.clicks(function () {
     clickCount.set(clickCount() + 1)
 })
 
@@ -33,13 +32,11 @@ function render(clickCount) {
         "The state ", h("code", "clickCount"), " has value: ",
         clickCount + ".",
         h("input", { type: "button", value: "Click me!",
-            "data-click": mercury.event(inputs.sinks.clicks) })
+            "data-click": mercury.event(events.clicks) })
     ])
 }
 
-var loop = mercury.main(clickCount(), render)
-clickCount(loop.update)
-document.body.appendChild(loop.target)
+mercury.app(document.body, clickCount, render)
 ```
 
 ## TodoMVC
