@@ -26,7 +26,7 @@
   "dependencies": {
     "dom-delegator": "^7.0.0",
     "geval": "^2.1.1",
-    "main-loop": "^1.4.0",
+    "main-loop": "^1.4.1",
     "observ": "^0.1.5",
     "observ-array": "^1.0.3",
     "observ-hash": "^1.2.0",
