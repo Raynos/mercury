@@ -31,9 +31,9 @@
     "observ-array": "^1.0.3",
     "observ-hash": "^1.1.1",
     "value-event": "^1.1.0",
-    "vdom-thunk": "^1.2.0",
-    "virtual-dom": "git://github.com/Raynos/virtual-dom#0.0.4-hooks",
-    "virtual-hyperscript": "^1.2.0"
+    "vdom-thunk": "^1.3.0",
+    "virtual-dom": "git://github.com/Matt-Esch/virtual-dom#aff7ed63ae7bbe018448640eb26c2ffb2a50a970",
+    "virtual-hyperscript": "^1.3.0"
   },
   "devDependencies": {
     "browserify": "^3.38.0",
