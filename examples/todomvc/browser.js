@@ -1,5 +1,7 @@
 var mercury = require("../../index.js")
+var TimeTravel = require("../../time-travel.js")
 var document = require("global/document")
+var global = require("global")
 
 var Input = require("./input.js")
 var State = require("./state.js")
@@ -8,7 +10,9 @@ var Update = require("./update.js")
 
 module.exports = createApp
 
-mercury.app(document.body, createApp(), Render)
+var state = createApp()
+global.undo = TimeTravel(state)
+mercury.app(document.body, state, Render)
 
 function createApp() {
     // load from localStorage

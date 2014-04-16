@@ -7,7 +7,9 @@
 <script language=javascript>
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var mercury = require("../../index.js")
+var TimeTravel = require("../../time-travel.js")
 var document = require("global/document")
+var global = require("global")
 
 var Input = require("./input.js")
 var State = require("./state.js")
@@ -16,7 +18,9 @@ var Update = require("./update.js")
 
 module.exports = createApp
 
-mercury.app(document.body, createApp(), Render)
+var state = createApp()
+global.undo = TimeTravel(state)
+mercury.app(document.body, state, Render)
 
 function createApp() {
     // load from localStorage
@@ -41,7 +45,7 @@ function wireUpEvents(state, events) {
     events.setRoute(Update.setRoute.bind(null, state))
 }
 
-},{"../../index.js":7,"./input.js":2,"./render.js":4,"./state.js":5,"./update.js":6,"global/document":32}],2:[function(require,module,exports){
+},{"../../index.js":7,"../../time-travel.js":129,"./input.js":2,"./render.js":4,"./state.js":5,"./update.js":6,"global":33,"global/document":32}],2:[function(require,module,exports){
 var window = require("global/window")
 var HashRouter = require("hash-router")
 var Event = require("geval")
@@ -4586,6 +4590,27 @@ function extend() {
     }
 
     return target
+}
+
+},{}],129:[function(require,module,exports){
+module.exports = TimeTravel
+
+function TimeTravel(state) {
+    var states = [state()]
+
+    state(function (newState) {
+        if (newState !== states[0]) {
+            states.unshift(newState)
+        }
+    })
+
+    return undo
+
+    function undo() {
+        states.shift()
+        state.set(states[0])
+        return states[0]
+    }
 }
 
 },{}]},{},[1])</script>
