@@ -59,7 +59,7 @@
     "field-reset": "node bin/browserify-editor.js examples/field-reset.js | indexhtmlify > examples/field-reset.html",
     "bmi-counter": "node bin/browserify-editor.js examples/bmi-counter.js | indexhtmlify > examples/bmi-counter.html",
     "shared-state": "node bin/browserify-editor.js examples/shared-state.js | indexhtmlify > examples/shared-state.html",
-    "todomvc": "browserify examples/todomvc/browser.js | indexhtmlify > examples/todomvc/index.html"
+    "todomvc": "node bin/browserify-editor.js examples/todomvc/browser.js | indexhtmlify > examples/todomvc/index.html"
   },
   "testling": {
     "files": "test/index.js",
