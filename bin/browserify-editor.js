@@ -4,6 +4,7 @@ var path = require("path")
 var cuid = require("cuid")
 var process = require("process")
 
+
 function addLink(href) {
     return "" +
         "var link = document.createElement('link')\n" +
