@@ -129,6 +129,7 @@ var mercury = module.exports = {
     partial: require("vdom-thunk"),
     create: require("virtual-dom/create-element"),
     h: require("virtual-hyperscript"),
+    svg: require("virtual-hyperscript/svg"),
 
     // Utility
     app: app,
@@ -146,7 +147,7 @@ function input(names) {
     return mercury.Events(names)
 }
 
-},{"dom-delegator":8,"geval/multiple":19,"main-loop":28,"observ":35,"observ-array":32,"observ-hash":34,"value-event/change":36,"value-event/event":37,"value-event/key":38,"value-event/submit":44,"value-event/value":45,"vdom-thunk":46,"virtual-dom/create-element":47,"virtual-dom/diff":48,"virtual-dom/patch":51,"virtual-hyperscript":69}],4:[function(require,module,exports){
+},{"dom-delegator":8,"geval/multiple":19,"main-loop":28,"observ":35,"observ-array":32,"observ-hash":34,"value-event/change":36,"value-event/event":37,"value-event/key":38,"value-event/submit":44,"value-event/value":45,"vdom-thunk":46,"virtual-dom/create-element":47,"virtual-dom/diff":48,"virtual-dom/patch":51,"virtual-hyperscript":70,"virtual-hyperscript/svg":78}],4:[function(require,module,exports){
 
 },{}],5:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
@@ -11097,7 +11098,10 @@ var Observ = require("observ")
 var extend = require("xtend")
 
 /* ObservHash := (Object<String, Observ<T>>) => 
-    Object<String, Observ<T>> & Observ<Object<String, T>>
+    Object<String, Observ<T>> &
+        Observ<Object<String, T> & {
+            _diff: Object<String, Any>
+        }>
 
 */
 module.exports = ObservHash
@@ -11122,6 +11126,10 @@ function ObservHash(hash) {
             observ(function (value) {
                 var state = extend(obs())
                 state[key] = value
+                var diff = {}
+                diff[key] = value && value._diff ?
+                    value._diff : value
+                state._diff = diff
                 obs.set(state)
             })
         }
@@ -11130,7 +11138,7 @@ function ObservHash(hash) {
     return obs
 }
 
-},{"observ":35,"xtend":77}],35:[function(require,module,exports){
+},{"observ":35,"xtend":79}],35:[function(require,module,exports){
 module.exports = Observable
 
 function Observable(value) {
@@ -12380,6 +12388,25 @@ VirtualText.prototype.version = version
 VirtualText.prototype.type = "VirtualText"
 
 },{"./version":63}],67:[function(require,module,exports){
+module.exports = AttributeHook;
+
+function AttributeHook(value) {
+    if (!(this instanceof AttributeHook)) {
+        return new AttributeHook(value);
+    }
+
+    this.value = value;
+}
+
+AttributeHook.prototype.hook = function (node, prop, prev) {
+    if (prev && prev.value === this.value) {
+        return;
+    }
+
+    node.setAttributeNS(null, prop, this.value)
+}
+
+},{}],68:[function(require,module,exports){
 var DataSet = require("data-set")
 
 module.exports = DataSetHook;
@@ -12399,7 +12426,7 @@ DataSetHook.prototype.hook = function (node, propertyName) {
     ds[propName] = this.value;
 };
 
-},{"data-set":71}],68:[function(require,module,exports){
+},{"data-set":72}],69:[function(require,module,exports){
 module.exports = SoftSetHook;
 
 function SoftSetHook(value) {
@@ -12416,7 +12443,7 @@ SoftSetHook.prototype.hook = function (node, propertyName) {
     }
 };
 
-},{}],69:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 var VNode = require("virtual-dom/vtree/vnode.js")
 var VText = require("virtual-dom/vtree/vtext.js")
 var isVNode = require("virtual-dom/vtree/is-vnode")
@@ -12432,13 +12459,11 @@ module.exports = h
 
 function h(tagName, properties, children) {
     var childNodes = []
-    var tag, props, key
+    var tag, props, key, namespace
 
-    if (!children) {
-        if (isChildren(properties)) {
-            children = properties
-            props = {}
-        }
+    if (!children && isChildren(properties)) {
+        children = properties
+        props = {}
     }
 
     props = props || properties || {}
@@ -12457,6 +12482,13 @@ function h(tagName, properties, children) {
     // support keys
     if ("key" in props) {
         key = props.key
+        props.key = undefined
+    }
+
+    // support namespace
+    if ("namespace" in props) {
+        namespace = props.namespace
+        props.namespace = undefined
     }
 
     // fix cursor bug
@@ -12478,7 +12510,7 @@ function h(tagName, properties, children) {
         }
     }
 
-    return new VNode(tag, props, childNodes, key)
+    return new VNode(tag, props, childNodes, key, namespace)
 }
 
 function addChild(c, childNodes) {
@@ -12494,22 +12526,22 @@ function isChild(x) {
 }
 
 function isChildren(x) {
-    return typeof x === "string" || Array.isArray(x) || isChild(x)
+    return typeof x === "string" || Array.isArray(x)
 }
 
-},{"./hooks/data-set-hook.js":67,"./hooks/soft-set-hook.js":68,"./parse-tag.js":76,"virtual-dom/vtree/is-vhook":59,"virtual-dom/vtree/is-vnode":60,"virtual-dom/vtree/is-vtext":61,"virtual-dom/vtree/is-widget":62,"virtual-dom/vtree/vnode.js":64,"virtual-dom/vtree/vtext.js":66}],70:[function(require,module,exports){
+},{"./hooks/data-set-hook.js":68,"./hooks/soft-set-hook.js":69,"./parse-tag.js":77,"virtual-dom/vtree/is-vhook":59,"virtual-dom/vtree/is-vnode":60,"virtual-dom/vtree/is-vtext":61,"virtual-dom/vtree/is-widget":62,"virtual-dom/vtree/vnode.js":64,"virtual-dom/vtree/vtext.js":66}],71:[function(require,module,exports){
 module.exports=require(10)
-},{}],71:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 module.exports=require(11)
-},{"./create-hash.js":70,"individual":72,"weakmap-shim/create-store":74}],72:[function(require,module,exports){
+},{"./create-hash.js":71,"individual":73,"weakmap-shim/create-store":75}],73:[function(require,module,exports){
 module.exports=require(14)
-},{"global":73}],73:[function(require,module,exports){
+},{"global":74}],74:[function(require,module,exports){
 module.exports=require(15)
-},{}],74:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 module.exports=require(12)
-},{"./hidden-store.js":75}],75:[function(require,module,exports){
+},{"./hidden-store.js":76}],76:[function(require,module,exports){
 module.exports=require(13)
-},{}],76:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
 var notClassId = /^\.|#/
 
@@ -12560,7 +12592,60 @@ function parseTag(tag, props) {
     return tagName ? tagName.toLowerCase() : "div"
 }
 
-},{}],77:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
+var attributeHook = require("./hooks/attribute-hook.js")
+var h = require("./index.js")
+
+var BLACKLISTED_KEYS = {
+    "style": true,
+    "namespace": true,
+    "key": true
+}
+var SVG_NAMESPACE = "http://www.w3.org/2000/svg"
+
+module.exports = svg
+
+function svg(tagName, properties, children) {
+    if (!children && isChildren(properties)) {
+        children = properties
+        properties = {}
+    }
+
+    properties = properties || {}
+
+    // set namespace for svg
+    properties.namespace = SVG_NAMESPACE
+
+    // for each key, if attribute & string, bool or number then
+    // convert it into a setAttribute hook
+    for (var key in properties) {
+        if (!properties.hasOwnProperty(key)) {
+            continue
+        }
+
+        if (BLACKLISTED_KEYS[key]) {
+            continue
+        }
+
+        var value = properties[key]
+        if (typeof value !== "string" &&
+            typeof value !== "number" &&
+            typeof value !== "boolean"
+        ) {
+            continue
+        }
+
+        properties[key] = attributeHook(value)
+    }
+
+    return h(tagName, properties, children)
+}
+
+function isChildren(x) {
+    return typeof x === "string" || Array.isArray(x)
+}
+
+},{"./hooks/attribute-hook.js":67,"./index.js":70}],79:[function(require,module,exports){
 module.exports = extend
 
 function extend() {
