@@ -21,7 +21,7 @@ function createApp() {
     var initialState = storedState ? JSON.parse(storedState) : null
 
     var events = Input()
-    var state = State.todoApp(events, initialState)
+    var state = window.state = State.todoApp(events, initialState)
 
     wireUpEvents(state, events)
 
