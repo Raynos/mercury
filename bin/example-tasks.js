@@ -19,6 +19,7 @@ var examplesTasks = [
         'jsx'
     )),
     browserifyTask('login-form'),
+    browserifyTask('2048'),
     browserifyEditorTask('field-reset'),
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),
