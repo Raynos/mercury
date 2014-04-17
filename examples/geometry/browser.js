@@ -1,13 +1,13 @@
-var mercury = require('../../mercury.js')
-var h = require('../../mercury.js').h
-var svg = require('../../mercury.js').svg
+var mercury = require('../../index.js')
+var h = require('../../index.js').h
+var svg = require('../../index.js').svg
 
 var shapes = require('./shapes.js')
 var dragEvent = require('./drag-handler.js')
 
 var events = mercury.input(['movePoint'])
 var state = mercury.hash({
-    p1: mercury.value([100, 200]),
+    p1: mercury.value([100, 100]),
     p2: mercury.value([200, 200]),
     p3: mercury.value([100, 200]),
     c: mercury.value([250, 250]),
@@ -21,8 +21,8 @@ events.movePoint(function (data) {
     var point = state[data.name]()
 
     state[data.name].set([
-        point.x + data.x,
-        point.y + data.y
+        point[0] + data.x,
+        point[1] + data.y
     ])
 })
 
