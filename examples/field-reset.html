@@ -19,7 +19,7 @@ var createEditor = require('javascript-editor')
 window.addEventListener('load', function () {
     var editor = createEditor({
         container: container,
-        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"reset\"])\n\nvar state = mercury.hash({\n    isReset: mercury.value(false),\n    events: events\n})\n\nevents.reset(function (bool) {\n    state.isReset.set(bool)\n})\n\nfunction render(state) {\n    return h(\"div\", [\n        \"TEMPORARILY KAPUT.\",\n        \"Text field: \",\n        h(\"input\", {\n            value: state.isReset ?\n                resetHook(\"\", state.events.reset) :\n                undefined\n        }),\n        h(\"input\", {\n            type: \"button\",\n            value: \"Reset text field\",\n            \"data-click\": mercury.event(state.events.reset, true)\n        })\n    ])\n}\n\nmercury.app(document.body, state, render)\n\nfunction resetHook(value, sink) {\n    if (!(this instanceof resetHook)) {\n        return new resetHook(value, sink)\n    }\n\n    this.value = value\n    this.sink = sink\n}\n\nresetHook.prototype.hook = function (elem, propName) {\n    elem[propName] = this.value\n    this.sink(false)\n}\n",
+        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"reset\"])\n\nvar state = mercury.hash({\n    isReset: mercury.value(false),\n    events: events\n})\n\nevents.reset(function (bool) {\n    state.isReset.set(bool)\n})\n\nfunction render(state) {\n    return h(\"div\", [\n        \"Text field: \",\n        h(\"input\", {\n            value: state.isReset ?\n                resetHook(\"\", state.events.reset) :\n                undefined\n        }),\n        h(\"input\", {\n            type: \"button\",\n            value: \"Reset text field\",\n            \"data-click\": mercury.event(state.events.reset, true)\n        })\n    ])\n}\n\nmercury.app(document.body, state, render)\n\nfunction resetHook(value, sink) {\n    if (!(this instanceof resetHook)) {\n        return new resetHook(value, sink)\n    }\n\n    this.value = value\n    this.sink = sink\n}\n\nresetHook.prototype.hook = function (elem, propName) {\n    elem[propName] = this.value\n    this.sink(false)\n}\n",
         readOnly: true
     })
 })
@@ -50,7 +50,6 @@ events.reset(function (bool) {
 
 function render(state) {
     return h("div", [
-        "TEMPORARILY KAPUT.",
         "Text field: ",
         h("input", {
             value: state.isReset ?
