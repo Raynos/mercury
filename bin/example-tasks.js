@@ -8,6 +8,7 @@ var examplesDir = path.join(__dirname, '..', 'examples')
 var examplesTasks = [
     browserifyTask('geometry'),
     browserifyTask('todomvc'),
+    browserifyTask('2048'),
     browserifyEditorTask('field-reset'),
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),
