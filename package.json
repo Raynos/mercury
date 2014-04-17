@@ -26,14 +26,14 @@
   "dependencies": {
     "dom-delegator": "^7.0.0",
     "geval": "^2.1.1",
-    "main-loop": "^1.4.1",
+    "main-loop": "^1.5.0",
     "observ": "^0.1.5",
     "observ-array": "^1.0.3",
     "observ-hash": "^1.2.0",
     "value-event": "^1.3.0",
-    "vdom-thunk": "^1.3.0",
-    "virtual-dom": "git://github.com/Matt-Esch/virtual-dom#aff7ed63ae7bbe018448640eb26c2ffb2a50a970",
-    "virtual-hyperscript": "^1.3.4"
+    "vdom-thunk": "^1.4.0",
+    "virtual-dom": "0.0.6",
+    "virtual-hyperscript": "^1.4.0"
   },
   "devDependencies": {
     "browserify": "^3.38.0",
