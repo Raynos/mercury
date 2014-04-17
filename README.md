@@ -43,6 +43,19 @@ mercury.app(document.body, clickCount, render)
 
 Check out [TODOMVC implementation](examples/todomvc)
 
+## Examples
+
+Some of the `mercury` examples are ports of examples for other
+  applications from various projects.
+
+ - Credit goes to @holmsand and reagant contributers for initial
+    implementations of the bmi-counter, shared-state, count &
+    geometry examples
+ - Credit goes to @addyosmani and todomvc contributors for 
+    initial implementation of todomvc
+ - Credit goes to @gabrielecirulli and 2048 contributors for
+    initial implementation of 2048
+
 ## Installation
 
 `npm install mercury`
