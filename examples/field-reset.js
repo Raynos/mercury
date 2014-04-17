@@ -14,7 +14,6 @@ events.reset(function (bool) {
 
 function render(state) {
     return h("div", [
-        "TEMPORARILY KAPUT.",
         "Text field: ",
         h("input", {
             value: state.isReset ?

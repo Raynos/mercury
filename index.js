@@ -26,6 +26,7 @@ var mercury = module.exports = {
     partial: require("vdom-thunk"),
     create: require("virtual-dom/create-element"),
     h: require("virtual-hyperscript"),
+    svg: require("virtual-hyperscript/svg"),
 
     // Utility
     app: app,
