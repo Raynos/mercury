@@ -1,9 +1,10 @@
 var mercury = require("../../index.js")
+var window = require("global/window")
 
 var Input = require("./input.js")
 var Render = require("./render.js")
 var State = require("./state.js")
-var Update = require("./update.js")
+// var Update = require("./update.js")
 
 module.exports = createApp
 
