@@ -11,6 +11,9 @@ module.exports = createApp
 var state = window.state = createApp()
 mercury.app(document.body, state, Render)
 
+state.grid.splice(0, 1, State.tile({ number: 2, x: 1, y: 1 }))
+state.grid.splice(1, 1, State.tile({ number: 2, x: 1, y: 2 }))
+
 function createApp() {
     var initialState = null
 

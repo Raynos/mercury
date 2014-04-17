@@ -1,8 +1,5 @@
 var h = require("../../index.js").h
 
-var rows = [0, 1, 2, 3]
-var cells = [0, 1, 2, 3]
-
 module.exports = render
 
 function render(state) {
@@ -25,8 +22,8 @@ function header(state) {
         h(".heading", [
             h("h1.title", "2048"),
             h(".scores-container", [
-                h(".score-container", "0"),
-                h(".best-container", "0")
+                h(".score-container", String(state.currentScore)),
+                h(".best-container", String(state.highScore))
             ])
         ]),
         h(".above-game", [
@@ -40,6 +37,9 @@ function header(state) {
 }
 
 function gameScreen(state) {
+    var rows = range(0, state.size)
+    var cells = rows
+
     return h(".game-container", [
         h(".game-message", [
             h("p"),
@@ -53,7 +53,20 @@ function gameScreen(state) {
                 return h(".grid-cell")
             }))
         })),
-        h(".tile-container")
+        h(".tile-container", state.grid.map(function (tile) {
+            return tile ? gameTile(tile) : null
+        }).filter(Boolean))
+    ])
+}
+
+function gameTile(tile) {
+    var className = "tile-" + tile.number +
+        " tile-position-" + tile.x + "-" + tile.y
+
+    return h(".tile", {
+        className: className
+    }, [
+        h(".tile-inner", String(tile.number))
     ])
 }
 
@@ -87,4 +100,12 @@ function footer(state) {
             }, "2048 by Gabriele Cirulli.")
         ])
     ])
+}
+
+function range(start, end) {
+    var list = [];
+    for (var i = start; i < end; i++) {
+        list[i] = i;
+    }
+    return list;
 }
