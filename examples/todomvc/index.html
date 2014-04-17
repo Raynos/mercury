@@ -9,7 +9,8 @@
 var mercury = require("../../index.js")
 var TimeTravel = require("../../time-travel.js")
 var document = require("global/document")
-var global = require("global")
+var window = require("global/window")
+var localStorage = window.localStorage
 
 var Input = require("./input.js")
 var State = require("./state.js")
@@ -19,17 +20,22 @@ var Update = require("./update.js")
 module.exports = createApp
 
 var state = createApp()
-global.undo = TimeTravel(state)
+window.undo = TimeTravel(state)
 mercury.app(document.body, state, Render)
 
 function createApp() {
     // load from localStorage
-    var initialState = null
+    var storedState = localStorage.getItem("todos-mercury")
+    var initialState = storedState ? JSON.parse(storedState) : null
 
     var events = Input()
     var state = State.todoApp(events, initialState)
 
     wireUpEvents(state, events)
+
+    state(function (value) {
+        localStorage.setItem("todos-mercury", JSON.stringify(value))
+    })
 
     return state
 }
@@ -42,10 +48,12 @@ function wireUpEvents(state, events) {
     events.destroy(Update.destroy.bind(null, state))
     events.startEdit(Update.startEdit.bind(null, state))
     events.finishEdit(Update.finishEdit.bind(null, state))
+    events.cancelEdit(Update.cancelEdit.bind(null, state))
+    events.clearCompleted(Update.clearCompleted.bind(null, state))
     events.setRoute(Update.setRoute.bind(null, state))
 }
 
-},{"../../index.js":7,"../../time-travel.js":129,"./input.js":2,"./render.js":4,"./state.js":5,"./update.js":6,"global":33,"global/document":32}],2:[function(require,module,exports){
+},{"../../index.js":7,"../../time-travel.js":130,"./input.js":2,"./render.js":4,"./state.js":5,"./update.js":6,"global/document":32,"global/window":33}],2:[function(require,module,exports){
 var window = require("global/window")
 var HashRouter = require("hash-router")
 var Event = require("geval")
@@ -57,7 +65,7 @@ module.exports = createInput
 function createInput() {
     var events = mercury.input([
         "toggleAll", "add", "setTodoField", "toggle", "destroy",
-        "startEdit", "finishEdit"
+        "startEdit", "finishEdit", "cancelEdit", "clearCompleted"
     ])
 
     events.setRoute = EventRouter()
@@ -97,20 +105,21 @@ var h = require("../../index.js").h
 
 var doMutableFocus = require("./lib/do-mutable-focus.js")
 
+var ESCAPE = 27
 var footer = infoFooter()
 
 module.exports = render
 
 function render(state) {
-    return h("#todoapp.todomvc-wrapper", [
+    return h(".todomvc-wrapper", [
         h("link", {
             rel: "stylesheet",
             href: "https://rawgithub.com/raynos/mercury/master/examples/todomvc/style.css"
         }),
-        h("section.todoapp", [
+        h("section#todoapp.todoapp", [
             mercury.partial(header, state.todoField, state.events),
             mercury.partial(mainSection, state.todos, state.route, state.events),
-            mercury.partial(statsSection, state.todos, state.route)
+            mercury.partial(statsSection, state.todos, state.route, state.events)
         ]),
         footer
     ])
@@ -146,8 +155,9 @@ function mainSection(todos, route, events) {
     return h("section#main.main", { hidden: !todos.length }, [
         h("input#toggle-all.toggle-all", {
             type: "checkbox",
+            name: "toggle",
             checked: allCompleted,
-            "data-change": mercury.event(events.toggleAll)
+            "data-change": mercury.valueEvent(events.toggleAll)
         }),
         h("label", { htmlFor: "toggle-all" }, "Mark all as complete"),
         h("ul#todo-list.todolist", visibleTodos.map(function (todo) {
@@ -183,17 +193,19 @@ function todoItem(todo, events) {
             // when we need an RPC invocation we add a 
             // custom mutable operation into the tree to be
             // invoked at patch time
-            "data-focus": todo.editing ? doMutableFocus : null,
+            "data-focus": todo.editing ? doMutableFocus() : null,
+            "data-keydown": mercury.keyEvent(events.cancelEdit, ESCAPE, { id: todo.id }),
             "data-event": mercury.submitEvent(events.finishEdit, { id: todo.id }),
             "data-blur": mercury.valueEvent(events.finishEdit, { id: todo.id })
         })
     ])
 }
 
-function statsSection(todos, route) {
+function statsSection(todos, route, events) {
     var todosLeft = todos.filter(function (todo) {
         return !todo.completed
     }).length
+    var todosCompleted = todos.length - todosLeft
 
     return h("footer#footer.footer", { hidden: !todos.length }, [
         h("span#todo-count.todo-count", [
@@ -205,7 +217,11 @@ function statsSection(todos, route) {
             link("#/", "All", route === "all"),
             link("#/active", "Active", route === "active"),
             link("#/completed", "Completed", route === "completed")
-        ])
+        ]),
+        h("button.clear-completed#clear-completed", {
+            hidden: todosCompleted === 0,
+            "data-click": mercury.event(events.clearCompleted)
+        }, "Clear completed (" + String(todosCompleted) + ")")
     ])
 }
 
@@ -256,7 +272,7 @@ function todoApp(events, initialState) {
     var state = extend(TodoApp, initialState)
 
     return mercury.hash({
-        todos: mercury.array(state.todos),
+        todos: mercury.array(state.todos.map(todoItem)),
         route: mercury.value(state.route),
         todoField: mercury.value(state.todoField),
         events: events
@@ -274,7 +290,7 @@ function todoItem(item) {
     })
 }
 
-},{"../../index.js":7,"cuid":15,"xtend":128}],6:[function(require,module,exports){
+},{"../../index.js":7,"cuid":15,"xtend":129}],6:[function(require,module,exports){
 var State = require("./state.js")
 
 module.exports = {
@@ -285,25 +301,28 @@ module.exports = {
     toggle: toggle,
     destroy: destroy,
     startEdit: startEdit,
-    finishEdit: finishEdit
+    finishEdit: finishEdit,
+    cancelEdit: cancelEdit,
+    clearCompleted: clearCompleted
 }
 
 function setRoute(state, route) {
     state.route.set(route.substr(2) || "all")
 }
 
-function toggleAll(state) {
+function toggleAll(state, value) {
     state.todos.forEach(function (todo) {
-        todo.completed.set(!todo.completed())
+        todo.completed.set(value.toggle)
     })
 }
 
 function add(state, data) {
     state.todos.push(State.todoItem({
-        title: data.newTodo
+        title: data.newTodo.trim()
     }))
     state.todoField.set("")
 }
+
 
 function setTodoField(state, data) {
     state.todoField.set(data.newTodo)
@@ -326,8 +345,28 @@ function destroy(state, data) {
 
 function finishEdit(state, data) {
     var item = find(state.todos, data.id)
+    if (!item || item.editing === false) return
+
     item.editing.set(false)
     item.title.set(data.title)
+
+    if (data.title.trim() === "") {
+        destroy(state, data)
+    }
+}
+
+function cancelEdit(state, data) {
+    var item = find(state.todos, data.id)
+
+    item.editing.set(false)
+}
+
+function clearCompleted(state) {
+    state.todos().forEach(function (todo, index) {
+        if (todo.completed) {
+            destroy(state, todo)
+        }
+    })
 }
 
 function find(list, id) {
@@ -368,6 +407,7 @@ var mercury = module.exports = {
     valueEvent: require("value-event/value"),
     submitEvent: require("value-event/submit"),
     changeEvent: require("value-event/change"),
+    keyEvent: require("value-event/key"),
 
     // State
     array: require("observ-array"),
@@ -397,7 +437,7 @@ function input(names) {
     return mercury.Events(names)
 }
 
-},{"dom-delegator":18,"geval/multiple":29,"main-loop":39,"observ":64,"observ-array":61,"observ-hash":63,"value-event/change":65,"value-event/event":66,"value-event/submit":72,"value-event/value":73,"vdom-thunk":74,"virtual-dom/create-element":93,"virtual-dom/diff":94,"virtual-dom/patch":97,"virtual-hyperscript":113}],8:[function(require,module,exports){
+},{"dom-delegator":18,"geval/multiple":29,"main-loop":39,"observ":64,"observ-array":61,"observ-hash":63,"value-event/change":65,"value-event/event":66,"value-event/key":67,"value-event/submit":73,"value-event/value":74,"vdom-thunk":75,"virtual-dom/create-element":94,"virtual-dom/diff":95,"virtual-dom/patch":98,"virtual-hyperscript":114}],8:[function(require,module,exports){
 
 },{}],9:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
@@ -3864,7 +3904,7 @@ function ObservHash(hash) {
     return obs
 }
 
-},{"observ":64,"xtend":128}],64:[function(require,module,exports){
+},{"observ":64,"xtend":129}],64:[function(require,module,exports){
 module.exports = Observable
 
 function Observable(value) {
@@ -3934,7 +3974,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":68,"xtend":71}],66:[function(require,module,exports){
+},{"form-data-set/element":69,"xtend":72}],66:[function(require,module,exports){
 module.exports = SinkEventHandler
 
 function SinkEventHandler(sink, data) {
@@ -3958,6 +3998,27 @@ function handleEvent(ev) {
 }
 
 },{}],67:[function(require,module,exports){
+module.exports = KeyEventHandler
+
+function KeyEventHandler(fn, key, data) {
+    if (!(this instanceof KeyEventHandler)) {
+        return new KeyEventHandler(fn, key, data)
+    }
+
+    this.fn = fn
+    this.data = data
+    this.key = key
+}
+
+KeyEventHandler.prototype.handleEvent = handleEvent
+
+function handleEvent(ev) {
+    if (ev.keyCode === this.key) {
+        this.fn(this.data)
+    }
+}
+
+},{}],68:[function(require,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -3983,7 +4044,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 var walk = require('dom-walk')
 
 var FormData = require('./index.js')
@@ -4009,7 +4070,7 @@ function getFormData(rootElem) {
     return FormData(elements)
 }
 
-},{"./index.js":69,"dom-walk":67}],69:[function(require,module,exports){
+},{"./index.js":70,"dom-walk":68}],70:[function(require,module,exports){
 /*jshint maxcomplexity: 10*/
 
 module.exports = FormData
@@ -4086,9 +4147,9 @@ function filterNull(val) {
     return val !== null
 }
 
-},{}],70:[function(require,module,exports){
-module.exports=require(26)
 },{}],71:[function(require,module,exports){
+module.exports=require(26)
+},{}],72:[function(require,module,exports){
 var hasKeys = require("./has-keys")
 
 module.exports = extend
@@ -4113,7 +4174,7 @@ function extend() {
     return target
 }
 
-},{"./has-keys":70}],72:[function(require,module,exports){
+},{"./has-keys":71}],73:[function(require,module,exports){
 var extend = require('xtend')
 var getFormData = require('form-data-set/element')
 
@@ -4141,8 +4202,7 @@ function handleEvent(ev) {
         (ev.type === 'click' && target.tagName === 'BUTTON') ||
         (
             (target.type === 'text' || target.tagName === 'TEXTAREA') &&
-            (ev.keyCode === ENTER && !ev.shiftKey && ev.type === 'keyup') &&
-            (target.value.trim() !== '')
+            (ev.keyCode === ENTER && !ev.shiftKey && ev.type === 'keyup')
         )
 
     if (!isValid) {
@@ -4159,7 +4219,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":68,"xtend":71}],73:[function(require,module,exports){
+},{"form-data-set/element":69,"xtend":72}],74:[function(require,module,exports){
 var extend = require('xtend')
 var getFormData = require('form-data-set/element')
 
@@ -4188,7 +4248,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":68,"xtend":71}],74:[function(require,module,exports){
+},{"form-data-set/element":69,"xtend":72}],75:[function(require,module,exports){
 var createElement = require("virtual-dom/create-element")
 var diff = require("virtual-dom/diff")
 var patch = require("virtual-dom/patch")
@@ -4233,79 +4293,79 @@ function init() {
     return createElement(this.vnode)
 }
 
-},{"virtual-dom/create-element":75,"virtual-dom/diff":76,"virtual-dom/patch":79}],75:[function(require,module,exports){
+},{"virtual-dom/create-element":76,"virtual-dom/diff":77,"virtual-dom/patch":80}],76:[function(require,module,exports){
 module.exports=require(41)
-},{"./vdom/create-element":81}],76:[function(require,module,exports){
+},{"./vdom/create-element":82}],77:[function(require,module,exports){
 module.exports=require(42)
-},{"./vtree/diff":86}],77:[function(require,module,exports){
+},{"./vtree/diff":87}],78:[function(require,module,exports){
 module.exports=require(43)
-},{}],78:[function(require,module,exports){
-module.exports=require(44)
 },{}],79:[function(require,module,exports){
-module.exports=require(45)
-},{"./vdom/patch":84}],80:[function(require,module,exports){
-module.exports=require(46)
-},{"../vtree/is-vhook":87,"is-object":77}],81:[function(require,module,exports){
-module.exports=require(47)
-},{"../vtree/is-vnode":88,"../vtree/is-vtext":89,"../vtree/is-widget":90,"./apply-properties":80,"global/document":32}],82:[function(require,module,exports){
-module.exports=require(48)
-},{}],83:[function(require,module,exports){
-module.exports=require(49)
-},{"../vtree/is-widget":90,"../vtree/vpatch":92,"./apply-properties":80,"./create-element":81,"./update-widget":85}],84:[function(require,module,exports){
-module.exports=require(50)
-},{"./dom-index":82,"./patch-op":83,"global/document":32,"x-is-array":78}],85:[function(require,module,exports){
-module.exports=require(51)
-},{"../vtree/is-widget":90}],86:[function(require,module,exports){
-module.exports=require(52)
-},{"./is-vnode":88,"./is-vtext":89,"./is-widget":90,"./vpatch":92,"is-object":77,"x-is-array":78}],87:[function(require,module,exports){
-module.exports=require(53)
-},{}],88:[function(require,module,exports){
-module.exports=require(54)
-},{"./version":91}],89:[function(require,module,exports){
-module.exports=require(55)
-},{"./version":91}],90:[function(require,module,exports){
-module.exports=require(56)
-},{}],91:[function(require,module,exports){
-module.exports=require(57)
-},{}],92:[function(require,module,exports){
-module.exports=require(58)
-},{"./version":91}],93:[function(require,module,exports){
-module.exports=require(41)
-},{"./vdom/create-element":99}],94:[function(require,module,exports){
-module.exports=require(42)
-},{"./vtree/diff":104}],95:[function(require,module,exports){
-module.exports=require(43)
-},{}],96:[function(require,module,exports){
 module.exports=require(44)
-},{}],97:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 module.exports=require(45)
-},{"./vdom/patch":102}],98:[function(require,module,exports){
+},{"./vdom/patch":85}],81:[function(require,module,exports){
 module.exports=require(46)
-},{"../vtree/is-vhook":105,"is-object":95}],99:[function(require,module,exports){
+},{"../vtree/is-vhook":88,"is-object":78}],82:[function(require,module,exports){
 module.exports=require(47)
-},{"../vtree/is-vnode":106,"../vtree/is-vtext":107,"../vtree/is-widget":108,"./apply-properties":98,"global/document":32}],100:[function(require,module,exports){
+},{"../vtree/is-vnode":89,"../vtree/is-vtext":90,"../vtree/is-widget":91,"./apply-properties":81,"global/document":32}],83:[function(require,module,exports){
 module.exports=require(48)
-},{}],101:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 module.exports=require(49)
-},{"../vtree/is-widget":108,"../vtree/vpatch":110,"./apply-properties":98,"./create-element":99,"./update-widget":103}],102:[function(require,module,exports){
+},{"../vtree/is-widget":91,"../vtree/vpatch":93,"./apply-properties":81,"./create-element":82,"./update-widget":86}],85:[function(require,module,exports){
 module.exports=require(50)
-},{"./dom-index":100,"./patch-op":101,"global/document":32,"x-is-array":96}],103:[function(require,module,exports){
+},{"./dom-index":83,"./patch-op":84,"global/document":32,"x-is-array":79}],86:[function(require,module,exports){
 module.exports=require(51)
-},{"../vtree/is-widget":108}],104:[function(require,module,exports){
+},{"../vtree/is-widget":91}],87:[function(require,module,exports){
 module.exports=require(52)
-},{"./is-vnode":106,"./is-vtext":107,"./is-widget":108,"./vpatch":110,"is-object":95,"x-is-array":96}],105:[function(require,module,exports){
+},{"./is-vnode":89,"./is-vtext":90,"./is-widget":91,"./vpatch":93,"is-object":78,"x-is-array":79}],88:[function(require,module,exports){
 module.exports=require(53)
-},{}],106:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 module.exports=require(54)
-},{"./version":109}],107:[function(require,module,exports){
+},{"./version":92}],90:[function(require,module,exports){
 module.exports=require(55)
-},{"./version":109}],108:[function(require,module,exports){
+},{"./version":92}],91:[function(require,module,exports){
 module.exports=require(56)
-},{}],109:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 module.exports=require(57)
-},{}],110:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 module.exports=require(58)
-},{"./version":109}],111:[function(require,module,exports){
+},{"./version":92}],94:[function(require,module,exports){
+module.exports=require(41)
+},{"./vdom/create-element":100}],95:[function(require,module,exports){
+module.exports=require(42)
+},{"./vtree/diff":105}],96:[function(require,module,exports){
+module.exports=require(43)
+},{}],97:[function(require,module,exports){
+module.exports=require(44)
+},{}],98:[function(require,module,exports){
+module.exports=require(45)
+},{"./vdom/patch":103}],99:[function(require,module,exports){
+module.exports=require(46)
+},{"../vtree/is-vhook":106,"is-object":96}],100:[function(require,module,exports){
+module.exports=require(47)
+},{"../vtree/is-vnode":107,"../vtree/is-vtext":108,"../vtree/is-widget":109,"./apply-properties":99,"global/document":32}],101:[function(require,module,exports){
+module.exports=require(48)
+},{}],102:[function(require,module,exports){
+module.exports=require(49)
+},{"../vtree/is-widget":109,"../vtree/vpatch":111,"./apply-properties":99,"./create-element":100,"./update-widget":104}],103:[function(require,module,exports){
+module.exports=require(50)
+},{"./dom-index":101,"./patch-op":102,"global/document":32,"x-is-array":97}],104:[function(require,module,exports){
+module.exports=require(51)
+},{"../vtree/is-widget":109}],105:[function(require,module,exports){
+module.exports=require(52)
+},{"./is-vnode":107,"./is-vtext":108,"./is-widget":109,"./vpatch":111,"is-object":96,"x-is-array":97}],106:[function(require,module,exports){
+module.exports=require(53)
+},{}],107:[function(require,module,exports){
+module.exports=require(54)
+},{"./version":110}],108:[function(require,module,exports){
+module.exports=require(55)
+},{"./version":110}],109:[function(require,module,exports){
+module.exports=require(56)
+},{}],110:[function(require,module,exports){
+module.exports=require(57)
+},{}],111:[function(require,module,exports){
+module.exports=require(58)
+},{"./version":110}],112:[function(require,module,exports){
 var DataSet = require("data-set")
 
 module.exports = DataSetHook;
@@ -4325,7 +4385,7 @@ DataSetHook.prototype.hook = function (node, propertyName) {
     ds[propName] = this.value;
 };
 
-},{"data-set":115}],112:[function(require,module,exports){
+},{"data-set":116}],113:[function(require,module,exports){
 module.exports = SoftSetHook;
 
 function SoftSetHook(value) {
@@ -4342,7 +4402,7 @@ SoftSetHook.prototype.hook = function (node, propertyName) {
     }
 };
 
-},{}],113:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 var VNode = require("virtual-dom/vtree/vnode.js")
 var VText = require("virtual-dom/vtree/vtext.js")
 var isVNode = require("virtual-dom/vtree/is-vnode")
@@ -4423,29 +4483,29 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x) || isChild(x)
 }
 
-},{"./hooks/data-set-hook.js":111,"./hooks/soft-set-hook.js":112,"./parse-tag.js":127,"virtual-dom/vtree/is-vhook":120,"virtual-dom/vtree/is-vnode":121,"virtual-dom/vtree/is-vtext":122,"virtual-dom/vtree/is-widget":123,"virtual-dom/vtree/vnode.js":125,"virtual-dom/vtree/vtext.js":126}],114:[function(require,module,exports){
+},{"./hooks/data-set-hook.js":112,"./hooks/soft-set-hook.js":113,"./parse-tag.js":128,"virtual-dom/vtree/is-vhook":121,"virtual-dom/vtree/is-vnode":122,"virtual-dom/vtree/is-vtext":123,"virtual-dom/vtree/is-widget":124,"virtual-dom/vtree/vnode.js":126,"virtual-dom/vtree/vtext.js":127}],115:[function(require,module,exports){
 module.exports=require(20)
-},{}],115:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 module.exports=require(21)
-},{"./create-hash.js":114,"individual":116,"weakmap-shim/create-store":118}],116:[function(require,module,exports){
+},{"./create-hash.js":115,"individual":117,"weakmap-shim/create-store":119}],117:[function(require,module,exports){
 module.exports=require(24)
-},{"global":117}],117:[function(require,module,exports){
+},{"global":118}],118:[function(require,module,exports){
 module.exports=require(25)
-},{}],118:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 module.exports=require(22)
-},{"./hidden-store.js":119}],119:[function(require,module,exports){
+},{"./hidden-store.js":120}],120:[function(require,module,exports){
 module.exports=require(23)
-},{}],120:[function(require,module,exports){
-module.exports=require(53)
 },{}],121:[function(require,module,exports){
+module.exports=require(53)
+},{}],122:[function(require,module,exports){
 module.exports=require(54)
-},{"./version":124}],122:[function(require,module,exports){
+},{"./version":125}],123:[function(require,module,exports){
 module.exports=require(55)
-},{"./version":124}],123:[function(require,module,exports){
+},{"./version":125}],124:[function(require,module,exports){
 module.exports=require(56)
-},{}],124:[function(require,module,exports){
-module.exports=require(57)
 },{}],125:[function(require,module,exports){
+module.exports=require(57)
+},{}],126:[function(require,module,exports){
 var version = require("./version")
 var isVNode = require("./is-vnode")
 var isWidget = require("./is-widget")
@@ -4510,7 +4570,7 @@ function VirtualNode(tagName, properties, children, key, namespace) {
 VirtualNode.prototype.version = version
 VirtualNode.prototype.type = "VirtualNode"
 
-},{"./is-vhook":120,"./is-vnode":121,"./is-widget":123,"./version":124}],126:[function(require,module,exports){
+},{"./is-vhook":121,"./is-vnode":122,"./is-widget":124,"./version":125}],127:[function(require,module,exports){
 var version = require("./version")
 
 module.exports = VirtualText
@@ -4522,7 +4582,7 @@ function VirtualText(text) {
 VirtualText.prototype.version = version
 VirtualText.prototype.type = "VirtualText"
 
-},{"./version":124}],127:[function(require,module,exports){
+},{"./version":125}],128:[function(require,module,exports){
 var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
 var notClassId = /^\.|#/
 
@@ -4573,7 +4633,7 @@ function parseTag(tag, props) {
     return tagName ? tagName.toLowerCase() : "div"
 }
 
-},{}],128:[function(require,module,exports){
+},{}],129:[function(require,module,exports){
 module.exports = extend
 
 function extend() {
@@ -4592,7 +4652,7 @@ function extend() {
     return target
 }
 
-},{}],129:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 module.exports = TimeTravel
 
 function TimeTravel(state) {
@@ -4607,6 +4667,10 @@ function TimeTravel(state) {
     return undo
 
     function undo() {
+        if (states.length <= 1) {
+            return
+        }
+
         states.shift()
         state.set(states[0])
         return states[0]
