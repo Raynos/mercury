@@ -8,25 +8,28 @@ module.exports = {
     toggle: toggle,
     destroy: destroy,
     startEdit: startEdit,
-    finishEdit: finishEdit
+    finishEdit: finishEdit,
+    cancelEdit: cancelEdit,
+    clearCompleted: clearCompleted
 }
 
 function setRoute(state, route) {
     state.route.set(route.substr(2) || "all")
 }
 
-function toggleAll(state) {
+function toggleAll(state, value) {
     state.todos.forEach(function (todo) {
-        todo.completed.set(!todo.completed())
+        todo.completed.set(value.toggle)
     })
 }
 
 function add(state, data) {
     state.todos.push(State.todoItem({
-        title: data.newTodo
+        title: data.newTodo.trim()
     }))
     state.todoField.set("")
 }
+
 
 function setTodoField(state, data) {
     state.todoField.set(data.newTodo)
@@ -49,8 +52,28 @@ function destroy(state, data) {
 
 function finishEdit(state, data) {
     var item = find(state.todos, data.id)
+    if (!item || item.editing === false) return
+
     item.editing.set(false)
     item.title.set(data.title)
+
+    if (data.title.trim() === "") {
+        destroy(state, data)
+    }
+}
+
+function cancelEdit(state, data) {
+    var item = find(state.todos, data.id)
+
+    item.editing.set(false)
+}
+
+function clearCompleted(state) {
+    state.todos().forEach(function (todo, index) {
+        if (todo.completed) {
+            destroy(state, todo)
+        }
+    })
 }
 
 function find(list, id) {

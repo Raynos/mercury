@@ -13,6 +13,7 @@ var mercury = module.exports = {
     valueEvent: require("value-event/value"),
     submitEvent: require("value-event/submit"),
     changeEvent: require("value-event/change"),
+    keyEvent: require("value-event/key"),
 
     // State
     array: require("observ-array"),

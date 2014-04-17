@@ -12,6 +12,10 @@ function TimeTravel(state) {
     return undo
 
     function undo() {
+        if (states.length <= 1) {
+            return
+        }
+
         states.shift()
         state.set(states[0])
         return states[0]
