@@ -9,7 +9,7 @@ module.exports = createInput
 function createInput() {
     var events = mercury.input([
         "toggleAll", "add", "setTodoField", "toggle", "destroy",
-        "startEdit", "finishEdit"
+        "startEdit", "finishEdit", "cancelEdit", "clearCompleted"
     ])
 
     events.setRoute = EventRouter()

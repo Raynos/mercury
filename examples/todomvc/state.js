@@ -24,7 +24,7 @@ function todoApp(events, initialState) {
     var state = extend(TodoApp, initialState)
 
     return mercury.hash({
-        todos: mercury.array(state.todos),
+        todos: mercury.array(state.todos.map(todoItem)),
         route: mercury.value(state.route),
         todoField: mercury.value(state.todoField),
         events: events
