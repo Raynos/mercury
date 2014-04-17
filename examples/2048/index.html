@@ -19,6 +19,9 @@ module.exports = createApp
 var state = window.state = createApp()
 mercury.app(document.body, state, Render)
 
+state.grid.splice(0, 1, State.tile({ number: 2, x: 1, y: 1 }))
+state.grid.splice(1, 1, State.tile({ number: 2, x: 1, y: 2 }))
+
 function createApp() {
     var initialState = null
 
@@ -48,9 +51,6 @@ function createInput() {
 },{"../../index.js":5}],3:[function(require,module,exports){
 var h = require("../../index.js").h
 
-var rows = [0, 1, 2, 3]
-var cells = [0, 1, 2, 3]
-
 module.exports = render
 
 function render(state) {
@@ -73,8 +73,8 @@ function header(state) {
         h(".heading", [
             h("h1.title", "2048"),
             h(".scores-container", [
-                h(".score-container", "0"),
-                h(".best-container", "0")
+                h(".score-container", String(state.currentScore)),
+                h(".best-container", String(state.highScore))
             ])
         ]),
         h(".above-game", [
@@ -88,6 +88,9 @@ function header(state) {
 }
 
 function gameScreen(state) {
+    var rows = range(0, state.size)
+    var cells = rows
+
     return h(".game-container", [
         h(".game-message", [
             h("p"),
@@ -101,7 +104,20 @@ function gameScreen(state) {
                 return h(".grid-cell")
             }))
         })),
-        h(".tile-container")
+        h(".tile-container", state.grid.map(function (tile) {
+            return tile ? gameTile(tile) : null
+        }).filter(Boolean))
+    ])
+}
+
+function gameTile(tile) {
+    var className = "tile-" + tile.number +
+        " tile-position-" + tile.x + "-" + tile.y
+
+    return h(".tile", {
+        className: className
+    }, [
+        h(".tile-inner", String(tile.number))
     ])
 }
 
@@ -137,24 +153,61 @@ function footer(state) {
     ])
 }
 
+function range(start, end) {
+    var list = [];
+    for (var i = start; i < end; i++) {
+        list[i] = i;
+    }
+    return list;
+}
+
 },{"../../index.js":5}],4:[function(require,module,exports){
 var mercury = require("../../index.js")
 var extend = require("xtend")
 
 var Game2048 = {
-    size: 4
+    size: 4,
+    grid: [],
+    currentScore: 0,
+    highScore: 0
+}
+
+var GameTile = {
+    number: 2,
+    x: -1,
+    y: -1
 }
 
 module.exports = {
-    game: GameState
+    game: gameBoard,
+    tile: numberTile
 }
 
-function GameState(events, initialState) {
+function gameBoard(events, initialState) {
     var state = extend(Game2048, initialState)
+
+    if (state.grid.length === 0) {
+        for (var i = 0; i < state.size * state.size; i++) {
+            state.grid[i] = null
+        }
+    }
 
     return mercury.hash({
         events: events,
-        size: state.size
+        grid: mercury.array(state.grid),
+        size: mercury.value(state.size),
+        currentScore: mercury.value(state.currentScore),
+        highScore: mercury.value(state.highScore)
+    })
+}
+
+function numberTile(tile) {
+    var state = extend(GameTile, tile)
+
+    return mercury.hash({
+        number: mercury.value(state.number),
+        x: mercury.value(state.x),
+        y: mercury.value(state.y)
     })
 }
 
