@@ -9,7 +9,7 @@ events.change(function (data) {
 })
 
 function inputBox(value, sink) {
-    return h("input", {
+    return h("input.input", {
         value: value,
         name: "text",
         "data-event": mercury.changeEvent(sink)
@@ -18,7 +18,7 @@ function inputBox(value, sink) {
 
 function render(textValue) {
     return h("div", [
-        h("p", "The value is now: " + textValue),
+        h("p.content", "The value is now: " + textValue),
         h("p", [
             "Change it here: ",
             inputBox(textValue, events.change)
