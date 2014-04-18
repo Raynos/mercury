@@ -15,12 +15,12 @@ events.reset(function (bool) {
 function render(state) {
     return h("div", [
         "Text field: ",
-        h("input", {
+        h("input.input", {
             value: state.isReset ?
                 resetHook("", state.events.reset) :
                 undefined
         }),
-        h("input", {
+        h("input.button", {
             type: "button",
             value: "Reset text field",
             "data-click": mercury.event(state.events.reset, true)

@@ -5,37 +5,42 @@ var events = mercury.input(["height", "weight", "bmi"])
 var bmiData = mercury.hash({
     height: mercury.value(180),
     weight: mercury.value(80),
-    bmi: mercury.value(null)
+    bmi: mercury.value(calcBmi(180, 80))
 })
-
-function updateData(type, data) {
-    bmiData[type].set(data.slider)
-    bmiData[type === "bmi" ? "weight" : "bmi"].set(null)
-}
 
 events.height(updateData.bind(null, "height"))
 events.weight(updateData.bind(null, "weight"))
 events.bmi(updateData.bind(null, "bmi"))
 
-function calcBmi(data) {
-    var h = data.height / 100
-    return {
-        height: data.height,
-        bmi: data.bmi ? data.bmi : data.weight / (h * h),
-        weight: data.bmi ? data.bmi * (h * h) : data.weight
+function updateData(type, data) {
+    bmiData[type].set(data.slider)
+
+    if (type !== "bmi") {
+        bmiData.bmi.set(calcBmi(bmiData.height(), bmiData.weight()))
+    } else {
+        bmiData.weight.set(calcWeight(bmiData.height(), bmiData.bmi()))
     }
 }
 
+function calcWeight(height, bmi) {
+    var h = height / 100
+    return h * h * bmi
+}
+
+function calcBmi(height, weight) {
+    var h = height / 100
+    return weight / (h * h)
+}
+
 function slider(value, sink, min, max) {
-    return h("input", {
+    return h("input.slider", {
         type: "range", min: min, max: max, value: value,
         style: { width: "100%" }, name: "slider",
         "data-event": mercury.changeEvent(sink)
     })
 }
 
-function render(bmiData) {
-    var values = calcBmi(bmiData)
+function render(values) {
     var color = values.bmi < 18.5 ? "orange" :
         values.bmi < 25 ? "inherit" :
         values.bmi < 30 ? "orange" : "red"

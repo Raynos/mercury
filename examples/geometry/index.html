@@ -369,8 +369,7 @@ function listenTo(eventName) {
 }
 
 },{"./add-event.js":7,"./listen.js":10,"global/document":22,"individual":15}],10:[function(require,module,exports){
-var extend = require("xtend/mutable")
-
+var ProxyEvent = require("./proxy-event.js")
 var getListener = require("./get-listener.js")
 
 module.exports = listen
@@ -391,17 +390,8 @@ function listen(delegator, eventName) {
     }, true)
 }
 
-function ProxyEvent(ev, listener) {
-    this._rawEvent = ev
-    extend(this, ev)
-    this.currentTarget = listener.currentTarget
-}
 
-ProxyEvent.prototype.preventDefault = function () {
-    this._rawEvent.preventDefault()
-}
-
-},{"./get-listener.js":8,"xtend/mutable":18}],11:[function(require,module,exports){
+},{"./get-listener.js":8,"./proxy-event.js":18}],11:[function(require,module,exports){
 module.exports = createHash
 
 function createHash(elem) {
@@ -511,40 +501,109 @@ if (typeof global !== "undefined") {
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],17:[function(require,module,exports){
-module.exports = hasKeys
-
-function hasKeys(source) {
-    return source !== null &&
-        (typeof source === "object" ||
-        typeof source === "function")
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
 }
 
 },{}],18:[function(require,module,exports){
-var hasKeys = require("./has-keys")
+var inherits = require("inherits")
 
-module.exports = extend
+var ALL_PROPS = [
+    "altKey", "bubbles", "cancelable", "ctrlKey",
+    "eventPhase", "metaKey", "relatedTarget", "shiftKey",
+    "target", "timeStamp", "type", "view", "which"
+]
+var KEY_PROPS = ["char", "charCode", "key", "keyCode"]
+var MOUSE_PROPS = [
+    "button", "buttons", "clientX", "clientY", "layerX",
+    "layerY", "offsetX", "offsetY", "pageX", "pageY",
+    "screenX", "screenY", "toElement"
+]
 
-function extend(target) {
-    var sources = [].slice.call(arguments, 1)
+var rkeyEvent = /^key/
+var rmouseEvent = /^(?:mouse|pointer|contextmenu)|click/
 
-    for (var i = 0; i < sources.length; i++) {
-        var source = sources[i]
+module.exports = ProxyEvent
 
-        if (!hasKeys(source)) {
-            continue
-        }
-
-        for (var key in source) {
-            if (source.hasOwnProperty(key)) {
-                target[key] = source[key]
-            }
-        }
+function ProxyEvent(ev, listener) {
+    if (!(this instanceof ProxyEvent)) {
+        return new ProxyEvent(ev, listener)
     }
 
-    return target
+    if (rkeyEvent.test(ev.type)) {
+        return new KeyEvent(ev, listener)
+    } else if (rmouseEvent.test(ev.type)) {
+        return new MouseEvent(ev, listener)
+    }
+
+    for (var i = 0; i < ALL_PROPS.length; i++) {
+        var propKey = ALL_PROPS[i]
+        this[propKey] = ev[propKey]
+    }
+
+    this._rawEvent = ev
+    this.currentTarget = listener ? listener.currentTarget : null
 }
 
-},{"./has-keys":17}],19:[function(require,module,exports){
+ProxyEvent.prototype.preventDefault = function () {
+    this._rawEvent.preventDefault()
+}
+
+function MouseEvent(ev, listener) {
+    for (var i = 0; i < ALL_PROPS.length; i++) {
+        var propKey = ALL_PROPS[i]
+        this[propKey] = ev[propKey]
+    }
+
+    for (var j = 0; j < MOUSE_PROPS.length; j++) {
+        var mousePropKey = MOUSE_PROPS[j]
+        this[mousePropKey] = ev[mousePropKey]
+    }
+
+    this._rawEvent = ev
+    this.currentTarget = listener ? listener.currentTarget : null
+}
+
+inherits(MouseEvent, ProxyEvent)
+
+function KeyEvent(ev, listener) {
+    for (var i = 0; i < ALL_PROPS.length; i++) {
+        var propKey = ALL_PROPS[i]
+        this[propKey] = ev[propKey]
+    }
+
+    for (var j = 0; j < KEY_PROPS.length; j++) {
+        var keyPropKey = KEY_PROPS[j]
+        this[keyPropKey] = ev[keyPropKey]
+    }
+
+    this._rawEvent = ev
+    this.currentTarget = listener ? listener.currentTarget : null
+}
+
+inherits(KeyEvent, ProxyEvent)
+
+},{"inherits":17}],19:[function(require,module,exports){
 module.exports = Event
 
 function Event() {
@@ -1206,7 +1265,14 @@ function filterNull(val) {
 }
 
 },{}],38:[function(require,module,exports){
-module.exports=require(17)
+module.exports = hasKeys
+
+function hasKeys(source) {
+    return source !== null &&
+        (typeof source === "object" ||
+        typeof source === "function")
+}
+
 },{}],39:[function(require,module,exports){
 var hasKeys = require("./has-keys")
 
@@ -1311,10 +1377,18 @@ var createElement = require("virtual-dom/create-element")
 var diff = require("virtual-dom/diff")
 var patch = require("virtual-dom/patch")
 
+function copyOver(list, offset) {
+    var newList = []
+    for (var i = offset; i < list.length; i++) {
+        newList[i - offset] = list[i]
+    }
+    return newList
+}
+
 module.exports = partial
 
 function partial(fn) {
-    var args = [].slice.call(arguments, 1)
+    var args = copyOver(arguments, 1)
     var firstArg = args[0]
     var key
 
@@ -1341,10 +1415,31 @@ Thunk.prototype.update = update
 Thunk.prototype.init = init
 
 function shouldUpdate(current, previous) {
-    return current.fn !== previous.fn ||
-        current.args.some(function (arg, index) {
-            return arg !== previous.args[index]
-        })
+    if (current.fn !== previous.fn) {
+        return true
+    }
+
+    var cargs = current.args
+    var pargs = previous.args
+
+    // fast case for args is zero case.
+    if (cargs.length === 0 && pargs.length === 0) {
+        return false
+    }
+
+    if (cargs.length !== pargs.length) {
+        return true
+    }
+
+    var max = cargs.length > pargs.length ? cargs.length : pargs.length
+
+    for (var i = 0; i < max; i++) {
+        if (cargs[i] !== pargs[i]) {
+            return true
+        }
+    }
+
+    return false
 }
 
 function update(previous, domNode) {
@@ -1353,8 +1448,12 @@ function update(previous, domNode) {
         return
     }
 
-    this.vnode = (this.vnode || this.fn.apply(null, this.args))
-    patch(domNode, diff(previous.vnode, this.vnode))
+    if (!this.vnode) {
+        this.vnode = this.fn.apply(null, this.args)
+    }
+
+    var patches = diff(previous.vnode, this.vnode)
+    patch(domNode, patches)
 }
 
 function init() {

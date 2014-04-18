@@ -19,7 +19,7 @@ var createEditor = require('javascript-editor')
 window.addEventListener('load', function () {
     var editor = createEditor({
         container: container,
-        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"reset\"])\n\nvar state = mercury.hash({\n    isReset: mercury.value(false),\n    events: events\n})\n\nevents.reset(function (bool) {\n    state.isReset.set(bool)\n})\n\nfunction render(state) {\n    return h(\"div\", [\n        \"Text field: \",\n        h(\"input\", {\n            value: state.isReset ?\n                resetHook(\"\", state.events.reset) :\n                undefined\n        }),\n        h(\"input\", {\n            type: \"button\",\n            value: \"Reset text field\",\n            \"data-click\": mercury.event(state.events.reset, true)\n        })\n    ])\n}\n\nmercury.app(document.body, state, render)\n\nfunction resetHook(value, sink) {\n    if (!(this instanceof resetHook)) {\n        return new resetHook(value, sink)\n    }\n\n    this.value = value\n    this.sink = sink\n}\n\nresetHook.prototype.hook = function (elem, propName) {\n    elem[propName] = this.value\n    this.sink(false)\n}\n",
+        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"reset\"])\n\nvar state = mercury.hash({\n    isReset: mercury.value(false),\n    events: events\n})\n\nevents.reset(function (bool) {\n    state.isReset.set(bool)\n})\n\nfunction render(state) {\n    return h(\"div\", [\n        \"Text field: \",\n        h(\"input.input\", {\n            value: state.isReset ?\n                resetHook(\"\", state.events.reset) :\n                undefined\n        }),\n        h(\"input.button\", {\n            type: \"button\",\n            value: \"Reset text field\",\n            \"data-click\": mercury.event(state.events.reset, true)\n        })\n    ])\n}\n\nmercury.app(document.body, state, render)\n\nfunction resetHook(value, sink) {\n    if (!(this instanceof resetHook)) {\n        return new resetHook(value, sink)\n    }\n\n    this.value = value\n    this.sink = sink\n}\n\nresetHook.prototype.hook = function (elem, propName) {\n    elem[propName] = this.value\n    this.sink(false)\n}\n",
         readOnly: true
     })
 })
@@ -51,12 +51,12 @@ events.reset(function (bool) {
 function render(state) {
     return h("div", [
         "Text field: ",
-        h("input", {
+        h("input.input", {
             value: state.isReset ?
                 resetHook("", state.events.reset) :
                 undefined
         }),
-        h("input", {
+        h("input.button", {
             type: "button",
             value: "Reset text field",
             "data-click": mercury.event(state.events.reset, true)
@@ -534,8 +534,7 @@ function listenTo(eventName) {
 }
 
 },{"./add-event.js":6,"./listen.js":9,"global/document":21,"individual":14}],9:[function(require,module,exports){
-var extend = require("xtend/mutable")
-
+var ProxyEvent = require("./proxy-event.js")
 var getListener = require("./get-listener.js")
 
 module.exports = listen
@@ -556,17 +555,8 @@ function listen(delegator, eventName) {
     }, true)
 }
 
-function ProxyEvent(ev, listener) {
-    this._rawEvent = ev
-    extend(this, ev)
-    this.currentTarget = listener.currentTarget
-}
 
-ProxyEvent.prototype.preventDefault = function () {
-    this._rawEvent.preventDefault()
-}
-
-},{"./get-listener.js":7,"xtend/mutable":17}],10:[function(require,module,exports){
+},{"./get-listener.js":7,"./proxy-event.js":17}],10:[function(require,module,exports){
 module.exports = createHash
 
 function createHash(elem) {
@@ -676,40 +666,109 @@ if (typeof global !== "undefined") {
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],16:[function(require,module,exports){
-module.exports = hasKeys
-
-function hasKeys(source) {
-    return source !== null &&
-        (typeof source === "object" ||
-        typeof source === "function")
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
 }
 
 },{}],17:[function(require,module,exports){
-var hasKeys = require("./has-keys")
+var inherits = require("inherits")
 
-module.exports = extend
+var ALL_PROPS = [
+    "altKey", "bubbles", "cancelable", "ctrlKey",
+    "eventPhase", "metaKey", "relatedTarget", "shiftKey",
+    "target", "timeStamp", "type", "view", "which"
+]
+var KEY_PROPS = ["char", "charCode", "key", "keyCode"]
+var MOUSE_PROPS = [
+    "button", "buttons", "clientX", "clientY", "layerX",
+    "layerY", "offsetX", "offsetY", "pageX", "pageY",
+    "screenX", "screenY", "toElement"
+]
 
-function extend(target) {
-    var sources = [].slice.call(arguments, 1)
+var rkeyEvent = /^key/
+var rmouseEvent = /^(?:mouse|pointer|contextmenu)|click/
 
-    for (var i = 0; i < sources.length; i++) {
-        var source = sources[i]
+module.exports = ProxyEvent
 
-        if (!hasKeys(source)) {
-            continue
-        }
-
-        for (var key in source) {
-            if (source.hasOwnProperty(key)) {
-                target[key] = source[key]
-            }
-        }
+function ProxyEvent(ev, listener) {
+    if (!(this instanceof ProxyEvent)) {
+        return new ProxyEvent(ev, listener)
     }
 
-    return target
+    if (rkeyEvent.test(ev.type)) {
+        return new KeyEvent(ev, listener)
+    } else if (rmouseEvent.test(ev.type)) {
+        return new MouseEvent(ev, listener)
+    }
+
+    for (var i = 0; i < ALL_PROPS.length; i++) {
+        var propKey = ALL_PROPS[i]
+        this[propKey] = ev[propKey]
+    }
+
+    this._rawEvent = ev
+    this.currentTarget = listener ? listener.currentTarget : null
 }
 
-},{"./has-keys":16}],18:[function(require,module,exports){
+ProxyEvent.prototype.preventDefault = function () {
+    this._rawEvent.preventDefault()
+}
+
+function MouseEvent(ev, listener) {
+    for (var i = 0; i < ALL_PROPS.length; i++) {
+        var propKey = ALL_PROPS[i]
+        this[propKey] = ev[propKey]
+    }
+
+    for (var j = 0; j < MOUSE_PROPS.length; j++) {
+        var mousePropKey = MOUSE_PROPS[j]
+        this[mousePropKey] = ev[mousePropKey]
+    }
+
+    this._rawEvent = ev
+    this.currentTarget = listener ? listener.currentTarget : null
+}
+
+inherits(MouseEvent, ProxyEvent)
+
+function KeyEvent(ev, listener) {
+    for (var i = 0; i < ALL_PROPS.length; i++) {
+        var propKey = ALL_PROPS[i]
+        this[propKey] = ev[propKey]
+    }
+
+    for (var j = 0; j < KEY_PROPS.length; j++) {
+        var keyPropKey = KEY_PROPS[j]
+        this[keyPropKey] = ev[keyPropKey]
+    }
+
+    this._rawEvent = ev
+    this.currentTarget = listener ? listener.currentTarget : null
+}
+
+inherits(KeyEvent, ProxyEvent)
+
+},{"inherits":16}],18:[function(require,module,exports){
 module.exports = Event
 
 function Event() {
@@ -11362,7 +11421,14 @@ function filterNull(val) {
 }
 
 },{}],42:[function(require,module,exports){
-module.exports=require(16)
+module.exports = hasKeys
+
+function hasKeys(source) {
+    return source !== null &&
+        (typeof source === "object" ||
+        typeof source === "function")
+}
+
 },{}],43:[function(require,module,exports){
 var hasKeys = require("./has-keys")
 
@@ -11467,10 +11533,18 @@ var createElement = require("virtual-dom/create-element")
 var diff = require("virtual-dom/diff")
 var patch = require("virtual-dom/patch")
 
+function copyOver(list, offset) {
+    var newList = []
+    for (var i = offset; i < list.length; i++) {
+        newList[i - offset] = list[i]
+    }
+    return newList
+}
+
 module.exports = partial
 
 function partial(fn) {
-    var args = [].slice.call(arguments, 1)
+    var args = copyOver(arguments, 1)
     var firstArg = args[0]
     var key
 
@@ -11497,10 +11571,31 @@ Thunk.prototype.update = update
 Thunk.prototype.init = init
 
 function shouldUpdate(current, previous) {
-    return current.fn !== previous.fn ||
-        current.args.some(function (arg, index) {
-            return arg !== previous.args[index]
-        })
+    if (current.fn !== previous.fn) {
+        return true
+    }
+
+    var cargs = current.args
+    var pargs = previous.args
+
+    // fast case for args is zero case.
+    if (cargs.length === 0 && pargs.length === 0) {
+        return false
+    }
+
+    if (cargs.length !== pargs.length) {
+        return true
+    }
+
+    var max = cargs.length > pargs.length ? cargs.length : pargs.length
+
+    for (var i = 0; i < max; i++) {
+        if (cargs[i] !== pargs[i]) {
+            return true
+        }
+    }
+
+    return false
 }
 
 function update(previous, domNode) {
@@ -11509,8 +11604,12 @@ function update(previous, domNode) {
         return
     }
 
-    this.vnode = (this.vnode || this.fn.apply(null, this.args))
-    patch(domNode, diff(previous.vnode, this.vnode))
+    if (!this.vnode) {
+        this.vnode = this.fn.apply(null, this.args)
+    }
+
+    var patches = diff(previous.vnode, this.vnode)
+    patch(domNode, patches)
 }
 
 function init() {

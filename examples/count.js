@@ -9,11 +9,11 @@ events.clicks(function () {
 })
 
 function render(clickCount) {
-    return h("div", [
+    return h("div.counter", [
         "The state ",
         h("code", "clickCount"),
         " has value: " + clickCount + ".",
-        h("input", {
+        h("input.button", {
             type: "button",
             value: "Click me!",
             "data-click": mercury.event(events.clicks)
