@@ -19,7 +19,7 @@ var createEditor = require('javascript-editor')
 window.addEventListener('load', function () {
     var editor = createEditor({
         container: container,
-        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"reset\"])\n\nvar state = mercury.hash({\n    isReset: mercury.value(false),\n    events: events\n})\n\nevents.reset(function (bool) {\n    state.isReset.set(bool)\n})\n\nfunction render(state) {\n    return h(\"div\", [\n        \"Text field: \",\n        h(\"input\", {\n            value: state.isReset ?\n                resetHook(\"\", state.events.reset) :\n                undefined\n        }),\n        h(\"input\", {\n            type: \"button\",\n            value: \"Reset text field\",\n            \"data-click\": mercury.event(state.events.reset, true)\n        })\n    ])\n}\n\nmercury.app(document.body, state, render)\n\nfunction resetHook(value, sink) {\n    if (!(this instanceof resetHook)) {\n        return new resetHook(value, sink)\n    }\n\n    this.value = value\n    this.sink = sink\n}\n\nresetHook.prototype.hook = function (elem, propName) {\n    elem[propName] = this.value\n    this.sink(false)\n}\n",
+        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"reset\"])\n\nvar state = mercury.hash({\n    isReset: mercury.value(false),\n    events: events\n})\n\nevents.reset(function (bool) {\n    state.isReset.set(bool)\n})\n\nfunction render(state) {\n    return h(\"div\", [\n        \"Text field: \",\n        h(\"input.input\", {\n            value: state.isReset ?\n                resetHook(\"\", state.events.reset) :\n                undefined\n        }),\n        h(\"input.button\", {\n            type: \"button\",\n            value: \"Reset text field\",\n            \"data-click\": mercury.event(state.events.reset, true)\n        })\n    ])\n}\n\nmercury.app(document.body, state, render)\n\nfunction resetHook(value, sink) {\n    if (!(this instanceof resetHook)) {\n        return new resetHook(value, sink)\n    }\n\n    this.value = value\n    this.sink = sink\n}\n\nresetHook.prototype.hook = function (elem, propName) {\n    elem[propName] = this.value\n    this.sink(false)\n}\n",
         readOnly: true
     })
 })
@@ -51,12 +51,12 @@ events.reset(function (bool) {
 function render(state) {
     return h("div", [
         "Text field: ",
-        h("input", {
+        h("input.input", {
             value: state.isReset ?
                 resetHook("", state.events.reset) :
                 undefined
         }),
-        h("input", {
+        h("input.button", {
             type: "button",
             value: "Reset text field",
             "data-click": mercury.event(state.events.reset, true)
@@ -11533,10 +11533,18 @@ var createElement = require("virtual-dom/create-element")
 var diff = require("virtual-dom/diff")
 var patch = require("virtual-dom/patch")
 
+function copyOver(list, offset) {
+    var newList = []
+    for (var i = offset; i < list.length; i++) {
+        newList[i] = list[i]
+    }
+    return newList
+}
+
 module.exports = partial
 
 function partial(fn) {
-    var args = [].slice.call(arguments, 1)
+    var args = copyOver(arguments, 1)
     var firstArg = args[0]
     var key
 
@@ -11563,10 +11571,31 @@ Thunk.prototype.update = update
 Thunk.prototype.init = init
 
 function shouldUpdate(current, previous) {
-    return current.fn !== previous.fn ||
-        current.args.some(function (arg, index) {
-            return arg !== previous.args[index]
-        })
+    if (current.fn !== previous.fn) {
+        return true
+    }
+
+    var cargs = current.args
+    var parcs = previous.args
+
+    // fast case for args is zero case.
+    if (cargs.length === 0 && pargs.length === 0) {
+        return false
+    }
+
+    if (cargs.length !== pargs.length) {
+        return true
+    }
+
+    var max = cargs.length > pargs.length ? cargs.length : pargs.length
+
+    for (var i = 0; i < max; i++) {
+        if (cargs[i] !== pargs[i]) {
+            return true
+        }
+    }
+
+    return false
 }
 
 function update(previous, domNode) {
@@ -11575,8 +11604,12 @@ function update(previous, domNode) {
         return
     }
 
-    this.vnode = (this.vnode || this.fn.apply(null, this.args))
-    patch(domNode, diff(previous.vnode, this.vnode))
+    if (!this.vnode) {
+        this.vnode = this.fn.apply(null, this.args)
+    }
+
+    var patches = diff(previous.vnode, this.vnode)
+    patch(domNode, patches)
 }
 
 function init() {

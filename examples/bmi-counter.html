@@ -19,7 +19,7 @@ var createEditor = require('javascript-editor')
 window.addEventListener('load', function () {
     var editor = createEditor({
         container: container,
-        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"height\", \"weight\", \"bmi\"])\nvar bmiData = mercury.hash({\n    height: mercury.value(180),\n    weight: mercury.value(80),\n    bmi: mercury.value(null)\n})\n\nfunction updateData(type, data) {\n    bmiData[type].set(data.slider)\n    bmiData[type === \"bmi\" ? \"weight\" : \"bmi\"].set(null)\n}\n\nevents.height(updateData.bind(null, \"height\"))\nevents.weight(updateData.bind(null, \"weight\"))\nevents.bmi(updateData.bind(null, \"bmi\"))\n\nfunction calcBmi(data) {\n    var h = data.height / 100\n    return {\n        height: data.height,\n        bmi: data.bmi ? data.bmi : data.weight / (h * h),\n        weight: data.bmi ? data.bmi * (h * h) : data.weight\n    }\n}\n\nfunction slider(value, sink, min, max) {\n    return h(\"input\", {\n        type: \"range\", min: min, max: max, value: value,\n        style: { width: \"100%\" }, name: \"slider\",\n        \"data-event\": mercury.changeEvent(sink)\n    })\n}\n\nfunction render(bmiData) {\n    var values = calcBmi(bmiData)\n    var color = values.bmi < 18.5 ? \"orange\" :\n        values.bmi < 25 ? \"inherit\" :\n        values.bmi < 30 ? \"orange\" : \"red\"\n    var diagnose = values.bmi < 18.5 ? \"underweight\" :\n        values.bmi < 25 ? \"normal\" :\n        values.bmi < 30 ? \"overweight\" : \"obese\"\n\n    return h(\"div\", [\n        h(\"h3\", \"BMI calculator\"),\n        h(\"div\", [\n            \"Weight: \" + ~~values.weight + \"kg\",\n            mercury.partial(slider, values.weight, events.weight, 30, 150)\n        ]),\n        h(\"div\", [\n            \"Height: \" + ~~values.height + \"cm\",\n            mercury.partial(slider, values.height,\n                events.height, 100, 220)\n        ]),\n        h(\"div\", [\n            \"BMI: \" + ~~values.bmi + \" \",\n            h(\"span\", { style: { color: color } }, diagnose),\n            mercury.partial(slider, values.bmi, events.bmi, 10, 50)\n        ])\n    ])\n}\n\nmercury.app(document.body, bmiData, render)\n",
+        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"height\", \"weight\", \"bmi\"])\nvar bmiData = mercury.hash({\n    height: mercury.value(180),\n    weight: mercury.value(80),\n    bmi: mercury.value(null)\n})\n\nfunction updateData(type, data) {\n    bmiData[type].set(data.slider)\n    bmiData[type === \"bmi\" ? \"weight\" : \"bmi\"].set(null)\n}\n\nevents.height(updateData.bind(null, \"height\"))\nevents.weight(updateData.bind(null, \"weight\"))\nevents.bmi(updateData.bind(null, \"bmi\"))\n\nfunction calcBmi(data) {\n    var h = data.height / 100\n    return {\n        height: data.height,\n        bmi: data.bmi ? data.bmi : data.weight / (h * h),\n        weight: data.bmi ? data.bmi * (h * h) : data.weight\n    }\n}\n\nfunction slider(value, sink, min, max) {\n    return h(\"input.slider\", {\n        type: \"range\", min: min, max: max, value: value,\n        style: { width: \"100%\" }, name: \"slider\",\n        \"data-event\": mercury.changeEvent(sink)\n    })\n}\n\nfunction render(bmiData) {\n    var values = calcBmi(bmiData)\n    var color = values.bmi < 18.5 ? \"orange\" :\n        values.bmi < 25 ? \"inherit\" :\n        values.bmi < 30 ? \"orange\" : \"red\"\n    var diagnose = values.bmi < 18.5 ? \"underweight\" :\n        values.bmi < 25 ? \"normal\" :\n        values.bmi < 30 ? \"overweight\" : \"obese\"\n\n    return h(\"div\", [\n        h(\"h3\", \"BMI calculator\"),\n        h(\"div\", [\n            \"Weight: \" + ~~values.weight + \"kg\",\n            mercury.partial(slider, values.weight, events.weight, 30, 150)\n        ]),\n        h(\"div\", [\n            \"Height: \" + ~~values.height + \"cm\",\n            mercury.partial(slider, values.height,\n                events.height, 100, 220)\n        ]),\n        h(\"div\", [\n            \"BMI: \" + ~~values.bmi + \" \",\n            h(\"span\", { style: { color: color } }, diagnose),\n            mercury.partial(slider, values.bmi, events.bmi, 10, 50)\n        ])\n    ])\n}\n\nmercury.app(document.body, bmiData, render)\n",
         readOnly: true
     })
 })
@@ -63,7 +63,7 @@ function calcBmi(data) {
 }
 
 function slider(value, sink, min, max) {
-    return h("input", {
+    return h("input.slider", {
         type: "range", min: min, max: max, value: value,
         style: { width: "100%" }, name: "slider",
         "data-event": mercury.changeEvent(sink)
@@ -11553,10 +11553,18 @@ var createElement = require("virtual-dom/create-element")
 var diff = require("virtual-dom/diff")
 var patch = require("virtual-dom/patch")
 
+function copyOver(list, offset) {
+    var newList = []
+    for (var i = offset; i < list.length; i++) {
+        newList[i] = list[i]
+    }
+    return newList
+}
+
 module.exports = partial
 
 function partial(fn) {
-    var args = [].slice.call(arguments, 1)
+    var args = copyOver(arguments, 1)
     var firstArg = args[0]
     var key
 
@@ -11583,10 +11591,31 @@ Thunk.prototype.update = update
 Thunk.prototype.init = init
 
 function shouldUpdate(current, previous) {
-    return current.fn !== previous.fn ||
-        current.args.some(function (arg, index) {
-            return arg !== previous.args[index]
-        })
+    if (current.fn !== previous.fn) {
+        return true
+    }
+
+    var cargs = current.args
+    var parcs = previous.args
+
+    // fast case for args is zero case.
+    if (cargs.length === 0 && pargs.length === 0) {
+        return false
+    }
+
+    if (cargs.length !== pargs.length) {
+        return true
+    }
+
+    var max = cargs.length > pargs.length ? cargs.length : pargs.length
+
+    for (var i = 0; i < max; i++) {
+        if (cargs[i] !== pargs[i]) {
+            return true
+        }
+    }
+
+    return false
 }
 
 function update(previous, domNode) {
@@ -11595,8 +11624,12 @@ function update(previous, domNode) {
         return
     }
 
-    this.vnode = (this.vnode || this.fn.apply(null, this.args))
-    patch(domNode, diff(previous.vnode, this.vnode))
+    if (!this.vnode) {
+        this.vnode = this.fn.apply(null, this.args)
+    }
+
+    var patches = diff(previous.vnode, this.vnode)
+    patch(domNode, patches)
 }
 
 function init() {

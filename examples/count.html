@@ -19,7 +19,7 @@ var createEditor = require('javascript-editor')
 window.addEventListener('load', function () {
     var editor = createEditor({
         container: container,
-        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"clicks\"])\nvar clickCount = mercury.value(0)\n\nevents.clicks(function () {\n    clickCount.set(clickCount() + 1)\n})\n\nfunction render(clickCount) {\n    return h(\"div\", [\n        \"The state \",\n        h(\"code\", \"clickCount\"),\n        \" has value: \" + clickCount + \".\",\n        h(\"input\", {\n            type: \"button\",\n            value: \"Click me!\",\n            \"data-click\": mercury.event(events.clicks)\n        })\n    ])\n}\n\nmercury.app(document.body, clickCount, render)\n",
+        value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"clicks\"])\nvar clickCount = mercury.value(0)\n\nevents.clicks(function () {\n    clickCount.set(clickCount() + 1)\n})\n\nfunction render(clickCount) {\n    return h(\"div.counter\", [\n        \"The state \",\n        h(\"code\", \"clickCount\"),\n        \" has value: \" + clickCount + \".\",\n        h(\"input.button\", {\n            type: \"button\",\n            value: \"Click me!\",\n            \"data-click\": mercury.event(events.clicks)\n        })\n    ])\n}\n\nmercury.app(document.body, clickCount, render)\n",
         readOnly: true
     })
 })
@@ -45,11 +45,11 @@ events.clicks(function () {
 })
 
 function render(clickCount) {
-    return h("div", [
+    return h("div.counter", [
         "The state ",
         h("code", "clickCount"),
         " has value: " + clickCount + ".",
-        h("input", {
+        h("input.button", {
             type: "button",
             value: "Click me!",
             "data-click": mercury.event(events.clicks)
@@ -11512,10 +11512,18 @@ var createElement = require("virtual-dom/create-element")
 var diff = require("virtual-dom/diff")
 var patch = require("virtual-dom/patch")
 
+function copyOver(list, offset) {
+    var newList = []
+    for (var i = offset; i < list.length; i++) {
+        newList[i] = list[i]
+    }
+    return newList
+}
+
 module.exports = partial
 
 function partial(fn) {
-    var args = [].slice.call(arguments, 1)
+    var args = copyOver(arguments, 1)
     var firstArg = args[0]
     var key
 
@@ -11542,10 +11550,31 @@ Thunk.prototype.update = update
 Thunk.prototype.init = init
 
 function shouldUpdate(current, previous) {
-    return current.fn !== previous.fn ||
-        current.args.some(function (arg, index) {
-            return arg !== previous.args[index]
-        })
+    if (current.fn !== previous.fn) {
+        return true
+    }
+
+    var cargs = current.args
+    var parcs = previous.args
+
+    // fast case for args is zero case.
+    if (cargs.length === 0 && pargs.length === 0) {
+        return false
+    }
+
+    if (cargs.length !== pargs.length) {
+        return true
+    }
+
+    var max = cargs.length > pargs.length ? cargs.length : pargs.length
+
+    for (var i = 0; i < max; i++) {
+        if (cargs[i] !== pargs[i]) {
+            return true
+        }
+    }
+
+    return false
 }
 
 function update(previous, domNode) {
@@ -11554,8 +11583,12 @@ function update(previous, domNode) {
         return
     }
 
-    this.vnode = (this.vnode || this.fn.apply(null, this.args))
-    patch(domNode, diff(previous.vnode, this.vnode))
+    if (!this.vnode) {
+        this.vnode = this.fn.apply(null, this.args)
+    }
+
+    var patches = diff(previous.vnode, this.vnode)
+    patch(domNode, patches)
 }
 
 function init() {
