@@ -24,7 +24,7 @@
     "email": "raynos2@gmail.com"
   },
   "dependencies": {
-    "dom-delegator": "^7.0.0",
+    "dom-delegator": "^7.1.0",
     "geval": "^2.1.1",
     "main-loop": "^1.7.0",
     "observ": "^0.1.5",
