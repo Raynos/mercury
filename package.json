@@ -60,6 +60,7 @@
     "field-reset": "node bin/browserify-editor.js examples/field-reset.js | indexhtmlify > examples/field-reset.html",
     "bmi-counter": "node bin/browserify-editor.js examples/bmi-counter.js | indexhtmlify > examples/bmi-counter.html",
     "shared-state": "node bin/browserify-editor.js examples/shared-state.js | indexhtmlify > examples/shared-state.html",
+    "react-ballmer": "node bin/browserify-editor.js examples/react-ballmer.js | indexhtmlify > examples/react-ballmer.html",
     "geometry": "browserify examples/geometry/browser.js | indexhtmlify > examples/geometry/index.html",
     "todomvc": "browserify examples/todomvc/browser.js | indexhtmlify > examples/todomvc/index.html"
   },
