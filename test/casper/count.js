@@ -8,13 +8,12 @@ function assert(bool, message) {
     }
 }
 
-var cwd = fs.workingDirectory
-var uri = "file://" + fs.workingDirectory + "/examples/count.html"
+var uri = "file:///" + fs.workingDirectory + "/examples/count.html"
 casper.start(uri, function () {
     var info = this.getElementInfo(".counter")
 
     assert(info.text.indexOf('value: 0') !== -1, "value not 0")
-    
+
     this.click('.button')
 
     this.wait(50, function () {
