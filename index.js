@@ -8,7 +8,7 @@ var mercury = module.exports = {
 
     // Input
     Delegator: require("dom-delegator"),
-    Events: require("geval/multiple"),
+    input: require("geval/multiple"),
     event: require("value-event/event"),
     valueEvent: require("value-event/value"),
     submitEvent: require("value-event/submit"),
@@ -29,17 +29,12 @@ var mercury = module.exports = {
     svg: require("virtual-hyperscript/svg"),
 
     // Utility
-    app: app,
-    input: input
+    app: app
 }
 
 function app(elem, observ, render) {
+    mercury.Delegator();
     var loop = mercury.main(observ(), render)
     observ(loop.update)
     elem.appendChild(loop.target)
-}
-
-function input(names) {
-    var delegator = mercury.Delegator()
-    return mercury.Events(names)
 }
