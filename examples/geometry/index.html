@@ -117,8 +117,8 @@ DragEventHandler.prototype.handleEvent = function (ev) {
     var fn = this.fn
     var value = this.value
 
-    var currentX = ev.offsetX
-    var currentY = ev.offsetY
+    var currentX = ev.offsetX || ev.layerX
+    var currentY = ev.offsetY || ev.layerY
 
     function onmove(ev) {
         var delta = {
