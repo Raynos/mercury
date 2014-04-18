@@ -8,8 +8,7 @@ function assert(bool, message) {
     }
 }
 
-var cwd = fs.workingDirectory
-var uri = "file://" + fs.workingDirectory + "/examples/field-reset.html"
+var uri = "file:///" + fs.workingDirectory + "/examples/field-reset.html"
 casper.start(uri, function () {
     this.sendKeys(".input", "some text")
 

@@ -8,8 +8,7 @@ function assert(bool, message) {
     }
 }
 
-var cwd = fs.workingDirectory
-var uri = "file://" + fs.workingDirectory + "/examples/shared-state.html"
+var uri = "file:///" + fs.workingDirectory + "/examples/shared-state.html"
 casper.start(uri, function () {
     var info = this.getElementInfo(".content")
 
