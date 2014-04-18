@@ -1,5 +1,6 @@
 var casper = require("casper").create()
 var dump = require("utils").dump
+var fs = require("fs")
 
 function assert(bool, message) {
     if (!bool) {
@@ -7,7 +8,8 @@ function assert(bool, message) {
     }
 }
 
-var uri = "file:///home/raynos/projects/mercury/examples/shared-state.html"
+var cwd = fs.workingDirectory
+var uri = "file://" + fs.workingDirectory + "/examples/shared-state.html"
 casper.start(uri, function () {
     var info = this.getElementInfo(".content")
 
