@@ -3547,7 +3547,7 @@ var patch = require("virtual-dom/patch")
 function copyOver(list, offset) {
     var newList = []
     for (var i = offset; i < list.length; i++) {
-        newList[i] = list[i]
+        newList[i - offset] = list[i]
     }
     return newList
 }
@@ -3587,7 +3587,7 @@ function shouldUpdate(current, previous) {
     }
 
     var cargs = current.args
-    var parcs = previous.args
+    var pargs = previous.args
 
     // fast case for args is zero case.
     if (cargs.length === 0 && pargs.length === 0) {
