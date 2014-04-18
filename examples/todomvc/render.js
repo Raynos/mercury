@@ -59,7 +59,7 @@ function mainSection(todos, route, events) {
         }),
         h("label", { htmlFor: "toggle-all" }, "Mark all as complete"),
         h("ul#todo-list.todolist", visibleTodos.map(function (todo) {
-            return mercury.partial(todoItem, todo, events)
+            return todoItem(todo, events)
         }))
     ])
 }
