@@ -22,6 +22,8 @@ window.addEventListener('load', function () {
         value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"clicks\"])\nvar clickCount = mercury.value(0)\n\nevents.clicks(function () {\n    clickCount.set(clickCount() + 1)\n})\n\nfunction render(clickCount) {\n    return h(\"div.counter\", [\n        \"The state \",\n        h(\"code\", \"clickCount\"),\n        \" has value: \" + clickCount + \".\",\n        h(\"input.button\", {\n            type: \"button\",\n            value: \"Click me!\",\n            \"data-click\": mercury.event(events.clicks)\n        })\n    ])\n}\n\nmercury.app(document.body, clickCount, render)\n",
         readOnly: true
     })
+    container.childNodes[0].style.fontSize = '12px'
+    editor.editor.refresh()
 })
 document.documentElement.appendChild(container)
 var link = document.createElement('link')
@@ -463,10 +465,10 @@ var listen = require("./listen.js")
 
 var delegatorCache = Individual("__DOM_DELEGATOR_CACHE@7", {})
 var allEvents = [
-    "blur", "focus", "focusin", "focusout", "load", "resize",
-    "scroll", "unload", "click", "dblclick", "mousedown",
-    "mouseup", "change", "select", "submit", "keydown",
-    "keypress", "keyup", "error", "contextmenu", "input"
+    "blur", "change", "click",  "contextmenu", "dblclick",
+    "error","focus", "focusin", "focusout", "input", "keydown",
+    "keypress", "keyup", "load", "mousedown", "mouseup",
+    "resize", "scroll", "select", "submit", "unload",
 ]
 
 module.exports = Delegator

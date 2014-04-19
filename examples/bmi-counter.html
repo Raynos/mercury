@@ -22,6 +22,8 @@ window.addEventListener('load', function () {
         value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"height\", \"weight\", \"bmi\"])\nvar bmiData = mercury.hash({\n    height: mercury.value(180),\n    weight: mercury.value(80),\n    bmi: mercury.value(calcBmi(180, 80))\n})\n\nevents.height(updateData.bind(null, \"height\"))\nevents.weight(updateData.bind(null, \"weight\"))\nevents.bmi(updateData.bind(null, \"bmi\"))\n\nfunction updateData(type, data) {\n    bmiData[type].set(data.slider)\n\n    if (type !== \"bmi\") {\n        bmiData.bmi.set(calcBmi(bmiData.height(), bmiData.weight()))\n    } else {\n        bmiData.weight.set(calcWeight(bmiData.height(), bmiData.bmi()))\n    }\n}\n\nfunction calcWeight(height, bmi) {\n    var h = height / 100\n    return h * h * bmi\n}\n\nfunction calcBmi(height, weight) {\n    var h = height / 100\n    return weight / (h * h)\n}\n\nfunction slider(value, sink, min, max) {\n    return h(\"input.slider\", {\n        type: \"range\", min: min, max: max, value: value,\n        style: { width: \"100%\" }, name: \"slider\",\n        \"data-event\": mercury.changeEvent(sink)\n    })\n}\n\nfunction render(values) {\n    var color = values.bmi < 18.5 ? \"orange\" :\n        values.bmi < 25 ? \"inherit\" :\n        values.bmi < 30 ? \"orange\" : \"red\"\n    var diagnose = values.bmi < 18.5 ? \"underweight\" :\n        values.bmi < 25 ? \"normal\" :\n        values.bmi < 30 ? \"overweight\" : \"obese\"\n\n    return h(\"div\", [\n        h(\"h3\", \"BMI calculator\"),\n        h(\"div\", [\n            \"Weight: \" + ~~values.weight + \"kg\",\n            mercury.partial(slider, values.weight, events.weight, 30, 150)\n        ]),\n        h(\"div\", [\n            \"Height: \" + ~~values.height + \"cm\",\n            mercury.partial(slider, values.height,\n                events.height, 100, 220)\n        ]),\n        h(\"div\", [\n            \"BMI: \" + ~~values.bmi + \" \",\n            h(\"span\", { style: { color: color } }, diagnose),\n            mercury.partial(slider, values.bmi, events.bmi, 10, 50)\n        ])\n    ])\n}\n\nmercury.app(document.body, bmiData, render)\n",
         readOnly: true
     })
+    container.childNodes[0].style.fontSize = '12px'
+    editor.editor.refresh()
 })
 document.documentElement.appendChild(container)
 var link = document.createElement('link')
@@ -509,10 +511,10 @@ var listen = require("./listen.js")
 
 var delegatorCache = Individual("__DOM_DELEGATOR_CACHE@7", {})
 var allEvents = [
-    "blur", "focus", "focusin", "focusout", "load", "resize",
-    "scroll", "unload", "click", "dblclick", "mousedown",
-    "mouseup", "change", "select", "submit", "keydown",
-    "keypress", "keyup", "error", "contextmenu", "input"
+    "blur", "change", "click",  "contextmenu", "dblclick",
+    "error","focus", "focusin", "focusout", "input", "keydown",
+    "keypress", "keyup", "load", "mousedown", "mouseup",
+    "resize", "scroll", "select", "submit", "unload",
 ]
 
 module.exports = Delegator

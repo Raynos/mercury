@@ -22,6 +22,8 @@ window.addEventListener('load', function () {
         value: "var mercury = require(\"../index.js\")\nvar h = mercury.h\n\nvar events = mercury.input([\"reset\"])\n\nvar state = mercury.hash({\n    isReset: mercury.value(false),\n    events: events\n})\n\nevents.reset(function (bool) {\n    state.isReset.set(bool)\n})\n\nfunction render(state) {\n    return h(\"div\", [\n        \"Text field: \",\n        h(\"input.input\", {\n            value: state.isReset ?\n                resetHook(\"\", state.events.reset) :\n                undefined\n        }),\n        h(\"input.button\", {\n            type: \"button\",\n            value: \"Reset text field\",\n            \"data-click\": mercury.event(state.events.reset, true)\n        })\n    ])\n}\n\nmercury.app(document.body, state, render)\n\nfunction resetHook(value, sink) {\n    if (!(this instanceof resetHook)) {\n        return new resetHook(value, sink)\n    }\n\n    this.value = value\n    this.sink = sink\n}\n\nresetHook.prototype.hook = function (elem, propName) {\n    elem[propName] = this.value\n    this.sink(false)\n}\n",
         readOnly: true
     })
+    container.childNodes[0].style.fontSize = '12px'
+    editor.editor.refresh()
 })
 document.documentElement.appendChild(container)
 var link = document.createElement('link')
@@ -484,10 +486,10 @@ var listen = require("./listen.js")
 
 var delegatorCache = Individual("__DOM_DELEGATOR_CACHE@7", {})
 var allEvents = [
-    "blur", "focus", "focusin", "focusout", "load", "resize",
-    "scroll", "unload", "click", "dblclick", "mousedown",
-    "mouseup", "change", "select", "submit", "keydown",
-    "keypress", "keyup", "error", "contextmenu", "input"
+    "blur", "change", "click",  "contextmenu", "dblclick",
+    "error","focus", "focusin", "focusout", "input", "keydown",
+    "keypress", "keyup", "load", "mousedown", "mouseup",
+    "resize", "scroll", "select", "submit", "unload",
 ]
 
 module.exports = Delegator
