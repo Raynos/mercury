@@ -33,6 +33,8 @@ var code = "" +
     "        value: " + JSON.stringify(src) + ",\n" +
     "        readOnly: true\n" +
     "    })\n" +
+    "    container.childNodes[0].style.fontSize = '12px'\n" +
+    "    editor.editor.refresh()\n" +
     "})\n" +
     "document.documentElement.appendChild(container)\n" +
     addLink("https://rawgithub.com/maxogden/" +
