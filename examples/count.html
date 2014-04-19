@@ -70,7 +70,7 @@ var mercury = module.exports = {
 
     // Input
     Delegator: require("dom-delegator"),
-    Events: require("geval/multiple"),
+    input: require("geval/multiple"),
     event: require("value-event/event"),
     valueEvent: require("value-event/value"),
     submitEvent: require("value-event/submit"),
@@ -91,19 +91,14 @@ var mercury = module.exports = {
     svg: require("virtual-hyperscript/svg"),
 
     // Utility
-    app: app,
-    input: input
+    app: app
 }
 
 function app(elem, observ, render) {
+    mercury.Delegator();
     var loop = mercury.main(observ(), render)
     observ(loop.update)
     elem.appendChild(loop.target)
-}
-
-function input(names) {
-    var delegator = mercury.Delegator()
-    return mercury.Events(names)
 }
 
 },{"dom-delegator":8,"geval/multiple":19,"main-loop":28,"observ":35,"observ-array":32,"observ-hash":34,"value-event/change":36,"value-event/event":37,"value-event/key":38,"value-event/submit":44,"value-event/value":45,"vdom-thunk":46,"virtual-dom/create-element":47,"virtual-dom/diff":48,"virtual-dom/patch":51,"virtual-hyperscript":70,"virtual-hyperscript/svg":78}],4:[function(require,module,exports){
@@ -471,7 +466,7 @@ var allEvents = [
     "blur", "focus", "focusin", "focusout", "load", "resize",
     "scroll", "unload", "click", "dblclick", "mousedown",
     "mouseup", "change", "select", "submit", "keydown",
-    "keypress", "keyup", "error", "contextmenu"
+    "keypress", "keyup", "error", "contextmenu", "input"
 ]
 
 module.exports = Delegator
@@ -11209,7 +11204,7 @@ function handleEvent(ev) {
 
     var isValid =
         (ev.type === 'change' && target.type === 'checkbox') ||
-        (ev.type === 'keyup' && target.type === 'text') ||
+        (ev.type === 'input' && target.type === 'text') ||
         (ev.type === 'change' && target.type === 'range')
 
     if (!isValid) {
