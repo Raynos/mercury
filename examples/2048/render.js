@@ -6,8 +6,9 @@ function render(state) {
     return h(".2048-wrapper", [
         h("link", {
             rel: "stylesheet",
-            href: "https://rawgithub.com/raynos/mercury/" +
-                "master/examples/2048/style.css"
+            href: "https://cdn.rawgit.com/Raynos/mercury/" +
+                "338d629145f3c0c33205d3873a1862ed1b5e139d/" +
+                "examples/2048/style.css"
         }),
         h(".container", [
             header(state),
@@ -61,7 +62,7 @@ function gameScreen(state) {
 
 function gameTile(tile) {
     var className = "tile-" + tile.number +
-        " tile-position-" + tile.x + "-" + tile.y
+        " tile-position-" + (tile.x + 1) + "-" + (tile.y + 1)
 
     return h(".tile", {
         className: className

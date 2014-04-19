@@ -5,7 +5,8 @@ var Game2048 = {
     size: 4,
     grid: [],
     currentScore: 0,
-    highScore: 0
+    highScore: 0,
+    startingTiles: 2
 }
 
 var GameTile = {
@@ -33,7 +34,8 @@ function gameBoard(events, initialState) {
         grid: mercury.array(state.grid),
         size: mercury.value(state.size),
         currentScore: mercury.value(state.currentScore),
-        highScore: mercury.value(state.highScore)
+        highScore: mercury.value(state.highScore),
+        startingTiles: mercury.value(state.startingTiles)
     })
 }
 
