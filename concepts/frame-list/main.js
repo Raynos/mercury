@@ -26,7 +26,7 @@ state.frames(frameData.save)
 
 // Show the frame editor
 frameList.onSelectFrame(function (frameId) {
-    state.currentFrame.set(state.frames[frameId])
+    state.currentFrame.set(state.frames[frameId]())
     state.editorVisible.set(true)
 
     editor.onExit(function () {
