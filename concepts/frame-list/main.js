@@ -21,7 +21,9 @@ state.frames(frameData.save)
 // Show the frame editor
 frameListEditor.onSelectFrame(function (frameId) {
     var editor = frameEditor(state.frames[frameId])
-    
+
+    state.editor.set(editor)
+
     editor.onExit(function () {
         // Restore the frame list
         state.editor.set(frameList)
