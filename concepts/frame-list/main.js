@@ -12,7 +12,8 @@ var frameList = FrameList(frames)
 
 var state = mercury.hash({
     frames: mercury.hash(initialFrameData),
-    editor: mercury.value(frameList)
+    editor: mercury.value(null),
+    frameList: mercury.value(frameList)
 })
 
 // When the data changes, save it
@@ -23,10 +24,12 @@ frameList.onSelectFrame(function (frameId) {
     var editor = FrameEditor(state.frames[frameId])
 
     state.editor.set(editor)
+    state.frameList.set(null)
 
     editor.onExit(function () {
         // Restore the frame list
-        state.editor.set(frameList)
+        state.frameList.set(frameList)
+        state.editor.set(null)
     })
 })
 
@@ -36,7 +39,10 @@ function render(state) {
     // The immutable internal event list is also passed in
     // Event listeners are obviously not serializable, but 
     // they can expose their state (listener set)
-    return h(state.editor.partial())
+    return h(
+        state.editor ? state.editor.partial() :
+            state.frameList.partial()
+    )
 }
 
 // setup the loop and go.
