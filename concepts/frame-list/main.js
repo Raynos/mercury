@@ -28,9 +28,11 @@ frameListEditor.onSelectFrame(function (frameId) {
 })
 
 function render(state) {
-    // This is a mercury partial rendered with editor.state instead of globalSoup.state
+    // This is a mercury partial rendered with editor.state instead 
+    // of globalSoup.state
     // The immutable internal event list is also passed in
-    // Event listeners are obviously not serializable, but they can expose their state (listener set)
+    // Event listeners are obviously not serializable, but 
+    // they can expose their state (listener set)
     return h(state.editor.partial())
 }
 

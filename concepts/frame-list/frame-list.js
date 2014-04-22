@@ -61,7 +61,8 @@ function AutonymousWidget(state, render, internalEvents, publicEvents) {
     this._render = render
     
     // Export the public events output only (readable/source)
-    // Here we have a true notion of only being able to read this event externally
+    // Here we have a true notion of only being able to read this 
+    // event externally
     Object.keys(publicEvents).forEach(function (eventName) {
         this[eventName] = publicEvents[eventName].output
     })
@@ -75,5 +76,6 @@ function AutonymousWidget(state, render, internalEvents, publicEvents) {
 }
 
 AnonymousWidget.prototype.partial = function (optional) {
-    return mercury.partial(this._render, this.state(), this._internalEvents, optional)
+    return mercury.partial(this._render, this.state(),
+        this._internalEvents, optional)
 }
