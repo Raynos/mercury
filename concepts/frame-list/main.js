@@ -1,37 +1,52 @@
 var mercury = require("mercury")
 
-var frameList = require("./views/frame-list")
-var frameEditor = require("./views/frame-editor")
-var frameData = require("./data/frames")
+var FrameList = require("./apps/frame-list")
+var FrameEditor = require("./apps/frame-editor")
+var FrameData = require("./data/frames")
 
 // Load the data
-var frames = mercury.hash(frameData.load())
-// When the data changes, save it
-frames(frameData.save)
+var initialFrameData = FrameData.load()
 
-// Create the default view using the frame set
-var frameListEditor = frameList(frames)
+var frames = mercury.hash(initialFrameData)
+var currentFrame = mercury.value(null)
+// Create the frameList component using the frames data
+// `frameList` is { state: state, events: events }
+// we can collapse these two objects into one interface optionally
+var frameList = FrameList(frames)
+// `frameEditor` is { state: state, events: events }
+var frameEditor = FrameEditor(currentFrame)
 
 var state = mercury.hash({
     frames: frames,
-    editor: frameList
+    currentFrame: currentFrame,
+    editor: frameEditor.state,
+    frameList: frameList.state,
+    editorVisible: mercury.value(false)
 })
 
+// When the data changes, save it
+state.frames(frameData.save)
+
 // Show the frame editor
-frameListEditor.onSelectFrame(function (frameId) {
-    var editor = frameEditor(frames[frameId])
-    
-    editor.onExit(function () {
+frameList.events.onSelectFrame(function (frameId) {
+    state.currentFrame.set(state.frames[frameId]())
+    state.editorVisible.set(true)
+
+    editor.events.onExit(function () {
         // Restore the frame list
-        state.editor.set(frameList)
+        state.editorVisible.set(false)
     })
 })
 
 function render(state) {
-    // This is a mercury partial rendered with editor.state instead of globalSoup.state
+    // This is a mercury partial rendered with the editor's state
     // The immutable internal event list is also passed in
-    // Event listeners are obviously not serializable, but they can expose their state (listener set)
-    return h(state.editor.partial())
+    // Event listeners are obviously not serializable, but 
+    // they can expose their state (listener set)
+    return h(
+        state.editorVisible ? FrameEditor.Render(state.editor) :
+            FrameList.Render(state.frameList)
+    )
 }
 
 // setup the loop and go.
