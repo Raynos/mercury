@@ -12,7 +12,7 @@ var frameListEditor = frameList(frames)
 
 var state = mercury.hash({
     frames: mercury.hash(initialFrameData),
-    editor: frameList
+    editor: frameListEditor
 })
 
 // When the data changes, save it
@@ -26,7 +26,7 @@ frameListEditor.onSelectFrame(function (frameId) {
 
     editor.onExit(function () {
         // Restore the frame list
-        state.editor.set(frameList)
+        state.editor.set(frameListEditor)
     })
 })
 
