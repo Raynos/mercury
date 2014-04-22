@@ -1,14 +1,14 @@
 var mercury = require("mercury")
 
-var frameList = require("./views/frame-list")
-var frameEditor = require("./views/frame-editor")
-var frameData = require("./data/frames")
+var FrameList = require("./views/frame-list")
+var FrameEditor = require("./views/frame-editor")
+var FrameData = require("./data/frames")
 
 // Load the data
-var initialFrameData = frameData.load()
+var initialFrameData = FrameData.load()
 
 // Create the default view using the frame set
-var frameListEditor = frameList(frames)
+var frameListEditor = FrameList(frames)
 
 var state = mercury.hash({
     frames: mercury.hash(initialFrameData),
@@ -20,7 +20,7 @@ state.frames(frameData.save)
 
 // Show the frame editor
 frameListEditor.onSelectFrame(function (frameId) {
-    var editor = frameEditor(state.frames[frameId])
+    var editor = FrameEditor(state.frames[frameId])
 
     state.editor.set(editor)
 
