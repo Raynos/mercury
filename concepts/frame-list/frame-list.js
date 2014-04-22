@@ -36,12 +36,26 @@ function createFrameList(state) {
     // instead of injecting the listeners blindly.
     // +1 self documenting code and readability
     var publicEvents = {
+        // Only onSelectFrame.output is exported on the interface
+        //  mercury.io(listener<function>?) -> { 
+        //      input: function(value<any>),
+        //      output: function(listener<function>)
+        //  }
+        //   
+        //    returns an event object. An event consists of two function input and output
+        //       write the       read the 
+        //    --> input --> O --> output -->
+        //               [Event]
+        //
+        //  If a function is provided to mercury.io, that is the default listener to the output  
+        // 
         onSelectFrame = mercury.io()
     }
     
     // Events to listen to internally on the dom
     // We probably don't want to expose this internal concern
     var internalEvents = {
+        // Only frameClick.input is passed into render
         frameClick: mercury.io(function (frame) {
             // We can just write the value straight out here.
             // But we could also write to the state if we wanted
