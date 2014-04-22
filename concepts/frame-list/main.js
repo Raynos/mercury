@@ -8,13 +8,17 @@ var FrameData = require("./data/frames")
 var initialFrameData = FrameData.load()
 
 var frames = mercury.hash(initialFrameData)
+var currentFrame = mercury.value(null)
 // Create the default view using the frame set
 var frameList = FrameList(frames)
+var frameEditor = FrameEditor(currentFrame)
 
 var state = mercury.hash({
     frames: frames,
-    editor: mercury.value(null),
-    frameList: mercury.value(frameList)
+    currentFrame: currentFrame,
+    editor: mercury.value(frameEditor),
+    frameList: mercury.value(frameList),
+    editorVisible: mercury.value(false)
 })
 
 // When the data changes, save it
@@ -22,15 +26,12 @@ state.frames(frameData.save)
 
 // Show the frame editor
 frameList.onSelectFrame(function (frameId) {
-    var editor = FrameEditor(state.frames[frameId])
-
-    state.editor.set(editor)
-    state.frameList.set(null)
+    state.currentFrame.set(state.frames[frameId])
+    state.editorVisible.set(true)
 
     editor.onExit(function () {
         // Restore the frame list
-        state.frameList.set(frameList)
-        state.editor.set(null)
+        state.editorVisible.set(false)
     })
 })
 
@@ -41,7 +42,7 @@ function render(state) {
     // Event listeners are obviously not serializable, but 
     // they can expose their state (listener set)
     return h(
-        state.editor ? state.editor.partial() :
+        state.editorVisible ? state.editor.partial() :
             state.frameList.partial()
     )
 }
