@@ -1,12 +1,14 @@
 var mercury = require("mercury")
 
+createFrameList.Render = frameList
 
 module.exports = createFrameList
 
 // @state - snapshot of internal state
-// @events - collection of internal event inputs
 // @optional - argument passed into widget.thunk, not used
-function frameList(state, events, optional) {
+function frameList(state, optional) {
+    var events = state._internalEvents
+
     return h("ul.frame-list", map(state.thumbnails, function (frame) {
         return h("li.frame-list-item", {
             "className": state.lastSelected === frame.id ? "highlighed" : "",
@@ -28,7 +30,7 @@ function createFrameList(state) {
     
     var state = mercury.hash({
         thumbnails: thumbnails,
-        lastSelect: null
+        lastSelect: mercury.value(null)
     })
     
     // Events for consumers to listen to
@@ -66,30 +68,26 @@ function createFrameList(state) {
     }
 
     
-    return new AutonymousWidget(state, frameList, internalEvents, publicEvents)
+    return AutonymousThing(state, internalEvents, publicEvents)
 }
 
 
-function AutonymousWidget(state, render, internalEvents, publicEvents) {
-    this.state = state
-    this._render = render
+function AutonymousThing(state, internalEvents, publicEvents) {
+    var events = {}
+    state._internalEvents = {}
     
     // Export the public events output only (readable/source)
     // Here we have a true notion of only being able to read this 
     // event externally
     Object.keys(publicEvents).forEach(function (eventName) {
-        this[eventName] = publicEvents[eventName].output
+        events[eventName] = publicEvents[eventName].output
     })
-    
-    var internal = this._internalEvents {}
     
     // Persist the private events listeners only (writable/sink)
     Object.keys(privateEvents).forEach(function (eventName) {
-        internal[eventName] = internalEvents[eventName].input
+        state._internalEvents[eventName] =
+            internalEvents[eventName].input
     })
-}
 
-AnonymousWidget.prototype.partial = function (optional) {
-    return mercury.partial(this._render, this.state(),
-        this._internalEvents, optional)
+    return { state: state, events: events }
 }
