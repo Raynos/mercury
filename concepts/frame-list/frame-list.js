@@ -17,14 +17,14 @@ function frameList(state, optional) {
     }))
 }
 
-function createFrameList(state) {
+function createFrameList(parentState) {
     // INTERNAL VIEW STATE: turn each frame into an internal thumbnail
     // You don't need this information. This shouldn't need to leak
     // outisde of this scope. I shouldn't have to compute this externally
     // I shouldn't have to mutate global state with a new key for my purpose
     // The internal state is still readable. This is still ref transparent
     // and this is still immutable.
-    var thumbnails = mercury.hash(map(state.frames, function (frame) {
+    var thumbnails = mercury.hash(map(parentState.frames, function (frame) {
         return thumbnailify(frame)
     }))
     
