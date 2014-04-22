@@ -10,9 +10,9 @@
 
 <!-- [![browser support][11]][12] -->
 
-A truly modular frontend anti framework
+A truly modular frontend framework
 
-To understand what I mean by anti framework just [read the source](https://github.com/Raynos/mercury/blob/master/index.js)
+To understand what I mean by truly modular just [read the source](https://github.com/Raynos/mercury/blob/master/index.js)
 
 ## Example
 
