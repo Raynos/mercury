@@ -7,11 +7,12 @@ var FrameData = require("./data/frames")
 // Load the data
 var initialFrameData = FrameData.load()
 
+var frames = mercury.hash(initialFrameData)
 // Create the default view using the frame set
 var frameList = FrameList(frames)
 
 var state = mercury.hash({
-    frames: mercury.hash(initialFrameData),
+    frames: frames,
     editor: mercury.value(null),
     frameList: mercury.value(frameList)
 })
