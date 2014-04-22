@@ -1,7 +1,7 @@
 var mercury = require("mercury")
 
-var FrameList = require("./views/frame-list")
-var FrameEditor = require("./views/frame-editor")
+var FrameList = require("./apps/frame-list")
+var FrameEditor = require("./apps/frame-editor")
 var FrameData = require("./data/frames")
 
 // Load the data
