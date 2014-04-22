@@ -60,7 +60,7 @@ function createFrameList(state) {
             // We can just write the value straight out here.
             // But we could also write to the state if we wanted
             // and allow state changes to drive the events
-            publicEvents.onSelectFrame.output(frame.id)
+            publicEvents.onSelectFrame.input(frame.id)
             state.lastSelected.set(frame.id)
         })
     }
