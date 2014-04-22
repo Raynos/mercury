@@ -5,7 +5,8 @@ var frameEditor = require("./views/frame-editor")
 var frameData = require("./data/frames")
 
 // Load the data
-var frames = mercury.hash(frameData.load())
+var initialFrameData = frameData.load()
+var frames = mercury.hash(initialFrameData)
 // When the data changes, save it
 frames(frameData.save)
 
