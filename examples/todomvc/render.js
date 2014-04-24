@@ -16,7 +16,7 @@ function render(state) {
         }),
         h("section#todoapp.todoapp", [
             mercury.partial(header, state.todoField, state.events),
-            mercury.partial(mainSection, state.todos, state.route, state.events),
+            mainSection(state.todos, state.route, state.events),
             mercury.partial(statsSection, state.todos, state.route, state.events)
         ]),
         footer
@@ -59,7 +59,7 @@ function mainSection(todos, route, events) {
         }),
         h("label", { htmlFor: "toggle-all" }, "Mark all as complete"),
         h("ul#todo-list.todolist", visibleTodos.map(function (todo) {
-            return mercury.partial(todoItem, todo, events)
+            return todoItem(todo, events)
         }))
     ])
 }

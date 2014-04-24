@@ -2,6 +2,7 @@ var mercury = require("../../index.js")
 var TimeTravel = require("../../time-travel.js")
 var document = require("global/document")
 var window = require("global/window")
+var rafListen = require("./lib/raf-listen.js")
 var localStorage = window.localStorage
 
 var Input = require("./input.js")
@@ -25,7 +26,7 @@ function createApp() {
 
     wireUpEvents(state, events)
 
-    state(function (value) {
+    rafListen(state, function (value) {
         localStorage.setItem("todos-mercury", JSON.stringify(value))
     })
 
