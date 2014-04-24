@@ -43,6 +43,7 @@
     "hash-router": "^0.3.4",
     "indexhtmlify": "^1.1.1",
     "javascript-editor": "^0.2.1",
+    "raf": "^0.1.3",
     "tape": "^2.12.3",
     "xtend": "^3.0.0"
   },
