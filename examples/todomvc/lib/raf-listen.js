@@ -1,11 +1,10 @@
 var raf = require('raf/polyfill');
 
-var Empty = {};
-
 module.exports = rafListen;
 
 function rafListen(observ, fn) {
     var sending = false;
+    var currValue;
 
     return observ(onvalue);
 
