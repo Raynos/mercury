@@ -19,7 +19,13 @@ function rafListen(observ, fn) {
     }
 
     function send() {
+        var oldValue = currValue;
         fn(currValue);
         sending = false;
+
+        if (oldValue !== currValue) {
+            sending = true;
+            raf(send);
+        }
     }
 }
