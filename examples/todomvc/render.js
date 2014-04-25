@@ -4,7 +4,6 @@ var h = require("../../index.js").h
 var doMutableFocus = require("./lib/do-mutable-focus.js")
 
 var ESCAPE = 27
-var footer = infoFooter()
 
 module.exports = render
 
@@ -19,7 +18,7 @@ function render(state) {
             mainSection(state.todos, state.route, state.events),
             mercury.partial(statsSection, state.todos, state.route, state.events)
         ]),
-        footer
+        mercury.partial(infoFooter)
     ])
 }
 
