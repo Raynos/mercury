@@ -5,7 +5,9 @@ var mercury = require("../../index.js")
 var TodoApp = {
     todos: [],
     route: "all",
-    todoField: ""
+    field: {
+        text: ""
+    }
 }
 
 var TodoItem = {
@@ -26,7 +28,9 @@ function todoApp(events, initialState) {
     return mercury.hash({
         todos: mercury.array(state.todos.map(todoItem)),
         route: mercury.value(state.route),
-        todoField: mercury.value(state.todoField),
+        field: mercury.hash({
+            text :mercury.value(state.field.text)
+        }),
         events: events
     })
 }

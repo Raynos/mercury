@@ -15,7 +15,7 @@ function render(state) {
             href: "https://rawgithub.com/raynos/mercury/master/examples/todomvc/style.css"
         }),
         h("section#todoapp.todoapp", [
-            mercury.partial(header, state.todoField, state.events),
+            mercury.partial(header, state.field, state.events),
             mainSection(state.todos, state.route, state.events),
             mercury.partial(statsSection, state.todos, state.route, state.events)
         ]),
@@ -23,7 +23,7 @@ function render(state) {
     ])
 }
 
-function header(todoField, events) {
+function header(field, events) {
     return h("header#header.header", {
         "data-event": [
             mercury.changeEvent(events.setTodoField),
@@ -34,7 +34,7 @@ function header(todoField, events) {
         h("input#new-todo.new-todo", {
             placeholder: "What needs to be done?",
             autofocus: true,
-            value: todoField,
+            value: field.text,
             name: "newTodo"
         })
     ])

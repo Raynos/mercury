@@ -31,12 +31,12 @@ function add(state, data) {
     state.todos.push(State.todoItem({
         title: data.newTodo.trim()
     }))
-    state.todoField.set("")
+    state.field.text.set("")
 }
 
 
 function setTodoField(state, data) {
-    state.todoField.set(data.newTodo)
+    state.field.text.set(data.newTodo)
 }
 
 function toggle(state, data) {
