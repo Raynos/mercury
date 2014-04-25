@@ -24,6 +24,10 @@ function toggleAll(state, value) {
 }
 
 function add(state, data) {
+    if (data.newTodo.trim() === "") {
+        return
+    }
+
     state.todos.push(State.todoItem({
         title: data.newTodo.trim()
     }))
