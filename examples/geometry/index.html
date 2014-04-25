@@ -141,7 +141,7 @@ DragEventHandler.prototype.handleEvent = function (ev) {
     window.addEventListener("mouseup", onup)
 }
 
-},{"global/window":23,"xtend":76}],3:[function(require,module,exports){
+},{"global/window":23,"xtend":75}],3:[function(require,module,exports){
 Point.dist = dist
 
 module.exports = Point
@@ -217,7 +217,7 @@ function circle(center, radius) {
     }))
 }
 
-},{"../../index.js":5,"./drag-handler.js":2,"./point.js":3,"xtend":76}],5:[function(require,module,exports){
+},{"../../index.js":5,"./drag-handler.js":2,"./point.js":3,"xtend":75}],5:[function(require,module,exports){
 /*
     Pro tip: Don't require `mercury` itself.
       require and depend on all these modules directly!
@@ -259,7 +259,7 @@ function app(elem, observ, render) {
     elem.appendChild(loop.target)
 }
 
-},{"dom-delegator":9,"geval/multiple":20,"main-loop":24,"observ":31,"observ-array":28,"observ-hash":30,"value-event/change":32,"value-event/event":33,"value-event/key":34,"value-event/submit":40,"value-event/value":41,"vdom-thunk":42,"virtual-dom/create-element":43,"virtual-dom/diff":44,"virtual-dom/patch":48,"virtual-hyperscript":67,"virtual-hyperscript/svg":75}],6:[function(require,module,exports){
+},{"dom-delegator":9,"geval/multiple":20,"main-loop":24,"observ":30,"observ-array":27,"observ-hash":29,"value-event/change":32,"value-event/event":33,"value-event/key":34,"value-event/submit":40,"value-event/value":41,"vdom-thunk":42,"virtual-dom/create-element":43,"virtual-dom/diff":44,"virtual-dom/patch":47,"virtual-hyperscript":66,"virtual-hyperscript/svg":74}],6:[function(require,module,exports){
 
 },{}],7:[function(require,module,exports){
 var DataSet = require("data-set")
@@ -281,10 +281,112 @@ function addEvent(target, type, handler) {
     }
 }
 
-},{"data-set":12}],8:[function(require,module,exports){
+},{"data-set":11}],8:[function(require,module,exports){
+var document = require("global/document")
 var DataSet = require("data-set")
 
-module.exports = getListener
+var addEvent = require("./add-event.js")
+var removeEvent = require("./remove-event.js")
+var ProxyEvent = require("./proxy-event.js")
+
+module.exports = DOMDelegator
+
+function DOMDelegator() {
+    this.target = document.documentElement
+    this.events = {}
+    this.rawEventListeners = {}
+    this.globalListeners = {}
+}
+
+DOMDelegator.prototype.addEventListener = addEvent
+DOMDelegator.prototype.removeEventListener = removeEvent
+
+DOMDelegator.prototype.addGlobalEventListener =
+    function addGlobalEventListener(eventName, fn) {
+        var listeners = this.globalListeners[eventName]
+        if (!listeners) {
+            listeners = this.globalListeners[eventName] = []
+        }
+
+        if (listeners.indexOf(fn) === -1) {
+            listeners.push(fn)
+        }
+    }
+
+DOMDelegator.prototype.removeGlobalEventListener =
+    function removeGlobalEventListener(eventName, fn) {
+        var listeners = this.globalListeners[eventName]
+        if (!listeners) {
+            return
+        }
+
+        var index = listeners.indexOf(fn)
+        if (index !== -1) {
+            listeners.splice(index, 1)
+        }
+    }
+
+DOMDelegator.prototype.listenTo = function listenTo(eventName) {
+    if (this.events[eventName]) {
+        return
+    }
+
+    this.events[eventName] = true
+    listen(this, eventName)
+}
+
+DOMDelegator.prototype.unlistenTo = function unlistenTo(eventName) {
+    if (!this.events[eventName]) {
+        return
+    }
+
+    this.events[eventName] = false
+    unlisten(this, eventName)
+}
+
+function listen(delegator, eventName) {
+    var listener = delegator.rawEventListeners[eventName]
+
+    if (!listener) {
+        listener = delegator.rawEventListeners[eventName] =
+            createHandler(eventName, delegator.globalListeners)
+    }
+
+    delegator.target.addEventListener(eventName, listener, true)
+}
+
+function unlisten(delegator, eventName) {
+    var listener = delegator.rawEventListeners[eventName]
+
+    if (!listener) {
+        throw new Error("dom-delegator#unlistenTo: cannot " +
+            "unlisten to " + eventName)
+    }
+
+    delegator.target.removeEventListener(eventName, listener, true)
+}
+
+function createHandler(eventName, globalListeners) {
+    return handler
+
+    function handler(ev) {
+        var globalHandlers = globalListeners[eventName] || []
+        var listener = getListener(ev.target, eventName)
+
+        var handlers = globalHandlers
+            .concat(listener ? listener.handlers : [])
+        if (handlers.length === 0) {
+            return
+        }
+
+        var arg = new ProxyEvent(ev, listener)
+
+        handlers.forEach(function (handler) {
+            typeof handler === "function" ?
+                handler(arg) : handler.handleEvent(arg)
+        })
+    }
+}
 
 function getListener(target, type) {
     // terminate recursion if parent is `null`
@@ -310,21 +412,28 @@ function Listener(target, handlers) {
     this.handlers = handlers
 }
 
-},{"data-set":12}],9:[function(require,module,exports){
+},{"./add-event.js":7,"./proxy-event.js":17,"./remove-event.js":18,"data-set":11,"global/document":22}],9:[function(require,module,exports){
 var Individual = require("individual")
-var document = require("global/document")
 
-var addEvent = require("./add-event.js")
-var listen = require("./listen.js")
+var DOMDelegator = require("./dom-delegator.js")
 
 var delegatorCache = Individual("__DOM_DELEGATOR_CACHE@7", {})
-var allEvents = [
-    "blur", "focus", "focusin", "focusout", "load", "resize",
-    "scroll", "unload", "click", "dblclick", "mousedown",
-    "mouseup", "change", "select", "submit", "keydown",
-    "keypress", "keyup", "error", "contextmenu"
+var commonEvents = [
+    "blur", "change", "click",  "contextmenu", "dblclick",
+    "error","focus", "focusin", "focusout", "input", "keydown",
+    "keypress", "keyup", "load", "mousedown", "mouseup",
+    "resize", "scroll", "select", "submit", "unload",
 ]
 
+/*  Delegator is a thin wrapper around a singleton `DOMDelegator`
+        instance.
+
+    Only one DOMDelegator should exist because we do not want
+        duplicate event listeners bound to the DOM.
+
+    `Delegator` will also `listenTo()` all events unless 
+        every caller opts out of it
+*/
 module.exports = Delegator
 
 function Delegator(opts) {
@@ -337,66 +446,17 @@ function Delegator(opts) {
     }
 
     if (opts.defaultEvents !== false) {
-        allEvents.forEach(function (eventName) {
-            delegator.listenTo(eventName)
-        })
+        for (var i = 0; i < commonEvents.length; i++) {
+            delegator.listenTo(commonEvents[i])
+        }
     }
 
     return delegator
 }
 
-function DOMDelegator() {
-    this.target = document.documentElement
-    this.events = {}
-}
 
-DOMDelegator.prototype.addEventListener = addEvent
 
-DOMDelegator.prototype.listenTo = listenTo
-
-function listenTo(eventName) {
-    if (this.events[eventName]) {
-        return
-    }
-
-    this.events[eventName] = true
-    listen(this, eventName)
-}
-
-},{"./add-event.js":7,"./listen.js":10,"global/document":22,"individual":15}],10:[function(require,module,exports){
-var extend = require("xtend/mutable")
-
-var getListener = require("./get-listener.js")
-
-module.exports = listen
-
-function listen(delegator, eventName) {
-    delegator.target.addEventListener(eventName, function (ev) {
-        var listener = getListener(ev.target, eventName)
-        if (!listener) {
-            return
-        }
-
-        var arg = new ProxyEvent(ev, listener)
-
-        listener.handlers.forEach(function (handler) {
-            typeof handler === "function" ?
-                handler(arg) : handler.handleEvent(arg)
-        })
-    }, true)
-}
-
-function ProxyEvent(ev, listener) {
-    this._rawEvent = ev
-    extend(this, ev)
-    this.currentTarget = listener.currentTarget
-}
-
-ProxyEvent.prototype.preventDefault = function () {
-    this._rawEvent.preventDefault()
-}
-
-},{"./get-listener.js":8,"xtend/mutable":18}],11:[function(require,module,exports){
+},{"./dom-delegator.js":8,"individual":14}],10:[function(require,module,exports){
 module.exports = createHash
 
 function createHash(elem) {
@@ -420,7 +480,7 @@ function createHash(elem) {
     return hash
 }
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var createStore = require("weakmap-shim/create-store")
 var Individual = require("individual")
 
@@ -440,7 +500,7 @@ function DataSet(elem) {
     return store.hash
 }
 
-},{"./create-hash.js":11,"individual":15,"weakmap-shim/create-store":13}],13:[function(require,module,exports){
+},{"./create-hash.js":10,"individual":14,"weakmap-shim/create-store":12}],12:[function(require,module,exports){
 var hiddenStore = require('./hidden-store.js');
 
 module.exports = createStore;
@@ -459,7 +519,7 @@ function createStore() {
     };
 }
 
-},{"./hidden-store.js":14}],14:[function(require,module,exports){
+},{"./hidden-store.js":13}],13:[function(require,module,exports){
 module.exports = hiddenStore;
 
 function hiddenStore(obj, key) {
@@ -477,7 +537,7 @@ function hiddenStore(obj, key) {
     return store;
 }
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var root = require("global")
 
 module.exports = Individual
@@ -495,7 +555,7 @@ function Individual(key, value) {
     return value
 }
 
-},{"global":16}],16:[function(require,module,exports){
+},{"global":15}],15:[function(require,module,exports){
 (function (global){
 /*global window, global*/
 if (typeof global !== "undefined") {
@@ -505,41 +565,131 @@ if (typeof global !== "undefined") {
 }
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],17:[function(require,module,exports){
-module.exports = hasKeys
-
-function hasKeys(source) {
-    return source !== null &&
-        (typeof source === "object" ||
-        typeof source === "function")
+},{}],16:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
 }
 
-},{}],18:[function(require,module,exports){
-var hasKeys = require("./has-keys")
+},{}],17:[function(require,module,exports){
+var inherits = require("inherits")
 
-module.exports = extend
+var ALL_PROPS = [
+    "altKey", "bubbles", "cancelable", "ctrlKey",
+    "eventPhase", "metaKey", "relatedTarget", "shiftKey",
+    "target", "timeStamp", "type", "view", "which"
+]
+var KEY_PROPS = ["char", "charCode", "key", "keyCode"]
+var MOUSE_PROPS = [
+    "button", "buttons", "clientX", "clientY", "layerX",
+    "layerY", "offsetX", "offsetY", "pageX", "pageY",
+    "screenX", "screenY", "toElement"
+]
 
-function extend(target) {
-    var sources = [].slice.call(arguments, 1)
+var rkeyEvent = /^key|input/
+var rmouseEvent = /^(?:mouse|pointer|contextmenu)|click/
 
-    for (var i = 0; i < sources.length; i++) {
-        var source = sources[i]
+module.exports = ProxyEvent
 
-        if (!hasKeys(source)) {
-            continue
-        }
-
-        for (var key in source) {
-            if (source.hasOwnProperty(key)) {
-                target[key] = source[key]
-            }
-        }
+function ProxyEvent(ev, listener) {
+    if (!(this instanceof ProxyEvent)) {
+        return new ProxyEvent(ev, listener)
     }
 
-    return target
+    if (rkeyEvent.test(ev.type)) {
+        return new KeyEvent(ev, listener)
+    } else if (rmouseEvent.test(ev.type)) {
+        return new MouseEvent(ev, listener)
+    }
+
+    for (var i = 0; i < ALL_PROPS.length; i++) {
+        var propKey = ALL_PROPS[i]
+        this[propKey] = ev[propKey]
+    }
+
+    this._rawEvent = ev
+    this.currentTarget = listener ? listener.currentTarget : null
 }
 
-},{"./has-keys":17}],19:[function(require,module,exports){
+ProxyEvent.prototype.preventDefault = function () {
+    this._rawEvent.preventDefault()
+}
+
+function MouseEvent(ev, listener) {
+    for (var i = 0; i < ALL_PROPS.length; i++) {
+        var propKey = ALL_PROPS[i]
+        this[propKey] = ev[propKey]
+    }
+
+    for (var j = 0; j < MOUSE_PROPS.length; j++) {
+        var mousePropKey = MOUSE_PROPS[j]
+        this[mousePropKey] = ev[mousePropKey]
+    }
+
+    this._rawEvent = ev
+    this.currentTarget = listener ? listener.currentTarget : null
+}
+
+inherits(MouseEvent, ProxyEvent)
+
+function KeyEvent(ev, listener) {
+    for (var i = 0; i < ALL_PROPS.length; i++) {
+        var propKey = ALL_PROPS[i]
+        this[propKey] = ev[propKey]
+    }
+
+    for (var j = 0; j < KEY_PROPS.length; j++) {
+        var keyPropKey = KEY_PROPS[j]
+        this[keyPropKey] = ev[keyPropKey]
+    }
+
+    this._rawEvent = ev
+    this.currentTarget = listener ? listener.currentTarget : null
+}
+
+inherits(KeyEvent, ProxyEvent)
+
+},{"inherits":16}],18:[function(require,module,exports){
+var DataSet = require("data-set")
+
+module.exports = removeEvent
+
+function removeEvent(target, type, handler) {
+    var ds = DataSet(target)
+    var events = ds[type]
+
+    if (!events) {
+        return
+    } else if (Array.isArray(events)) {
+        var index = events.indexOf(handler)
+        if (index !== -1) {
+            events.splice(index, 1)
+        }
+    } else if (events === handler) {
+        ds[type] = null
+    }
+}
+
+},{"data-set":11}],19:[function(require,module,exports){
 module.exports = Event
 
 function Event() {
@@ -674,25 +824,7 @@ function main(initialState, view, opts) {
     }
 }
 
-},{"raf/polyfill":25,"virtual-dom/create-element":43,"virtual-dom/diff":44,"virtual-dom/patch":48}],25:[function(require,module,exports){
-var global = typeof window === 'undefined' ? this : window
-
-var _raf =
-  global.requestAnimationFrame ||
-  global.webkitRequestAnimationFrame ||
-  global.mozRequestAnimationFrame ||
-  global.msRequestAnimationFrame ||
-  global.oRequestAnimationFrame ||
-  (global.setImmediate ? function(fn, el) {
-    setImmediate(fn)
-  } :
-  function(fn, el) {
-    setTimeout(fn, 0)
-  })
-
-module.exports = _raf
-
-},{}],26:[function(require,module,exports){
+},{"raf/polyfill":31,"virtual-dom/create-element":43,"virtual-dom/diff":44,"virtual-dom/patch":47}],25:[function(require,module,exports){
 module.exports = addListener
 
 function addListener(observArray, observ) {
@@ -720,7 +852,7 @@ function addListener(observArray, observ) {
     })
 }
 
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 var ObservArray = require("./index.js")
 
 var slice = Array.prototype.slice
@@ -787,7 +919,7 @@ function notImplemented() {
     throw new Error("Pull request welcome")
 }
 
-},{"./index.js":28}],28:[function(require,module,exports){
+},{"./index.js":27}],27:[function(require,module,exports){
 var Observ = require("observ")
 
 // circular dep between ArrayMethods & this file
@@ -834,6 +966,7 @@ function ObservArray(initialList) {
 
     obs.get = get
     obs.getLength = getLength
+    obs.put = put
 
     // you better not mutate this list directly
     // this is the list of observs instances
@@ -857,11 +990,15 @@ function get(index) {
     return this._list[index]
 }
 
+function put(index, value) {
+    this.splice(index, 1, value)
+}
+
 function getLength() {
     return this._list.length
 }
 
-},{"./add-listener.js":26,"./array-methods.js":27,"./splice.js":29,"observ":31}],29:[function(require,module,exports){
+},{"./add-listener.js":25,"./array-methods.js":26,"./splice.js":28,"observ":30}],28:[function(require,module,exports){
 var slice = Array.prototype.slice
 
 var addListener = require("./add-listener.js")
@@ -912,7 +1049,7 @@ function splice(index, amount) {
     return removed
 }
 
-},{"./add-listener.js":26}],30:[function(require,module,exports){
+},{"./add-listener.js":25}],29:[function(require,module,exports){
 var Observ = require("observ")
 var extend = require("xtend")
 
@@ -957,7 +1094,7 @@ function ObservHash(hash) {
     return obs
 }
 
-},{"observ":31,"xtend":76}],31:[function(require,module,exports){
+},{"observ":30,"xtend":75}],30:[function(require,module,exports){
 module.exports = Observable
 
 function Observable(value) {
@@ -985,6 +1122,24 @@ function Observable(value) {
         }
     }
 }
+
+},{}],31:[function(require,module,exports){
+var global = typeof window === 'undefined' ? this : window
+
+var _raf =
+  global.requestAnimationFrame ||
+  global.webkitRequestAnimationFrame ||
+  global.mozRequestAnimationFrame ||
+  global.msRequestAnimationFrame ||
+  global.oRequestAnimationFrame ||
+  (global.setImmediate ? function(fn, el) {
+    setImmediate(fn)
+  } :
+  function(fn, el) {
+    setTimeout(fn, 0)
+  })
+
+module.exports = _raf
 
 },{}],32:[function(require,module,exports){
 var extend = require('xtend')
@@ -1201,7 +1356,14 @@ function filterNull(val) {
 }
 
 },{}],38:[function(require,module,exports){
-module.exports=require(17)
+module.exports = hasKeys
+
+function hasKeys(source) {
+    return source !== null &&
+        (typeof source === "object" ||
+        typeof source === "function")
+}
+
 },{}],39:[function(require,module,exports){
 var hasKeys = require("./has-keys")
 
@@ -1306,18 +1468,37 @@ var createElement = require("virtual-dom/create-element")
 var diff = require("virtual-dom/diff")
 var patch = require("virtual-dom/patch")
 
+function copyOver(list, offset) {
+    var newList = []
+    for (var i = offset; i < list.length; i++) {
+        newList[i - offset] = list[i]
+    }
+    return newList
+}
+
 module.exports = partial
 
 function partial(fn) {
-    var args = [].slice.call(arguments, 1)
+    var args = copyOver(arguments, 1)
+    var firstArg = args[0]
+    var key
 
-    return new Thunk(fn, args)
+    if (typeof firstArg === "object" && firstArg !== null) {
+        if ("key" in firstArg) {
+            key = firstArg.key
+        } else if ("id" in firstArg) {
+            key = firstArg.id
+        }
+    }
+
+    return new Thunk(fn, args, key)
 }
 
-function Thunk(fn, args) {
+function Thunk(fn, args, key) {
     this.fn = fn
     this.args = args
     this.vnode = null
+    this.key = key
 }
 
 Thunk.prototype.type = "immutable-thunk"
@@ -1325,10 +1506,31 @@ Thunk.prototype.update = update
 Thunk.prototype.init = init
 
 function shouldUpdate(current, previous) {
-    return current.fn !== previous.fn ||
-        current.args.some(function (arg, index) {
-            return arg !== previous.args[index]
-        })
+    if (current.fn !== previous.fn) {
+        return true
+    }
+
+    var cargs = current.args
+    var pargs = previous.args
+
+    // fast case for args is zero case.
+    if (cargs.length === 0 && pargs.length === 0) {
+        return false
+    }
+
+    if (cargs.length !== pargs.length) {
+        return true
+    }
+
+    var max = cargs.length > pargs.length ? cargs.length : pargs.length
+
+    for (var i = 0; i < max; i++) {
+        if (cargs[i] !== pargs[i]) {
+            return true
+        }
+    }
+
+    return false
 }
 
 function update(previous, domNode) {
@@ -1337,8 +1539,12 @@ function update(previous, domNode) {
         return
     }
 
-    this.vnode = (this.vnode || this.fn.apply(null, this.args))
-    patch(domNode, diff(previous.vnode, this.vnode))
+    if (!this.vnode) {
+        this.vnode = this.fn.apply(null, this.args)
+    }
+
+    var patches = diff(previous.vnode, this.vnode)
+    patch(domNode, patches)
 }
 
 function init() {
@@ -1346,26 +1552,24 @@ function init() {
     return createElement(this.vnode)
 }
 
-},{"virtual-dom/create-element":43,"virtual-dom/diff":44,"virtual-dom/patch":48}],43:[function(require,module,exports){
+},{"virtual-dom/create-element":43,"virtual-dom/diff":44,"virtual-dom/patch":47}],43:[function(require,module,exports){
 var createElement = require("./vdom/create-element")
 
 module.exports = createElement
 
-},{"./vdom/create-element":50}],44:[function(require,module,exports){
+},{"./vdom/create-element":49}],44:[function(require,module,exports){
 var diff = require("./vtree/diff")
 
 module.exports = diff
 
-},{"./vtree/diff":55}],45:[function(require,module,exports){
-module.exports=require(22)
-},{"min-document":6}],46:[function(require,module,exports){
+},{"./vtree/diff":54}],45:[function(require,module,exports){
 module.exports = isObject
 
 function isObject(x) {
     return typeof x === "object" && x !== null
 }
 
-},{}],47:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 var nativeIsArray = Array.isArray
 var toString = Object.prototype.toString
 
@@ -1375,12 +1579,12 @@ function isArray(obj) {
     return toString.call(obj) === "[object Array]"
 }
 
-},{}],48:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 var patch = require("./vdom/patch")
 
 module.exports = patch
 
-},{"./vdom/patch":53}],49:[function(require,module,exports){
+},{"./vdom/patch":52}],48:[function(require,module,exports){
 var isObject = require("is-object")
 
 var isHook = require("../vtree/is-vhook")
@@ -1411,7 +1615,7 @@ function applyProperties(node, props, previous) {
     }
 }
 
-},{"../vtree/is-vhook":56,"is-object":46}],50:[function(require,module,exports){
+},{"../vtree/is-vhook":55,"is-object":45}],49:[function(require,module,exports){
 var document = require("global/document")
 
 var applyProperties = require("./apply-properties")
@@ -1456,7 +1660,7 @@ function createElement(vnode, opts) {
     return node
 }
 
-},{"../vtree/is-vnode":57,"../vtree/is-vtext":58,"../vtree/is-widget":59,"./apply-properties":49,"global/document":45}],51:[function(require,module,exports){
+},{"../vtree/is-vnode":56,"../vtree/is-vtext":57,"../vtree/is-widget":58,"./apply-properties":48,"global/document":22}],50:[function(require,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -1543,7 +1747,7 @@ function ascending(a, b) {
     return a > b ? 1 : -1
 }
 
-},{}],52:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 var applyProperties = require("./apply-properties")
 
 var isWidget = require("../vtree/is-widget")
@@ -1679,7 +1883,7 @@ function reorderChildren(domNode, bIndex) {
     }
 }
 
-},{"../vtree/is-widget":59,"../vtree/vpatch":62,"./apply-properties":49,"./create-element":50,"./update-widget":54}],53:[function(require,module,exports){
+},{"../vtree/is-widget":58,"../vtree/vpatch":61,"./apply-properties":48,"./create-element":49,"./update-widget":53}],52:[function(require,module,exports){
 var document = require("global/document")
 var isArray = require("x-is-array")
 
@@ -1754,7 +1958,7 @@ function patchIndices(patches) {
     return indices
 }
 
-},{"./dom-index":51,"./patch-op":52,"global/document":45,"x-is-array":47}],54:[function(require,module,exports){
+},{"./dom-index":50,"./patch-op":51,"global/document":22,"x-is-array":46}],53:[function(require,module,exports){
 var isWidget = require("../vtree/is-widget")
 
 module.exports = updateWidget
@@ -1771,7 +1975,7 @@ function updateWidget(a, b) {
     return false
 }
 
-},{"../vtree/is-widget":59}],55:[function(require,module,exports){
+},{"../vtree/is-widget":58}],54:[function(require,module,exports){
 var isArray = require("x-is-array")
 var isObject = require("is-object")
 
@@ -1894,12 +2098,11 @@ function getPrototype(value) {
 
 function diffChildren(a, b, patch, apply, index) {
     var aChildren = a.children
-    var bChildren = b.children
+    var bChildren = reorder(aChildren, b.children)
+
     var aLen = aChildren.length
     var bLen = bChildren.length
     var len = aLen > bLen ? aLen : bLen
-
-    aChildren = reorder(aChildren, bChildren, len)
 
     for (var i = 0; i < len; i++) {
         var leftNode = aChildren[i]
@@ -1926,9 +2129,9 @@ function diffChildren(a, b, patch, apply, index) {
         }
     }
 
-    if (aChildren.moves) {
+    if (bChildren.moves) {
         // Reorder nodes last
-        apply = appendPatch(apply, new VPatch(VPatch.ORDER, a, aChildren.moves))
+        apply = appendPatch(apply, new VPatch(VPatch.ORDER, a, bChildren.moves))
     }
 
     return apply
@@ -1982,54 +2185,58 @@ function hooks(vNode, patch, index) {
 }
 
 // List diff, naive left to right reordering
-function reorder(aChildren, bChildren, len) {
-    var aKeys = keyIndex(aChildren)
-
-    if (!aKeys) {
-        return aChildren
-    }
+function reorder(aChildren, bChildren) {
 
     var bKeys = keyIndex(bChildren)
 
     if (!bKeys) {
-        return aChildren
-    }
-
-    var aMatch, bMatch
-
-    for (var key in aKeys) {
-        if (key in bKeys) {
-            if (!aMatch) {
-                aMatch = {}
-                bMatch = {}
-            }
-
-            var aIndex = aKeys[key]
-            var bIndex = bKeys[key]
-            aMatch[aIndex] = bIndex
-            bMatch[bIndex] = aIndex
-        }
-    }
-
-    if (!aMatch) {
         return bChildren
     }
 
+    var aKeys = keyIndex(aChildren)
+
+    if (!aKeys) {
+        return bChildren
+    }
+
+    var bMatch = {}, aMatch = {}
+
+    for (var key in bKeys) {
+        bMatch[bKeys[key]] = aKeys[key]
+    }
+
+    for (var key in aKeys) {
+        aMatch[aKeys[key]] = bKeys[key]
+    }
+
+    var aLen = aChildren.length
+    var bLen = bChildren.length
+    var len = aLen > bLen ? aLen : bLen
     var shuffle = []
     var freeIndex = 0
+    var i = 0
+    var moveIndex = 0
+    var moves = shuffle.moves = {}
 
-    shuffle.moves = bMatch
-
-    for (var i = 0; i < len; i++) {
-        var move = bMatch[i]
+    while (freeIndex < len) {
+        var move = aMatch[i]
         if (move !== undefined) {
-            shuffle[i] = aChildren[move]
+            shuffle[i] = bChildren[move]
+            moves[move] = moveIndex++
+        } else if (i in aMatch) {
+            shuffle[i] = undefined
         } else {
-            while (freeIndex in aMatch) {
+            while (bMatch[freeIndex] !== undefined) {
                 freeIndex++
             }
-            shuffle[i] = aChildren[freeIndex++]
+
+            if (freeIndex < len) {
+                moves[freeIndex] = moveIndex++
+                shuffle[i] = bChildren[freeIndex]
+                freeIndex++
+            }
         }
+        i++
     }
 
     return shuffle
@@ -2064,7 +2271,7 @@ function appendPatch(apply, patch) {
     }
 }
 
-},{"./is-vnode":57,"./is-vtext":58,"./is-widget":59,"./vpatch":62,"is-object":46,"x-is-array":47}],56:[function(require,module,exports){
+},{"./is-vnode":56,"./is-vtext":57,"./is-widget":58,"./vpatch":61,"is-object":45,"x-is-array":46}],55:[function(require,module,exports){
 module.exports = isHook
 
 function isHook(hook) {
@@ -2072,7 +2279,7 @@ function isHook(hook) {
         !hook.hasOwnProperty("hook")
 }
 
-},{}],57:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 var version = require("./version")
 
 module.exports = isVirtualNode
@@ -2085,7 +2292,7 @@ function isVirtualNode(x) {
     return x.type === "VirtualNode" && x.version === version
 }
 
-},{"./version":60}],58:[function(require,module,exports){
+},{"./version":59}],57:[function(require,module,exports){
 var version = require("./version")
 
 module.exports = isVirtualText
@@ -2098,17 +2305,17 @@ function isVirtualText(x) {
     return x.type === "VirtualText" && x.version === version
 }
 
-},{"./version":60}],59:[function(require,module,exports){
+},{"./version":59}],58:[function(require,module,exports){
 module.exports = isWidget
 
 function isWidget(w) {
     return w && typeof w.init === "function" && typeof w.update === "function"
 }
 
-},{}],60:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 module.exports = "1"
 
-},{}],61:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 var version = require("./version")
 var isVNode = require("./is-vnode")
 var isWidget = require("./is-widget")
@@ -2173,7 +2380,7 @@ function VirtualNode(tagName, properties, children, key, namespace) {
 VirtualNode.prototype.version = version
 VirtualNode.prototype.type = "VirtualNode"
 
-},{"./is-vhook":56,"./is-vnode":57,"./is-widget":59,"./version":60}],62:[function(require,module,exports){
+},{"./is-vhook":55,"./is-vnode":56,"./is-widget":58,"./version":59}],61:[function(require,module,exports){
 var version = require("./version")
 
 VirtualPatch.NONE = 0
@@ -2196,7 +2403,7 @@ function VirtualPatch(type, vNode, patch) {
 VirtualPatch.prototype.version = version.split(".")
 VirtualPatch.prototype.type = "VirtualPatch"
 
-},{"./version":60}],63:[function(require,module,exports){
+},{"./version":59}],62:[function(require,module,exports){
 var version = require("./version")
 
 module.exports = VirtualText
@@ -2208,7 +2415,7 @@ function VirtualText(text) {
 VirtualText.prototype.version = version
 VirtualText.prototype.type = "VirtualText"
 
-},{"./version":60}],64:[function(require,module,exports){
+},{"./version":59}],63:[function(require,module,exports){
 module.exports = AttributeHook;
 
 function AttributeHook(value) {
@@ -2227,7 +2434,7 @@ AttributeHook.prototype.hook = function (node, prop, prev) {
     node.setAttributeNS(null, prop, this.value)
 }
 
-},{}],65:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 var DataSet = require("data-set")
 
 module.exports = DataSetHook;
@@ -2247,7 +2454,7 @@ DataSetHook.prototype.hook = function (node, propertyName) {
     ds[propName] = this.value;
 };
 
-},{"data-set":69}],66:[function(require,module,exports){
+},{"data-set":68}],65:[function(require,module,exports){
 module.exports = SoftSetHook;
 
 function SoftSetHook(value) {
@@ -2264,7 +2471,7 @@ SoftSetHook.prototype.hook = function (node, propertyName) {
     }
 };
 
-},{}],67:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 var VNode = require("virtual-dom/vtree/vnode.js")
 var VText = require("virtual-dom/vtree/vtext.js")
 var isVNode = require("virtual-dom/vtree/is-vnode")
@@ -2350,19 +2557,19 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x)
 }
 
-},{"./hooks/data-set-hook.js":65,"./hooks/soft-set-hook.js":66,"./parse-tag.js":74,"virtual-dom/vtree/is-vhook":56,"virtual-dom/vtree/is-vnode":57,"virtual-dom/vtree/is-vtext":58,"virtual-dom/vtree/is-widget":59,"virtual-dom/vtree/vnode.js":61,"virtual-dom/vtree/vtext.js":63}],68:[function(require,module,exports){
+},{"./hooks/data-set-hook.js":64,"./hooks/soft-set-hook.js":65,"./parse-tag.js":73,"virtual-dom/vtree/is-vhook":55,"virtual-dom/vtree/is-vnode":56,"virtual-dom/vtree/is-vtext":57,"virtual-dom/vtree/is-widget":58,"virtual-dom/vtree/vnode.js":60,"virtual-dom/vtree/vtext.js":62}],67:[function(require,module,exports){
+module.exports=require(10)
+},{}],68:[function(require,module,exports){
 module.exports=require(11)
-},{}],69:[function(require,module,exports){
-arguments[4][12][0].apply(exports,arguments)
-},{"./create-hash.js":68,"individual":70,"weakmap-shim/create-store":72}],70:[function(require,module,exports){
-module.exports=require(15)
-},{"global":71}],71:[function(require,module,exports){
-module.exports=require(16)
-},{}],72:[function(require,module,exports){
-module.exports=require(13)
-},{"./hidden-store.js":73}],73:[function(require,module,exports){
+},{"./create-hash.js":67,"individual":69,"weakmap-shim/create-store":71}],69:[function(require,module,exports){
 module.exports=require(14)
-},{}],74:[function(require,module,exports){
+},{"global":70}],70:[function(require,module,exports){
+module.exports=require(15)
+},{}],71:[function(require,module,exports){
+module.exports=require(12)
+},{"./hidden-store.js":72}],72:[function(require,module,exports){
+module.exports=require(13)
+},{}],73:[function(require,module,exports){
 var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
 var notClassId = /^\.|#/
 
@@ -2413,7 +2620,7 @@ function parseTag(tag, props) {
     return tagName ? tagName.toLowerCase() : "div"
 }
 
-},{}],75:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 var attributeHook = require("./hooks/attribute-hook.js")
 var h = require("./index.js")
 
@@ -2466,7 +2673,7 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x)
 }
 
-},{"./hooks/attribute-hook.js":64,"./index.js":67}],76:[function(require,module,exports){
+},{"./hooks/attribute-hook.js":63,"./index.js":66}],75:[function(require,module,exports){
 module.exports = extend
 
 function extend() {
