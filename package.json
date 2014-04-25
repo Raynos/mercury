@@ -63,7 +63,8 @@
     "shared-state": "node bin/browserify-editor.js examples/shared-state.js | indexhtmlify > examples/shared-state.html",
     "react-ballmer": "node bin/browserify-editor.js examples/react-ballmer.js | indexhtmlify > examples/react-ballmer.html",
     "geometry": "browserify examples/geometry/browser.js | indexhtmlify > examples/geometry/index.html",
-    "todomvc": "browserify examples/todomvc/browser.js | indexhtmlify > examples/todomvc/index.html"
+    "todomvc": "browserify examples/todomvc/browser.js | indexhtmlify > examples/todomvc/index.html",
+    "dist": "browserify --standalone mercury index.js > dist/mercury.js"
   },
   "testling": {
     "files": "test/index.js",
