@@ -140,7 +140,6 @@ var h = require("../../index.js").h
 var doMutableFocus = require("./lib/do-mutable-focus.js")
 
 var ESCAPE = 27
-var footer = infoFooter()
 
 module.exports = render
 
@@ -155,7 +154,7 @@ function render(state) {
             mainSection(state.todos, state.route, state.events),
             mercury.partial(statsSection, state.todos, state.route, state.events)
         ]),
-        footer
+        mercury.partial(infoFooter)
     ])
 }
 
@@ -3756,6 +3755,9 @@ var createElement = require("virtual-dom/create-element")
 var diff = require("virtual-dom/diff")
 var patch = require("virtual-dom/patch")
 
+var MESSAGE = "partial() cannot cache on values. " + 
+    "You must specify object arguments. partial("
+
 function copyOver(list, offset) {
     var newList = []
     for (var i = offset; i < list.length; i++) {
@@ -3769,14 +3771,27 @@ module.exports = partial
 function partial(fn) {
     var args = copyOver(arguments, 1)
     var firstArg = args[0]
+    var hasObjects = args.length === 0
     var key
 
     if (typeof firstArg === "object" && firstArg !== null) {
+        hasObjects = true
         if ("key" in firstArg) {
             key = firstArg.key
         } else if ("id" in firstArg) {
             key = firstArg.id
         }
+    }
+
+    for (var i = 1; !hasObjects && i < args.length; i++) {
+        var arg = args[i];
+        if (typeof arg === "object" && arg !== null) {
+            hasObjects = true
+        }
+    }
+
+    if (!hasObjects) {
+        throw new Error(MESSAGE + args + ")")
     }
 
     return new Thunk(fn, args, key)
