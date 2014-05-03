@@ -96,6 +96,7 @@
     }
   ],
   "scripts": {
+    "push": "git fetch --all && git rebase origin/master && npm run build && git add --all && git commit --all --amend --no-edit && git push origin gh-pages -f",
     "jshint": "jshint . --verbose",
     "disc": "browserify index.js --full-paths | discify > disc.html && xdg-open disc.html",
     "test": "node test/index.js | tap-spec",
