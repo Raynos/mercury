@@ -1,5 +1,4 @@
 var casper = require("casper").create()
-var dump = require("utils").dump
 var fs = require("fs")
 
 function assert(bool, message) {

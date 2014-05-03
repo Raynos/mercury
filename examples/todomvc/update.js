@@ -56,7 +56,9 @@ function destroy(state, data) {
 
 function finishEdit(state, data) {
     var item = find(state.todos, data.id)
-    if (!item || item.editing === false) return
+    if (!item || item.editing === false) {
+        return
+    }
 
     item.editing.set(false)
     item.title.set(data.title)

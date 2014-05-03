@@ -3,12 +3,12 @@ var mercury = require("../index.js");
 var React = (function () {
   var ReactLite = {};
   ReactLite.DOM = {};
-  ['div', 'img', 'p', 'a', 'h4', 'input', 'b'].forEach(function (tagName) {
+  ["div", "img", "p", "a", "h4", "input", "b"].forEach(function (tagName) {
     ReactLite.DOM[tagName] = function (props, children) {
       props = props || {};
       
       if (props.onKeyUp) {
-        props['data-keyup'] = props.onKeyUp;
+        props["data-keyup"] = props.onKeyUp;
         props.onKeyUp = null;
       }
      
@@ -55,10 +55,11 @@ var React = (function () {
 
 
 function computeBallmerPeak(x) {
-  // see: http://ask.metafilter.com/76859/Make-a-function-of-this-graph-Thats-like-an-antigraph
+  // see: http://ask.metafilter.com/76859/
+  // Make-a-function-of-this-graph-Thats-like-an-antigraph
   x = x * 100;
   return (
-    1-1/(1+Math.exp(-(x-6)))*.5 + Math.exp(-Math.pow(Math.abs(x-10), 2)*10)
+    1-1/(1+Math.exp(-(x-6)))*0.5 + Math.exp(-Math.pow(Math.abs(x-10), 2)*10)
   ) / 1.6;
 }
 
@@ -74,9 +75,9 @@ var BallmerPeakCalculator = React.createClass({
   render: function(state) {
     var pct = computeBallmerPeak(Number(state.bac));
     if (isNaN(pct)) {
-      pct = 'N/A';
+      pct = "N/A";
     } else {
-      pct = (100 - Math.round(pct * 100)) + '%';
+      pct = (100 - Math.round(pct * 100)) + "%";
     }
     return DOM.div(null, [
       DOM.img(({ src: "https://raw.githubusercontent.com/facebook/react/" +

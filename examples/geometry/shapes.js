@@ -1,6 +1,5 @@
 var extend = require("xtend")
 
-var dragEvent = require("./drag-handler.js")
 var svg = require("../../index.js").svg
 var dist = require("./point.js").dist
 

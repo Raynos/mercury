@@ -1,5 +1,4 @@
 var mercury = require('../../index.js')
-var h = require('../../index.js').h
 var svg = require('../../index.js').svg
 
 var shapes = require('./shapes.js')

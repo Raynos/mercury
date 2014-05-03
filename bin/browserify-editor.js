@@ -2,6 +2,7 @@ var browserify = require("browserify")
 var fs = require("fs")
 var path = require("path")
 var cuid = require("cuid")
+var process = require("process")
 
 var fileName = process.argv[2]
 var src = fs.readFileSync(path.resolve(fileName), "utf8")
