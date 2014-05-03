@@ -11,8 +11,9 @@ function render(state) {
     return h(".todomvc-wrapper", [
         h("link", {
             rel: "stylesheet",
-            href: "https://rawgithub.com/raynos/mercury/master" +
-                "/examples/todomvc/style.css"
+            href: "https://cdn.rawgit.com/Raynos/mercury/" + 
+                "ae9b453a493d8f19c6a07a2c6c1edcf1f5399cc0/" +
+                "examples/todomvc/style.css"
         }),
         h("section#todoapp.todoapp", [
             mercury.partial(header, state.field, state.events),
