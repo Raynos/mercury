@@ -4,9 +4,6 @@ var path = require("path")
 var cuid = require("cuid")
 var process = require("process")
 
-var fileName = process.argv[2]
-var src = fs.readFileSync(path.resolve(fileName), "utf8")
-
 function addLink(href) {
     return "" +
         "var link = document.createElement('link')\n" +
@@ -23,33 +20,45 @@ function floatElement(name, float) {
         name + ".style.width = '50%'\n"
 }
 
-var code = "" +
-    "var container = document.createElement('div')\n" +
-    floatElement("document.body", "left") +
-    floatElement("container", "right") +
-    "var createEditor = require('javascript-editor')\n" +
-    "window.addEventListener('load', function () {\n" +
-    "    var editor = createEditor({\n" +
-    "        container: container,\n" +
-    "        value: " + JSON.stringify(src) + ",\n" +
-    "        readOnly: true\n" +
-    "    })\n" +
-    "    container.childNodes[0].style.fontSize = '12px'\n" +
-    "    editor.editor.refresh()\n" +
-    "})\n" +
-    "document.documentElement.appendChild(container)\n" +
-    addLink("https://rawgithub.com/maxogden/" +
-        "javascript-editor/master/css/codemirror.css") +
-    addLink("https://rawgithub.com/maxogden/" +
-        "javascript-editor/master/css/theme.css")
-var loc = path.join(__dirname, cuid() + ".js")
-fs.writeFileSync(loc, code)
+function main(fileName) {
+    var src = fs.readFileSync(path.resolve(fileName), "utf8")
 
-var bundle = browserify()
-bundle.add(path.resolve(fileName))
-bundle.add(loc)
-var stream = bundle.bundle()
-stream.pipe(process.stdout)
-stream.on("end", function () {
-    fs.unlinkSync(loc)
-})
+    var code = "" +
+        "var container = document.createElement('div')\n" +
+        floatElement("document.body", "left") +
+        floatElement("container", "right") +
+        "var createEditor = require('javascript-editor')\n" +
+        "window.addEventListener('load', function () {\n" +
+        "    var editor = createEditor({\n" +
+        "        container: container,\n" +
+        "        value: " + JSON.stringify(src) + ",\n" +
+        "        readOnly: true\n" +
+        "    })\n" +
+        "    container.childNodes[0].style.fontSize = '12px'\n" +
+        "    editor.editor.refresh()\n" +
+        "})\n" +
+        "document.documentElement.appendChild(container)\n" +
+        addLink("https://rawgithub.com/maxogden/" +
+            "javascript-editor/master/css/codemirror.css") +
+        addLink("https://rawgithub.com/maxogden/" +
+            "javascript-editor/master/css/theme.css")
+
+    var loc = path.join(__dirname, cuid() + ".js")
+    fs.writeFileSync(loc, code)
+
+    var bundle = browserify()
+    bundle.add(path.resolve(fileName))
+    bundle.add(loc)
+    var stream = bundle.bundle()
+    stream.on("end", function () {
+        fs.unlinkSync(loc)
+    })
+    return stream
+}
+
+module.exports = main
+
+if (require.main === module) {
+    var fileName = process.argv[2]
+    main(fileName).pipe(process.stdout)
+}

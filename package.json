@@ -41,11 +41,12 @@
     "cuid": "^1.2.1",
     "global": "^3.0.0",
     "hash-router": "^0.3.4",
-    "indexhtmlify": "^1.1.1",
+    "indexhtmlify": "git://github.com/Raynos/indexhtmlify#v1.1.1-module",
     "javascript-editor": "^0.2.1",
     "jshint": "^2.5.0",
     "process": "^0.7.0",
     "raf": "^0.1.3",
+    "run-parallel": "^1.0.0",
     "tape": "^2.12.3",
     "xtend": "^3.0.0"
   },
@@ -58,15 +59,8 @@
   "scripts": {
     "jshint": "jshint . --verbose",
     "disc": "browserify index.js --full-paths | discify > disc.html && xdg-open disc.html",
-    "test": "casperjs ./test/casper/count.js && casperjs ./test/casper/reset.js && casperjs ./test/casper/shared.js",
-    "build": "npm run count && npm run bmi-counter && npm run shared-state && npm run todomvc && npm run field-reset && npm run geometry",
-    "count": "node bin/browserify-editor.js examples/count.js | indexhtmlify > examples/count.html",
-    "field-reset": "node bin/browserify-editor.js examples/field-reset.js | indexhtmlify > examples/field-reset.html",
-    "bmi-counter": "node bin/browserify-editor.js examples/bmi-counter.js | indexhtmlify > examples/bmi-counter.html",
-    "shared-state": "node bin/browserify-editor.js examples/shared-state.js | indexhtmlify > examples/shared-state.html",
-    "react-ballmer": "node bin/browserify-editor.js examples/react-ballmer.js | indexhtmlify > examples/react-ballmer.html",
-    "geometry": "browserify examples/geometry/browser.js | indexhtmlify > examples/geometry/index.html",
-    "todomvc": "browserify examples/todomvc/browser.js | indexhtmlify > examples/todomvc/index.html",
+    "test": "npm run jshint",
+    "build": "node bin/build.js",
     "dist": "browserify --standalone mercury index.js > dist/mercury.js"
   },
   "testling": {

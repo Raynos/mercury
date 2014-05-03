@@ -1,64 +1,57 @@
 var parallel = require('run-parallel')
 var fs = require('fs')
-var path = require('path')
+var indexhtmlify = require('indexhtmlify')
+var browserify = require('browserify')
 
-var browserify = require('./lib/browserify?')
-var browserifyEditor = require('./lib/browserifyEditor?')
-var indexhtmlify = require('./lib/indexhtmlify?')
-
-var examplesDir = path.join(__dirname, '..', 'examples')
-var examplesTasks = [
-    browserifyTask('geometry'),
-    browserifyTask('todomvc'),
-    browserifyEditorTask('field-reset'),
-    browserifyEditorTask('bmi-counter'),
-    browserifyEditorTask('shared-state'),
-    browserifyEditorTask('react-ballmer'),
-    browserifyEditorTask('count')
-];
-
-function browserifyTask(folder) {
-    return {
-        src: path.join(examplesDir, folder, 'browser.js'),
-        dest: path.join(examplesDir, folder, 'index.html'),
-        type: 'browserify'
-    }
-}
-
-function browserifyEditorTask(file) {
-    return {
-        src: path.join(examplesDir, file + '.js'),
-        dest: path.join(examplesDir, file + '.html'),
-        type: 'browserify-editor'
-    }
-}
+var browserifyEditor = require('./browserify-editor')
+var examplesTasks = require('./example-tasks.js')
 
 function browserifyEditorHtml(source, dest) {
     return function (cb) {
-        browserifyEditor(source)
-            .pipe(indexhtmlify())
+        console.log('reading', source)
+        var src = browserifyEditor(source)
+        src.on('end', function () {
+            console.log('writing', dest)
+            cb()
+        })
+
+        src.pipe(indexhtmlify({}))
             .pipe(fs.createWriteStream(dest))
-            .once('finish', cb)
     }
 }
 
 function browserifyHtml(source, dest) {
     return function (cb) {
-        browserify(source)
-            .pipe(indexhtmlify())
+        console.log('reading', source)
+        var src = browserifyBundle(source)
+        src.on('end', function () {
+            console.log('writing', dest)
+            cb()
+        })
+
+        src.pipe(indexhtmlify({}))
             .pipe(fs.createWriteStream(dest))
-            .once('finish', cb)
     }
+}
+
+function browserifyBundle(source) {
+    var b = browserify()
+    b.add(source)
+    return b.bundle()
 }
 
 function main() {
     var tasks = examplesTasks.map(function (task) {
-        return task.type === 'browserify' ?
-            browserifyHtml(task.src, task.dest) :
-            task.type === 'browserify-editor' ?
-            browserifyEditorHtml(task.src, task.dest) :
-            new Error('Invalid type')
-    });
+        if (task.type === 'browserify') {
+            return browserifyHtml(task.src, task.dest)
+        }
+
+        if (task.type === 'browserify-editor') {
+            return browserifyEditorHtml(task.src, task.dest)
+        }
+
+        throw new Error('invalid type ' + task.type)
+    })
 
     parallel(tasks, function (err) {
         if (err) {
