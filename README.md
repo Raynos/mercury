@@ -47,6 +47,26 @@ Check out [TODOMVC implementation](examples/todomvc)
 
 `npm install mercury`
 
+## Developement
+
+If you want to develop on `mercury` you can clone the code
+
+```sh
+git clone git@github.com:Raynos/mercury
+cd mercury
+npm install
+npm test
+```
+
+### npm run tasks
+
+ - `npm test` runs the tests
+ - `npm run jshint` will run jshint on the code
+ - `npm run disc` will open discify (if globally installed)
+ - `npm run build` will build the html assets for gh-pages
+ - `npm run examples` will start a HTTP server that shows examples
+ - `npm run dist` will create a distributed version of mercury
+
 ## Contributors
 
  - Raynos

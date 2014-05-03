@@ -41,11 +41,12 @@
     "cuid": "^1.2.1",
     "global": "^3.0.0",
     "hash-router": "^0.3.4",
-    "indexhtmlify": "git://github.com/Raynos/indexhtmlify#v1.1.1-module",
+    "indexhtmlify": "git://github.com/Raynos/indexhtmlify#v1.1.1-module2",
     "javascript-editor": "^0.2.1",
     "jshint": "^2.5.0",
     "process": "^0.7.0",
     "raf": "^0.1.3",
+    "routes-router": "^1.5.4",
     "run-parallel": "^1.0.0",
     "tape": "^2.12.3",
     "xtend": "^3.0.0"
@@ -61,6 +62,7 @@
     "disc": "browserify index.js --full-paths | discify > disc.html && xdg-open disc.html",
     "test": "npm run jshint",
     "build": "node bin/build.js",
+    "examples": "node bin/example-server.js",
     "dist": "browserify --standalone mercury index.js > dist/mercury.js"
   },
   "testling": {

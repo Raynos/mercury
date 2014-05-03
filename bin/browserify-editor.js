@@ -38,10 +38,10 @@ function main(fileName) {
         "    editor.editor.refresh()\n" +
         "})\n" +
         "document.documentElement.appendChild(container)\n" +
-        addLink("https://rawgithub.com/maxogden/" +
-            "javascript-editor/master/css/codemirror.css") +
-        addLink("https://rawgithub.com/maxogden/" +
-            "javascript-editor/master/css/theme.css")
+        addLink("https://cdn.rawgit.com/maxogden/javascript-editor/" +
+            "1835d09bdfe83e5121befe2ff660bc336a520d9a/css/codemirror.css") +
+        addLink("https://cdn.rawgit.com/maxogden/javascript-editor/" +
+            "1835d09bdfe83e5121befe2ff660bc336a520d9a/css/theme.css")
 
     var loc = path.join(__dirname, cuid() + ".js")
     fs.writeFileSync(loc, code)
