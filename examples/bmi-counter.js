@@ -52,17 +52,17 @@ function render(values) {
         h("h3", "BMI calculator"),
         h("div", [
             "Weight: " + ~~values.weight + "kg",
-            mercury.partial(slider, values.weight, events.weight, 30, 150)
+            slider(values.weight, events.weight, 30, 150)
         ]),
         h("div", [
             "Height: " + ~~values.height + "cm",
-            mercury.partial(slider, values.height,
+            slider(values.height,
                 events.height, 100, 220)
         ]),
         h("div", [
             "BMI: " + ~~values.bmi + " ",
             h("span", { style: { color: color } }, diagnose),
-            mercury.partial(slider, values.bmi, events.bmi, 10, 50)
+            slider(values.bmi, events.bmi, 10, 50)
         ])
     ])
 }
