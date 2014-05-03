@@ -6,7 +6,6 @@ var browserify = require('./lib/browserify?')
 var browserifyEditor = require('./lib/browserifyEditor?')
 var indexhtmlify = require('./lib/indexhtmlify?')
 
-
 var examplesDir = path.join(__dirname, '..', 'examples')
 var examplesTasks = [
     browserifyTask('geometry'),
