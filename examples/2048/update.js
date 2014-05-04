@@ -1,5 +1,8 @@
 var State = require("./state.js")
 
+var Grid = require("./grid/update.js")
+var Tile = require("./tile/update.js")
+
 module.exports = {
     resetGame: resetGame,
     move: move,
@@ -11,48 +14,21 @@ function rand(n) {
     return Math.floor(Math.random() * n)
 }
 
-function clearGrid(state) {
-    var len = state.size() * state.size()
-    var grid = state.grid().slice()
-    for (var i = 0; i < len; i++) {
-        grid[i] = null
-    }
-
-    state.grid.set(grid)
-}
-
-function getAvailableCells(state) {
-    var grid = state.grid()
-
-    return grid.reduce(function (acc, value, index) {
-        if (value === null) {
-            acc.push(index)
-        }
-        return acc
-    }, [])
-}
-
-function indexToPosition(state, index) {
-    var size = state.size()
-    var x = index % size
-    var y = (index - x) / size
-
-    return [x, y]
-}
-
 function resetGame(state) {
-    clearGrid(state)
+    state.currentScore.set(0)
+
+    Grid.clear(state.grid, state.size)
 
     // insert N random tiles for initial position
-    var availableCells = getAvailableCells(state)
+    var availableCells = Grid.getAvailableCells(state.grid)
     var startingTiles = state.startingTiles()
     var len = availableCells.length < startingTiles ?
-        getAvailableCells.length : startingTiles
+        availableCells.length : startingTiles
 
     for (var i = 0; i < len; i++) {
         var choosen = rand(availableCells.length)
         var index = availableCells.splice(choosen, 1)[0]
-        var pos = indexToPosition(state, index)
+        var pos = Tile.indexToPosition(state.size, index)
 
         state.grid.put(index, State.tile({
             x: pos[0],
@@ -70,7 +46,7 @@ function updateScore(state) {
 }
 
 function movesAvailable(state) {
-    return getAvailableCells(state).length !== 0 ||
+    return Grid.getAvailableCells(state.grid).length !== 0 ||
         tileMatchesAvailable(state)
 }
 
