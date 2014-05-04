@@ -3,14 +3,12 @@ var h = require("../../index.js").h
 module.exports = render
 
 function render(state) {
-    return h(".2048-wrapper", {
+    return h(".wrapper-2048", {
         "style": { "visibility": "hidden" }
     }, [
         h("link", {
             rel: "stylesheet",
-            href: "https://cdn.rawgit.com/Raynos/mercury/" +
-                "338d629145f3c0c33205d3873a1862ed1b5e139d/" +
-                "examples/2048/style.css"
+            href: "/examples/2048/style.css"
         }),
         h(".container", [
             header(state),
