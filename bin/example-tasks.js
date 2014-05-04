@@ -7,6 +7,7 @@ var browserifyEditor = require('./browserify-editor')
 var examplesDir = path.join(__dirname, '..', 'examples')
 var examplesTasks = [
     browserifyTask('geometry'),
+    browserifyTask('github-issues-viewer'),
     browserifyTask('todomvc'),
     browserifyTask('markdown'),
     browserifyTask('number-input'),
