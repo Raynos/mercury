@@ -24,8 +24,10 @@
     "email": "raynos2@gmail.com"
   },
   "dependencies": {
-    "dom-delegator": "^7.2.1",
+    "dom-delegator": "^7.3.0",
     "geval": "^2.1.1",
+    "global": "^4.2.1",
+    "hash-router": "^0.4.0",
     "main-loop": "^1.7.0",
     "observ": "^0.1.5",
     "observ-array": "^1.0.3",
