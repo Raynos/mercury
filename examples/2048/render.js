@@ -30,7 +30,7 @@ function header(state) {
         h(".above-game", [
             h("p.game-intro", [
                 "Join the numbers and get to the ",
-                h("strong", "2408 tile!")
+                h("strong", "2048 tile!")
             ]),
             h("a.restart-button", "New Game")
         ])
