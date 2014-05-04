@@ -8,12 +8,12 @@ var ESCAPE = 27
 module.exports = render
 
 function render(state) {
-    return h(".todomvc-wrapper", [
+    return h(".todomvc-wrapper", {
+        "style": { "visibility": "hidden" }
+    }, [
         h("link", {
             rel: "stylesheet",
-            href: "https://cdn.rawgit.com/Raynos/mercury/" + 
-                "ae9b453a493d8f19c6a07a2c6c1edcf1f5399cc0/" +
-                "examples/todomvc/style.css"
+            href: "/examples/todomvc/style.css"
         }),
         h("section#todoapp.todoapp", [
             mercury.partial(header, state.field, state.events),

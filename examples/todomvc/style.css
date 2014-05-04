@@ -4,6 +4,10 @@ body {
     padding: 0;
 }
 
+.todomvc-wrapper {
+    visibility: visible !important;
+}
+
 button {
     margin: 0;
     padding: 0;
