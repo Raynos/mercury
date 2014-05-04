@@ -31,7 +31,7 @@ function browserifyTask(folder) {
 
     function createStream() {
         return browserifyBundle(task.src)
-            .pipe(indexhtmlify({}))
+            .pipe(indexhtmlify({ title: task.name }))
     }
 }
 
@@ -48,7 +48,7 @@ function browserifyEditorTask(file) {
 
     function createStream() {
         return browserifyEditor(task.src)
-            .pipe(indexhtmlify({}))
+            .pipe(indexhtmlify({ title: task.name }))
     }
 }
 
