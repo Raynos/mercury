@@ -27,4 +27,5 @@ function createApp() {
 
 function wireUpEvents(state, events) {
     events.resetGame(Update.resetGame.bind(null, state))
+    events.move(Update.move.bind(null, state))
 }

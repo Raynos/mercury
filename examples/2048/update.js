@@ -61,8 +61,8 @@ function resetGame(state) {
     }
 }
 
-function move(state, data) {
-
+function move(state, coords) {
+    var x = coords.x, y = coords.y
 }
 
 function updateScore(state) {
