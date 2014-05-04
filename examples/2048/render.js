@@ -8,7 +8,7 @@ function render(state) {
     }, [
         h("link", {
             rel: "stylesheet",
-            href: "/examples/2048/style.css"
+            href: "/mercury/examples/2048/style.css"
         }),
         h(".container", [
             header(state),
