@@ -6,18 +6,12 @@ var Game2048 = {
     grid: [],
     currentScore: 0,
     highScore: 0,
+    defaultTileValue: 2,
     startingTiles: 2
 }
 
-var GameTile = {
-    number: 2,
-    x: -1,
-    y: -1
-}
-
 module.exports = {
-    game: gameBoard,
-    tile: numberTile
+    game: gameBoard
 }
 
 function gameBoard(events, initialState) {
@@ -35,16 +29,7 @@ function gameBoard(events, initialState) {
         size: mercury.value(state.size),
         currentScore: mercury.value(state.currentScore),
         highScore: mercury.value(state.highScore),
+        defaultTileValue: mercury.value(state.defaultTileValue),
         startingTiles: mercury.value(state.startingTiles)
-    })
-}
-
-function numberTile(tile) {
-    var state = extend(GameTile, tile)
-
-    return mercury.hash({
-        number: mercury.value(state.number),
-        x: mercury.value(state.x),
-        y: mercury.value(state.y)
     })
 }
