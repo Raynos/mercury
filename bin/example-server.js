@@ -36,6 +36,7 @@ router.addRoute('/:name', function (req, res, opts) {
 
 router.addRoute('*', st({
     path: path.dirname(__dirname),
+    url: '/mercury',
     cache: false
 }))
 

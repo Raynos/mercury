@@ -13,7 +13,7 @@ function render(state) {
     }, [
         h("link", {
             rel: "stylesheet",
-            href: "/examples/todomvc/style.css"
+            href: "/mercury/examples/todomvc/style.css"
         }),
         h("section#todoapp.todoapp", [
             mercury.partial(header, state.field, state.events),
