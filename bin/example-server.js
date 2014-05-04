@@ -1,5 +1,7 @@
 var http = require('http')
 var Router = require('routes-router')
+var path = require('path')
+var st = require('st')
 
 var tasks = require('./example-tasks.js')
 var tasksHash = tasks.reduce(function (acc, task){
@@ -31,6 +33,11 @@ router.addRoute('/:name', function (req, res, opts) {
     res.setHeader('Content-Type', 'text/html')
     task.createStream().pipe(res)
 })
+
+router.addRoute('*', st({
+    path: path.dirname(__dirname),
+    cache: false
+}))
 
 var server = http.createServer(router)
 
