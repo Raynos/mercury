@@ -3,7 +3,9 @@ var h = require("../../index.js").h
 module.exports = render
 
 function render(state) {
-    return h(".2048-wrapper", [
+    return h(".2048-wrapper", {
+        "style": { "visibility": "hidden" }
+    }, [
         h("link", {
             rel: "stylesheet",
             href: "https://cdn.rawgit.com/Raynos/mercury/" +
