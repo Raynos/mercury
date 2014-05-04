@@ -3,9 +3,8 @@ module.exports = {
 }
 
 function indexToPosition(size, index) {
-    var currSize = size()
-    var x = index % currSize
-    var y = (index - x) / currSize
+    var x = index % size
+    var y = (index - x) / size
 
     return [x, y]
 }
