@@ -8,3 +8,8 @@ function indexToPosition(size, index) {
 
     return [x, y]
 }
+
+// [a, b, c, d]
+// [null, null, null, tile] => [tile, null, null, null]
+
+// [a, E, E, d]

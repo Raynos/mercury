@@ -54,20 +54,24 @@ function gameScreen(state) {
                 return h(".grid-cell")
             }))
         })),
-        h(".tile-container", state.grid.map(function (tile) {
-            return tile ? gameTile(tile) : null
+        h(".tile-container", state.grid.map(function (tile, index) {
+            var x = index % state.size
+            var y = (index - x) / state.size
+
+            return tile ? gameTile(tile, x, y) : null
         }).filter(Boolean))
     ])
 }
 
-function gameTile(tile) {
-    var className = "tile-" + tile.number +
-        " tile-position-" + (tile.x + 1) + "-" + (tile.y + 1)
+function gameTile(tile, x, y) {
+    var className = "tile-" + tile.num +
+        " tile-position-" + (x + 1) + "-" + (y + 1)
 
     return h(".tile", {
-        className: className
+        className: className,
+        key: tile.id
     }, [
-        h(".tile-inner", String(tile.number))
+        h(".tile-inner", String(tile.num))
     ])
 }
 

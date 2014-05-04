@@ -1,7 +1,7 @@
-var State = require("./state.js")
+var cuid = require("cuid")
 
 var Grid = require("./grid/update.js")
-var Tile = require("./tile/update.js")
+// var Tile = require("./tile/update.js")
 
 module.exports = {
     resetGame: resetGame,
@@ -28,24 +28,31 @@ function resetGame(state) {
     for (var i = 0; i < len; i++) {
         var choosen = rand(availableCells.length)
         var index = availableCells.splice(choosen, 1)[0]
-        var pos = Tile.indexToPosition(state.size(), index)
 
-        state.grid.put(index, State.tile({
-            x: pos[0],
-            y: pos[1]
-        }))
+        state.grid.put(index, {
+            id: cuid(),
+            num: state.defaultTileValue()
+        })
     }
 }
 
-function move(state, direction) {
-    console.log("move", direction)
 
+function move(state, direction) {
     // ignore the case where we "move" to { x: 0, y: 0 }
     if (direction === "void") {
         return
     }
 
     state.grid.set(Grid.shift(state.grid(), direction))
+
+    var availableCells = Grid.getAvailableCells(state.grid())
+    var choosen = rand(availableCells.length)
+    var index = availableCells.splice(choosen, 1)[0]
+
+    state.grid.put(index, {
+        id: cuid(),
+        num: state.defaultTileValue()
+    })
 }
 
 function updateScore(state) {

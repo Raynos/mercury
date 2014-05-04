@@ -24,7 +24,7 @@ function createInput() {
 
     // list to last pressed keys and emit either a logical
     // operation or "void"
-    events.move = computed([keyboard.lastPressed], function (num) {
+    events.move = computed([keyboard.keyDown], function (num) {
         return operation[keycode(num)] || "void"
     })
 
