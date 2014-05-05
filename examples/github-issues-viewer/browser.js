@@ -9,8 +9,10 @@ var state = window.state = createApp()
 mercury.app(document.body, state, Render)
 
 function createApp() {
-    var events = Input()
-    var state = State.githubIssues(events, null)
+    var state = State.githubIssues(null)
+    var events = Input(state)
+
+    state.events.set(events)
 
     autoWire(state, events, Update)
 

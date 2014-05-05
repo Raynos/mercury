@@ -54,6 +54,7 @@
     "routes-router": "^1.5.4",
     "run-parallel": "^1.0.0",
     "tape": "^2.12.3",
+    "xhr": "^1.6.1",
     "xtend": "^3.0.0"
   },
   "licenses": [
