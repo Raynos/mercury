@@ -34,11 +34,20 @@ router.addRoute('/:name', function (req, res, opts) {
     task.createStream().pipe(res)
 })
 
-router.addRoute('*', st({
+var staticHandler = st({
     path: path.dirname(__dirname),
     url: '/mercury',
-    cache: false
-}))
+    cache: false,
+    passthrough: false
+})
+
+router.addRoute('*', function (req, res) {
+    var handled = staticHandler(req, res)
+    if (!handled) {
+        res.statusCode = 404
+        res.end('Could not find ' + req.url)
+    }
+})
 
 var server = http.createServer(router)
 
