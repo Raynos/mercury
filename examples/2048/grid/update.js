@@ -2,7 +2,7 @@ function slideRow(row, direction) {
     return pad(compact(row.filter(Boolean), direction), row.length, null)
 }
 
-function compact(list, slideLeft) {
+function compact(list) {
     var result = []
 
     for (var i = 0; i < list.length; i++) {
@@ -42,7 +42,6 @@ function applyShift(grid, rowSize, rowStart, rowSkip, cellSkip) {
         }
     }
 
-    console.log(result)
     return result
 }
 
