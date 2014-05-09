@@ -1,6 +1,6 @@
 var nextTick = require("next-tick")
 
-module.exports = SetNext
+module.exports = Transition
 
 function Transition(value, propName) {
     if (!(this instanceof Transition)) {
