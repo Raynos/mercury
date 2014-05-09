@@ -1,5 +1,5 @@
-function slideRow(row, direction) {
-    return pad(compact(row.filter(Boolean), direction), row.length, null)
+function slideRow(row) {
+    return pad(compact(row.filter(Boolean)), row.length, null)
 }
 
 function compact(list) {
