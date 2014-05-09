@@ -36,7 +36,8 @@
     "value-event": "^1.3.4",
     "vdom-thunk": "^2.0.0",
     "virtual-dom": "0.0.10",
-    "virtual-hyperscript": "^2.2.0"
+    "virtual-hyperscript": "^2.2.0",
+    "next-tick": "^0.2.2"
   },
   "devDependencies": {
     "browserify": "^3.38.0",
