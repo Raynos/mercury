@@ -1,4 +1,5 @@
 var h = require("../../index.js").h
+var Transition = require("./lib/transition")
 
 module.exports = render
 
@@ -64,11 +65,11 @@ function gameScreen(state) {
 }
 
 function gameTile(tile, x, y) {
-    var className = "tile-" + tile.num +
+    var className = "tile tile-" + tile.num +
         " tile-position-" + (x + 1) + "-" + (y + 1)
 
-    return h(".tile", {
-        className: className,
+    return h("div", {
+        className: Transition(className),
         key: tile.id
     }, [
         h(".tile-inner", String(tile.num))
