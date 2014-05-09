@@ -48,7 +48,8 @@
     "vdom": "0.0.16",
     "vdom-thunk": "^3.0.0",
     "virtual-hyperscript": "^4.4.0",
-    "vtree": "0.0.16"
+    "vtree": "0.0.16",
+    "next-tick": "^0.2.2"
   },
   "devDependencies": {
     "backbone": "^1.1.2",
