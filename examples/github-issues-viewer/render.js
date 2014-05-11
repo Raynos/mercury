@@ -6,7 +6,9 @@ var Update = require("./update.js")
 module.exports = Render
 
 function Render(state) {
-    return h(".issue-viewer-wrap", [
+    return h(".issue-viewer-wrap", {
+        "style": { "visibility": "hidden" }
+    }, [
         h("link", {
             rel: "stylesheet",
             href: "/mercury/examples/github-issues-viewer/style.css"

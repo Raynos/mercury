@@ -1,3 +1,7 @@
+.issue-viewer-wrap {
+    visibility: visible !important;
+}
+
 .clearfix:before,
 .clearfix:after {
   content: " ";
