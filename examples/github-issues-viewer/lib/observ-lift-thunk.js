@@ -5,12 +5,15 @@ module.exports = liftThunk
 function liftThunk(source, lambda) {
     var observ = value(null)
 
-    lambda(source())(observ.set)
-    source(onvalue)
+    handleValue(source())
+    source(handleValue)
 
     return observ
 
-    function onvalue(value) {
-        lambda(value)(observ.set)
+    function handleValue(value) {
+        var thunk = lambda(value)
+        if (thunk) {
+            thunk(observ.set)
+        }
     }
 }

@@ -16,10 +16,15 @@ function liftThunkLatest(source, lambda) {
         var myCounter = ++counter
         latest = myCounter
 
-        lambda(value)(function (newValue) {
+        var thunk = lambda(value)
+        if (thunk) {
+            thunk(onvalue)
+        }
+
+        function onvalue(newValue) {
             if (latest === myCounter) {
                 observ.set(newValue)
             }
-        })
+        }
     }
 }

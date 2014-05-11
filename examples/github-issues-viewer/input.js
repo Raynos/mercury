@@ -29,6 +29,10 @@ function popstate() {
 }
 
 function fetchRepo(repo) {
+    if (!repo || !repo.value || !repo.user || !repo.password) {
+        return null
+    }
+
     return function (send) {
         var currentPage = 1
         var issues = []
