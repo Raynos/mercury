@@ -1,7 +1,8 @@
 var mercury = require("../../index.js")
-var h = require("../../index.js").h
+var h = mercury.h
 
 var Update = require("./update.js")
+var repoInput = require("./components/repo-input.js").Render
 
 module.exports = Render
 
@@ -14,34 +15,12 @@ function Render(state) {
             href: "/mercury/examples/github-issues-viewer/static/style.css"
         }),
         h(".issue-viewer", [
-            repoInput(state),
+            repoInput(state.repoInput),
             state.errorMessage ?
                 h("h3", "Error loading repo: " + state.errorMessage) :
                 null,
             mainContent(state)
         ])
-    ])
-}
-
-
-function repoInput(state) {
-    var disabled = !Update.validRepo(state.repo.value, state.repoText)
-
-    return h(".repo-input", {
-        "data-event": [
-            mercury.changeEvent(state.events.setRepo),
-            mercury.submitEvent(state.events.submitRepo)
-        ]
-    }, [
-        h("span.repo-input__title", "View Issues From"),
-        h("input", {
-            placeholder: "owner/repo",
-            value: state.repoText,
-            name: "repo"
-        }),
-        h("button", {
-            disabled: disabled
-        }, "load")
     ])
 }
 

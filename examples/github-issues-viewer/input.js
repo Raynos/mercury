@@ -1,4 +1,4 @@
-var mercury = require("../../index.js")
+// var mercury = require("../../index.js")
 var xhr = require("xhr")
 
 var liftThunkLatest = require("./lib/observ-lift-thunk-latest.js")
@@ -6,10 +6,10 @@ var liftThunkLatest = require("./lib/observ-lift-thunk-latest.js")
 module.exports = Input
 
 function Input(state) {
-    var events = mercury.input(["setRepo", "submitRepo"])
+    var events = {}
 
     events.newRepo = liftThunkLatest(
-        state.repo, fetchRepo)
+        state.repoInput, fetchRepo)
 
     return events
 }

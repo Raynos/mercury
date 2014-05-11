@@ -2,9 +2,9 @@ var extend = require("xtend")
 var mercury = require("../../index.js")
 
 var Router = require("./components/router.js")
+var RepoInput = require("./components/repo-input.js")
 
 var GithubIssues = {
-    repoText: "rails/rails",
     errorMessage: "",
     issues: []
 }
@@ -19,10 +19,7 @@ function githubIssues(initialState) {
     return mercury.hash({
         events: mercury.value(null),
         route: Router().state,
-        repo: mercury.hash({
-            value: mercury.value(state.repoText)
-        }),
-        repoText: mercury.value(state.repoText),
+        repoInput: RepoInput().state,
         issues: mercury.array(state.issues),
         errorMessage: mercury.value(state.errorMessage)
     })
