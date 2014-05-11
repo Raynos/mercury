@@ -11,7 +11,7 @@ function Render(state) {
     }, [
         h("link", {
             rel: "stylesheet",
-            href: "/mercury/examples/github-issues-viewer/style.css"
+            href: "/mercury/examples/github-issues-viewer/static/style.css"
         }),
         h(".issue-viewer", [
             repoInput(state),
