@@ -23,7 +23,26 @@ router.addRoute('/', function (req, res) {
     res.end(html)
 })
 
-router.addRoute('/:name', function (req, res, opts) {
+var staticHandler = st({
+    path: path.dirname(__dirname),
+    url: '/mercury',
+    cache: false,
+    passthrough: false
+})
+
+function staticRouter(req, res) {
+    var handled = staticHandler(req, res)
+    if (!handled) {
+        res.statusCode = 404
+        res.end('Could not find ' + req.url)
+    }
+}
+
+router.addRoute('/mercury/*', staticRouter)
+router.addRoute('/:name', exampleRouter)
+router.addRoute('/:name/*', exampleRouter)
+
+function exampleRouter(req, res, opts) {
     var task = tasksHash[opts.name]
     if (!task) {
         res.statusCode = 404
@@ -32,22 +51,8 @@ router.addRoute('/:name', function (req, res, opts) {
 
     res.setHeader('Content-Type', 'text/html')
     task.createStream().pipe(res)
-})
+}
 
-var staticHandler = st({
-    path: path.dirname(__dirname),
-    url: '/mercury',
-    cache: false,
-    passthrough: false
-})
-
-router.addRoute('*', function (req, res) {
-    var handled = staticHandler(req, res)
-    if (!handled) {
-        res.statusCode = 404
-        res.end('Could not find ' + req.url)
-    }
-})
 
 var server = http.createServer(router)
 
