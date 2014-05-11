@@ -1,5 +1,7 @@
 var mercury = require("../../index.js")
 var xhr = require("xhr")
+var source = require("geval/source")
+var window = require("global/window")
 
 var liftThunkLatest = require("./lib/observ-lift-thunk-latest.js")
 
@@ -10,10 +12,21 @@ function Input(state) {
 
     events.newRepo = liftThunkLatest(
         state.repo, fetchRepo)
+    events.newRoute = popstate()
 
     return events
 }
 
+function popstate() {
+    return source(function (broadcast) {
+        window.addEventListener("popstate", function (ev) {
+            broadcast({
+                uri: String(document.location),
+                fromPopState: true
+            })
+        })
+    })
+}
 
 function fetchRepo(repo) {
     return function (send) {
