@@ -3,13 +3,7 @@ module.exports = {
     submitRepo: submitRepo,
     validRepo: validRepo,
     teaser: teaser,
-    newRepo: newRepo,
-    newRoute: newRoute
-}
-
-function newRoute(state, data) {
-    state.route.uri.set(data.uri)
-    state.route.fromPopState.set(data.fromPopState)
+    newRepo: newRepo
 }
 
 function setRepo(state, data) {

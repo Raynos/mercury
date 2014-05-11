@@ -8,12 +8,6 @@ var Update = require("./update.js")
 var state = window.state = createApp()
 mercury.app(document.body, state, Render)
 
-state.route(function (route) {
-    if (!route.fromPopState) {
-        window.history.pushState(undefined, undefined, route.uri)
-    }
-})
-
 function createApp() {
     var state = State.githubIssues(null)
     var events = Input(state)
