@@ -25,7 +25,7 @@ function Render(state) {
 
 
 function repoInput(state) {
-    var disabled = !Update.validRepo(state.repo)
+    var disabled = !Update.validRepo(state.repo.value, state.repoText)
 
     return h(".repo-input", {
         "data-event": [
@@ -36,7 +36,7 @@ function repoInput(state) {
         h("span.repo-input__title", "View Issues From"),
         h("input", {
             placeholder: "owner/repo",
-            value: state.repo.text,
+            value: state.repoText,
             name: "repo"
         }),
         h("button", {

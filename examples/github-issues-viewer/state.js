@@ -3,7 +3,7 @@ var document = require("global/document")
 var mercury = require("../../index.js")
 
 var GithubIssues = {
-    repo: "rails/rails",
+    repoText: "rails/rails",
     errorMessage: "",
     issues: [],
     route: {
@@ -25,9 +25,9 @@ function githubIssues(initialState) {
             fromPopState: mercury.value(false)
         }),
         repo: mercury.hash({
-            value: mercury.value(state.repo),
-            text: mercury.value(state.repo)
+            value: mercury.value(state.repoText)
         }),
+        repoText: mercury.value(state.repoText),
         issues: mercury.array(state.issues),
         errorMessage: mercury.value(state.errorMessage)
     })

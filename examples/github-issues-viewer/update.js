@@ -13,20 +13,20 @@ function newRoute(state, data) {
 }
 
 function setRepo(state, data) {
-    state.repo.text.set(data.repo.trim())
+    state.repoText.set(data.repo.trim())
 }
 
 function submitRepo(state, data) {
-    if (!validRepo(state.repo())) {
+    if (!validRepo(state.repo().value, state.repoText())) {
         return
     }
 
     state.repo.value.set(data.repo)
 }
 
-function validRepo(repo) {
-    var parts = repo.text.split("/")
-    var disabled = repo.text !== repo.value &&
+function validRepo(repoValue, repoText) {
+    var parts = repoText.split("/")
+    var disabled = repoText !== repoValue &&
         parts.length === 2 &&
         parts[0].length !== 0 &&
         parts[1].length !== 0
