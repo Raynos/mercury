@@ -16,8 +16,8 @@ router.addRoute('/', function (req, res) {
 
     var html = '<ul>\n'
     tasks.forEach(function (task) {
-        html += '  <li><a href="/' + task.name + '">' +
-            task.name + '</a></li>'
+        html += '  <li><a href="/mercury/examples/' +
+            task.name + '">' + task.name + '</a></li>'
     })
     html += '</ul>'
     res.end(html)
@@ -38,9 +38,9 @@ function staticRouter(req, res) {
     }
 }
 
-router.addRoute('/mercury/*', staticRouter)
-router.addRoute('/:name', exampleRouter)
-router.addRoute('/:name/*', exampleRouter)
+router.addRoute('/mercury/examples/:name/static/*', staticRouter)
+router.addRoute('/mercury/examples/:name', exampleRouter)
+router.addRoute('/mercury/examples/:name/*', exampleRouter)
 
 function exampleRouter(req, res, opts) {
     var task = tasksHash[opts.name]

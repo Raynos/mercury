@@ -3,6 +3,7 @@ var h = mercury.h
 
 var Update = require("./update.js")
 var repoInput = require("./components/repo-input.js").Render
+var router = require("./lib/router.js")
 
 module.exports = Render
 
@@ -26,17 +27,34 @@ function Render(state) {
 
 function mainContent(state) {
     return h(".main-view", [
-        h(".page .all-issues-page", [
-            h(".mypager", "Some pager"),
-            h("ul.issue-list",
-                state.issues.map(showIssue.bind(null, state))),
-            h(".mypager", "Some pager")
-        ])
+        router({
+            "/login": loginPage.bind(null, state.login),
+            "/issues/:org/:project": issuesPage.bind(null, state.issues)
+        }, {
+            route: state.route,
+            base: "/mercury/examples/github-issues-viewer"
+        })
     ])
 }
 
-function showIssue(state, issue) {
-    var href = state.repo.value + "/issue/" + issue.id
+function loginPage(login, params) {
+    return h(".page", [
+        h("h2", "login page")
+    ])
+}
+
+function issuesPage(issues, params) {
+    return h(".page .all-issues-page", [
+        h(".mypager", "Some pager"),
+        h("ul.issue-list",
+            issues.map(showIssue.bind(null, params))),
+        h(".mypager", "Some pager")
+    ])
+}
+
+function showIssue(params, issue) {
+    var repo = params.org + "/" + params.project
+    var href = repo + "/issue/" + issue.id
 
     return h("li.issue-list__item", [
         h(".issue", [

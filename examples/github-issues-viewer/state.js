@@ -17,10 +17,10 @@ function githubIssues(initialState) {
     var state = extend(GithubIssues, initialState || {})
 
     return mercury.hash({
-        events: mercury.value(null),
+        events: null,
         route: Router().state,
         repoInput: RepoInput().state,
-        issues: mercury.array(state.issues),
+        issues: mercury.value(state.issues),
         errorMessage: mercury.value(state.errorMessage)
     })
 }

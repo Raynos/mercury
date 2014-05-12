@@ -12,21 +12,24 @@ function createApp() {
     var state = State.githubIssues(null)
     var events = Input(state)
 
-    state.events.set(events)
+    state.route.set("/mercury/examples/github-issues-viewer/login")
 
-    autoWire(state, events, Update)
+    state.events = events
+
+    // autoWire(state, events, Update)
+    state.events.newRepo(Update.newRepo.bind(null, state))
 
     return state
 }
 
-function autoWire(state, events, Update) {
-    Object.keys(events).forEach(function (eventName) {
-        var func = Update[eventName]
+// function autoWire(state, events, Update) {
+//     Object.keys(events).forEach(function (eventName) {
+//         var func = Update[eventName]
 
-        if (!func) {
-            return
-        }
+//         if (!func) {
+//             return
+//         }
 
-        events[eventName](Update[eventName].bind(null, state))
-    })
-}
+//         events[eventName](Update[eventName].bind(null, state))
+//     })
+// }
