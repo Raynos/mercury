@@ -20,7 +20,7 @@ To understand what I mean by truly modular just [read the source](https://github
 var mercury = require("mercury")
 var h = mercury.h
 
-var events = mercury.input(["click"])
+var events = mercury.input(["clicks"])
 var clickCount = mercury.value(0)
 
 events.clicks(function () {
