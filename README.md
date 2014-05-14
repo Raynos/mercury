@@ -60,6 +60,10 @@ Check out [TODOMVC implementation](examples/todomvc)
  - mercury encourages zero dom manipulation in your application code. As far as your application is concerned
     elements do not exist. This means you don't need to reference DOM elements when rendering or when handling
     events
+ - mercury is compact, it's 11kb min.gzip.js, that's smaller then backbone.
+ - mercury strongly encourages FRP techniques and discourages local mutable state.
+ - mercury is highly performant, it's faster then React / om / ember+htmlbars in benchmarks
+ - mercury comes with FP features like time-travel / easy undo out of the box.
 
 ## Developement
 
