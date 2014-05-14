@@ -47,6 +47,20 @@ Check out [TODOMVC implementation](examples/todomvc)
 
 `npm install mercury`
 
+## Mercury vs React
+
+`mercury` is similar to react, however it's larger in scope, it is better
+  compared againts `om` or `quiescent`
+  
+ - mercury leverages `virtual-dom` which uses an immutable vdom structure
+ - mercury comes with `observ-hash` which uses immutable data for your state atom
+ - mercury is truly modular, you can trivially swap out subsets of it for other modules
+ - mercury source code itself is maintainable, the modules it uses are all small, well tested and well documented.
+    you should not be afraid to use mercury in production as it's easy to maintain & fix.
+ - mercury encourages zero dom manipulation in your application code. As far as your application is concerned
+    elements do not exist. This means you don't need to reference DOM elements when rendering or when handling
+    events
+
 ## Developement
 
 If you want to develop on `mercury` you can clone the code
