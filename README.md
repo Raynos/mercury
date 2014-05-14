@@ -62,7 +62,8 @@ Check out [TODOMVC implementation](examples/todomvc)
     events
  - mercury is compact, it's 11kb min.gzip.js, that's smaller then backbone.
  - mercury strongly encourages FRP techniques and discourages local mutable state.
- - mercury is highly performant, it's faster then React / om / ember+htmlbars in benchmarks
+ - mercury is highly performant, it's faster then React / om / ember+htmlbars in
+    [multiple](http://matt-esch.github.io/mercury-perf/) [benchmarks](http://jsfiddle.net/Raynos/sVPQL/)
  - mercury comes with FP features like time-travel / easy undo out of the box.
 
 ## Developement
