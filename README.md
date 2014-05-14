@@ -66,7 +66,7 @@ Check out [TODOMVC implementation](examples/todomvc)
     [multiple](http://matt-esch.github.io/mercury-perf/) [benchmarks](http://jsfiddle.net/Raynos/sVPQL/)
  - mercury comes with FP features like time-travel / easy undo out of the box.
 
-## Developement
+## Development
 
 If you want to develop on `mercury` you can clone the code
 
