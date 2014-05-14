@@ -67,7 +67,7 @@ Check out [TODOMVC implementation](examples/todomvc)
     [TodoMVC benchmark source](https://github.com/matt-esch/mercury-perf)
  - mercury comes with FP features like time-travel / easy undo out of the box.
 
-## Developement
+## Development
 
 If you want to develop on `mercury` you can clone the code
 
