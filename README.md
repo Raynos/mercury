@@ -67,6 +67,8 @@ Check out [TODOMVC implementation](examples/todomvc)
     [animation benchmark](http://jsfiddle.net/sVPQL/11/) 
     [TodoMVC benchmark source](https://github.com/matt-esch/mercury-perf)
  - mercury comes with FP features like time-travel / easy undo out of the box.
+ - mercury is lean, it's an weekend's read at 2.5kloc. (virtual-dom is 1.1kloc, an evening's read.)
+    compared to react which is almost 20kloc (a month's read)
 
 ## Development
 
