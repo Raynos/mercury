@@ -50,7 +50,7 @@ Check out [TODOMVC implementation](examples/todomvc)
 ## Mercury vs React
 
 `mercury` is similar to react, however it's larger in scope, it is better
-  compared againts `om` or `quiescent`
+  compared against `Om` or `quiescent`
   
  - mercury leverages `virtual-dom` which uses an immutable vdom structure
  - mercury comes with `observ-hash` which uses immutable data for your state atom
@@ -60,9 +60,9 @@ Check out [TODOMVC implementation](examples/todomvc)
  - mercury encourages zero dom manipulation in your application code. As far as your application is concerned
     elements do not exist. This means you don't need to reference DOM elements when rendering or when handling
     events
- - mercury is compact, it's 11kb min.gzip.js, that's smaller then backbone.
+ - mercury is compact, it's 11kb min.gzip.js, that's smaller than backbone.
  - mercury strongly encourages FRP techniques and discourages local mutable state.
- - mercury is highly performant, it's faster then React / om / ember+htmlbars in multiple benchmarks
+ - mercury is highly performant, it's faster then React / Om / ember+htmlbars in multiple benchmarks
     [TodoMVC benchmark](http://matt-esch.github.io/mercury-perf/)\
     [animation benchmark](http://jsfiddle.net/sVPQL/11/) 
     [TodoMVC benchmark source](https://github.com/matt-esch/mercury-perf)
