@@ -1,0 +1,63 @@
+var mercury = require('../../../index')
+var h = mercury.h
+var nextTick = require('next-tick')
+var update = {
+	// this needs to be input rather than change so that the pre expands as text
+	// is entered into the textarea
+	input: function (state, e) {
+		state.value.set(e.target.value)
+	}
+}
+
+textarea.render = textareaRender
+textarea.update = update
+textarea.input = input
+
+module.exports = textarea
+
+function textarea(options) {
+	var events = input()
+	var state = mercury.hash({
+		events: events,
+		value: mercury.value(options.value || ''),
+		placeholder: mercury.value(options.placeholder || ''),
+		name: mercury.value(options.name || ''),
+		shouldFocus: mercury.value(false)
+	})
+
+	events.input(update.input.bind(null, state))
+
+	return state
+}
+
+function input() {
+	return mercury.input([ 'blur', 'change', 'input' ])
+}
+
+function textareaRender(state) {
+	var events = state.events
+
+	return h('.textarea', [
+		h('textarea.expanding', {
+			'data-blur': events.blur,
+			'data-change': events.change,
+			'data-input': events.input,
+			focus: Object.create({
+				hook: function (node) {
+					if (state.shouldFocus) {
+						nextTick(function () {
+							node.focus()
+						})
+					}
+				}
+			}),
+			name: state.name,
+			placeholder: state.placeholder,
+			value: state.value
+		}),
+		h('pre', [
+			h('span', state.value),
+			h('br')
+		])
+	])
+}

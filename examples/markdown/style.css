@@ -1,0 +1,130 @@
+html {
+  font-family: Helvetica, Arial, sans-serif;
+}
+body {
+  background: #f4f4f4;
+  color: #333;
+  font-size: 0.8125rem;
+  line-height: 1rem;
+}
+html,
+body,
+.page {
+  margin: 0;
+  min-width: 320px;
+}
+*,
+*:before,
+*:after {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+.page {
+  visibility: visible !important;
+}
+.container {
+  height: 100%;
+  margin: 0 40px;
+  overflow: auto;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: normal;
+  color: #000;
+  margin: 0.5em 0;
+}
+h1 {
+  font-size: 1.5rem;
+}
+h2 {
+  font-size: 1.375rem;
+}
+h3 {
+  font-size: 1.25rem;
+}
+h4 {
+  font-size: 1.125rem;
+}
+h5,
+h6 {
+  font-size: 0.875rem;
+}
+a {
+  color: #007aff;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+p {
+  margin-bottom: 0.75rem;
+}
+strong {
+  font-weight: bold;
+}
+em {
+  font-style: italic;
+}
+hr {
+  border: 0;
+  height: 0;
+  border-top: 1px solid #ccc;
+  margin: 0;
+}
+blockquote {
+  color: #666;
+}
+blockquote:before {
+  content: '“';
+}
+blockquote:after {
+  content: '”';
+}
+.textarea {
+  background: #fff;
+  border: 1px solid #ccc;
+  min-height: 3em;
+  position: relative;
+}
+.textarea > textarea,
+.textarea > pre {
+  background: transparent;
+  border: none;
+  font: inherit;
+  padding: 5px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.textarea > textarea {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  resize: none;
+  top: 0;
+  width: 100%;
+}
+.textarea > pre {
+  visibility: hidden;
+}
+.inlineMdEditor {
+  cursor: pointer;
+}
+.sideBySideMdEditor {
+  height: 20rem;
+  overflow: hidden;
+}
+.sideBySideMdEditor > div {
+  float: left;
+  height: 100%;
+  width: 50%;
+}
+.markdown {
+  overflow: auto;
+}
