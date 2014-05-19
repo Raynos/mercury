@@ -6,6 +6,10 @@ var update = {
 	// is entered into the textarea
 	input: function (state, e) {
 		state.value.set(e.target.value)
+	},
+	change: function (state, e) {
+		// trim the content on a change event
+		state.value.set(e.target.value.trim())
 	}
 }
 
@@ -16,16 +20,19 @@ textarea.input = input
 module.exports = textarea
 
 function textarea(options) {
+	options = options || {}
+
 	var events = input()
 	var state = mercury.hash({
 		events: events,
 		value: mercury.value(options.value || ''),
 		placeholder: mercury.value(options.placeholder || ''),
 		name: mercury.value(options.name || ''),
-		shouldFocus: mercury.value(false)
+		shouldFocus: options.shouldFocus
 	})
 
 	events.input(update.input.bind(null, state))
+	events.change(update.change.bind(null, state))
 
 	return state
 }
@@ -39,7 +46,7 @@ function textareaRender(state) {
 
 	return h('.textarea', [
 		h('textarea.expanding', {
-			'data-blur': events.blur,
+			'data-blur': mercury.event(events.blur),
 			'data-change': events.change,
 			'data-input': events.input,
 			focus: Object.create({
