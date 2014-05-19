@@ -1,6 +1,6 @@
 var mercury = require('../../../index')
 var h = mercury.h
-var nextTick = require('next-tick')
+var doMutableFocus = require('../../todomvc/lib/do-mutable-focus')
 var update = {
 	// this needs to be input rather than change so that the pre expands as text
 	// is entered into the textarea
@@ -49,15 +49,7 @@ function textareaRender(state) {
 			'data-blur': mercury.event(events.blur),
 			'data-change': events.change,
 			'data-input': events.input,
-			focus: Object.create({
-				hook: function (node) {
-					if (state.shouldFocus) {
-						nextTick(function () {
-							node.focus()
-						})
-					}
-				}
-			}),
+			'data-focus': state.shouldFocus ? doMutableFocus() : null,
 			name: state.name,
 			placeholder: state.placeholder,
 			value: state.value
