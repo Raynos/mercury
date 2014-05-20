@@ -3,9 +3,7 @@ var h = mercury.h
 var textarea = require('./textarea')
 var mdRender = require('./mdRender')
 var update = {
-	editorBlur: function (state) {
-		var text = state.editor.value()
-
+	editorBlur: function (state, text) {
 		state.focusEditor.set(false)
 		state.isEditing.set(!text)
 	},
