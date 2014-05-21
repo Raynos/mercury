@@ -50,6 +50,7 @@ mercury.app(document.body, clickCount, render)
  - [shared-state](examples/shared-state.js)
  - [field-reset](examples/field-reset.js)
  - [bmi-counter](examples/bmi-counter.js)
+ - [canvas](examples/canvas.js)
 
 ### Intermediate Examples
 

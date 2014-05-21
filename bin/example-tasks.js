@@ -9,6 +9,7 @@ var examplesTasks = [
     browserifyTask('geometry'),
     browserifyTask('todomvc'),
     browserifyTask('markdown'),
+    browserifyTask('number-input'),
     browserifyEditorTask('field-reset'),
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),
