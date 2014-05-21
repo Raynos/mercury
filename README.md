@@ -54,10 +54,8 @@ mercury.app(document.body, clickCount, render)
 ### Intermediate Examples
 
  - [TodoMVC](examples/todomvc)
-
-## Installation
-
-`npm install mercury`
+ - [2048 (wip)](https://github.com/Raynos/mercury/tree/2048-wip/examples/2048)
+ - [github issues (wip)](https://github.com/Raynos/mercury/tree/github-issues/examples/github-issues-viewer)
 
 ## Mercury vs React
 
@@ -81,6 +79,15 @@ mercury.app(document.body, clickCount, render)
  - mercury comes with FP features like time-travel / easy undo out of the box.
  - mercury is lean, it's an weekend's read at 2.5kloc. (virtual-dom is 1.1kloc, an evening's read.)
     compared to react which is almost 20kloc (a month's read)
+
+
+## Documentation
+
+WIP. In lieue of documentation please see examples :(
+
+## Installation
+
+`npm install mercury`
 
 ## Development
 
