@@ -1,3 +1,6 @@
+var SingleEvent = require("geval/single")
+var MultipleEvent = require("geval/multiple")
+
 /*
     Pro tip: Don't require `mercury` itself.
       require and depend on all these modules directly!
@@ -8,7 +11,7 @@ var mercury = module.exports = {
 
     // Input
     Delegator: require("dom-delegator"),
-    input: require("geval/multiple"),
+    input: input,
     event: require("value-event/event"),
     valueEvent: require("value-event/value"),
     submitEvent: require("value-event/submit"),
@@ -30,6 +33,14 @@ var mercury = module.exports = {
 
     // Utility
     app: app
+}
+
+function input(names) {
+    if (!names) {
+        return SingleEvent()
+    }
+
+    return MultipleEvent(names)
 }
 
 function app(elem, observ, render) {
