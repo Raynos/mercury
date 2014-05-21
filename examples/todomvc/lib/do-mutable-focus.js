@@ -1,4 +1,5 @@
 var document = require("global/document")
+var nextTick = require('next-tick')
 
 module.exports = MutableFocusHook
 
@@ -9,7 +10,9 @@ function MutableFocusHook() {
 }
 
 MutableFocusHook.prototype.hook = function (node, property) {
-    if (document.activeElement !== node) {
-        node.focus();
-    }
+    nextTick(function () {
+        if (document.activeElement !== node) {
+            node.focus();
+        }
+    })
 }

@@ -12,7 +12,8 @@ var examplesTasks = [
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),
     browserifyEditorTask('react-ballmer'),
-    browserifyEditorTask('count')
+    browserifyEditorTask('count'),
+    browserifyTask('markdown')
 ]
 
 module.exports = examplesTasks
