@@ -1,5 +1,7 @@
 var parallel = require('run-parallel')
-var fs = require('fs')
+var fs = require('fs');
+var path = require('path');
+var process = require('process');
 var examplesTasks = require('./example-tasks.js')
 
 function main() {
@@ -20,6 +22,17 @@ function main() {
         if (err) {
             throw err
         }
+
+        var html = '<ul>\n'
+        examplesTasks.forEach(function (task) {
+            var dest = path.relative(process.cwd(), task.dest);
+            html += '    <li><a href="/' + dest + '">' +
+                task.name + '</a></li>\n'
+        })
+        html += '</ul>\n'
+
+        fs.writeFileSync(
+            path.join(process.cwd(), 'index.html'), html);
 
         console.log('build finished')
     })
