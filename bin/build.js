@@ -26,7 +26,7 @@ function main() {
         var html = '<ul>\n'
         examplesTasks.forEach(function (task) {
             var dest = path.relative(process.cwd(), task.dest);
-            html += '    <li><a href="/' + dest + '">' +
+            html += '    <li><a href="/mercury/' + dest + '">' +
                 task.name + '</a></li>\n'
         })
         html += '</ul>\n'
