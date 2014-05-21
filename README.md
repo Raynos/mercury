@@ -54,6 +54,7 @@ mercury.app(document.body, clickCount, render)
 ### Intermediate Examples
 
  - [TodoMVC](examples/todomvc)
+ - [markdown editor](examples/markdown)
  - [2048 (wip)](https://github.com/Raynos/mercury/tree/2048-wip/examples/2048)
  - [github issues (wip)](https://github.com/Raynos/mercury/tree/github-issues/examples/github-issues-viewer)
 

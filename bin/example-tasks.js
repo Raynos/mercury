@@ -8,12 +8,13 @@ var examplesDir = path.join(__dirname, '..', 'examples')
 var examplesTasks = [
     browserifyTask('geometry'),
     browserifyTask('todomvc'),
+    browserifyTask('markdown'),
     browserifyEditorTask('field-reset'),
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),
     browserifyEditorTask('react-ballmer'),
     browserifyEditorTask('count'),
-    browserifyTask('markdown')
+    browserifyEditorTask('canvas')
 ]
 
 module.exports = examplesTasks
