@@ -14,30 +14,37 @@ A truly modular frontend framework
 
 To understand what I mean by truly modular just [read the source](https://github.com/Raynos/mercury/blob/master/index.js)
 
-## Example
+## Examples
+
+### Hello world
 
 ```js
 var mercury = require("mercury")
 var h = mercury.h
 
-var events = mercury.input(["clicks"])
+var clicks = mercury.input()
 var clickCount = mercury.value(0)
 
-events.clicks(function () {
+clicks(function () {
     clickCount.set(clickCount() + 1)
 })
 
 function render(clickCount) {
-    return h("div", [
-        "The state ", h("code", "clickCount"), " has value: ",
-        clickCount + ".",
-        h("input", { type: "button", value: "Click me!",
-            "data-click": mercury.event(events.clicks) })
+    return h("div.counter", [
+        "The state ", h("code", "clickCount"),
+        " has value: " + clickCount + ".", h("input.button", {
+            type: "button",
+            value: "Click me!",
+            "data-click": mercury.event(clicks)
+        })
     ])
 }
 
 mercury.app(document.body, clickCount, render)
+
 ```
+
+### Basic Examples
 
 ## TodoMVC
 
