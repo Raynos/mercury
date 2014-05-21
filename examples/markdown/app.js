@@ -38,12 +38,12 @@ function appRender(state) {
 		}),
 		h('.content', [
 			h('h2', 'Side-by-side Markdown Editor'),
-			h('p', 'Enter some markdown and click outside of the textarea to ' +
-					'see the parsed result. Click the output to edit again.'),
+			h('p', 'Enter some markdown in the left pane and see it rendered ' +
+				'in the pane on the right.'),
 			sideBySideMdEditor.render(state.sideBySideEditor),
 			h('h2', 'Inline Markdown Editor'),
 			h('p', 'Enter some markdown and click outside of the textarea to ' +
-					'see the parsed result. Click the output to edit again.'),
+				'see the parsed result. Click the output to edit again.'),
 			inlineMdEditor.render(state.inlineEditor)
 		])
 	])
