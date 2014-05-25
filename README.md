@@ -81,7 +81,7 @@ In a normal mercury app you define your top level Input which
   is a finite list of events.
 
 You then define your top level state "atom". Generally you want
-  large fat state object for your entire application. We then
+  a large fat state object for your entire application. We then
   wire all the events in Input up to some updating logic, i.e.
   every time an event occurs in Input we do some logic and then
   update the State.
@@ -95,8 +95,8 @@ You may also need Output for your application, if we want to
   have some other side effect other then updating the UI, like
   sending a HTTP POST or writing to a websocket or persisting
   to indexedDB. Then we generally listen to changes in the state
-  and have our side effect. Note Render is just a specific subset
-  of the Output of your application
+  and have our side effect. Note that Render is just a specific 
+  subset of the Output of your application.
 
 ### Rendering modules (The view layer)
 
@@ -113,7 +113,7 @@ In `mercury` the view is just a function that takes your
 
 #### `vtree`
 
-`vtree` is the module that contae ains the data structures for the
+`vtree` is the module that contains the data structures for the
   virtual DOM. These are the primitive objects and values that
   the rendering functions in a mercury app will return.
 
@@ -190,7 +190,7 @@ In `mercury` we use immutable data structure primitives to
 `mercury` uses an observable state representation so that you
   can be notified of any changes.
 
-Generally applications build with mercury will have a single
+Generally applications built with mercury will have a single
   top level state "atom". i.e. there is one large state object
   for your application and child components do not have local or
   hidden state. However we can directly embed the state of a
@@ -214,7 +214,7 @@ Generally applications build with mercury will have a single
 #### `observ-hash`
 
 `observ-hash` is an observable that contains an object with
-  a fixed number of keys. Generally the key / value pairs in
+  a fixed number of keys. Generally the key-value pairs in
   `observ-hash` are themself observables. You can change the
   value of any key in an `observ-hash` and the top level object
   will also change to be a new object with that key changed.
@@ -226,7 +226,7 @@ Generally applications build with mercury will have a single
 
 `observ-array` is an observable that contains an array of
   observables. It's generally recommended that this a
-  heterogeanous array. You can change the value of any item in
+  heterogeneous array. You can change the value of any item in
   the array and the top level array will also change to be a 
   new array.
 
@@ -245,18 +245,18 @@ In `mercury` we model all the inputs to our application
   `geval` Event instances.
 
 Somewhere else in our application we listen to the Input and
-  run some logic & update our state when an event happens
+  run some logic and update our state when an event happens.
 
 #### `geval`
 
 `geval` is our data structure for Events. it gives us a way of
   listening to events and a way of publishing them.
 
-Most the time you will either create a computed Event that
+Most of the time you will either create a computed Event that
   emits events based on some raw source, like winddow scroll
   events or a websocket. Or you can create a mutable Event which
-  you pass to the UI renderer so it can emit events for dynamicly
-  created UI components
+  you pass to the UI renderer so it can emit events for dynamically
+  created UI components.
 
 `geval` is basically an implementation of the `Event` type that
   is normally used in FRP.
@@ -267,7 +267,7 @@ Most the time you will either create a computed Event that
   your event listeners from your event emitters. It sets up 
   global event listeners and allow you to embed event handlers
   on your virtual DOM elements without having to manage adding
-  or removing actual event listeners
+  or removing actual event listeners.
 
 #### `value-event`
 
@@ -275,14 +275,14 @@ Most the time you will either create a computed Event that
   embed in a virtual DOM. These event handlers work with both
   the native DOM and `dom-delegator`.
 
-`value-event` just contains a set of higher order functions that
-  allow you to write to a value to a `geval` Event when some
+`value-event` contains a set of higher order functions that
+  allows you to write to a value to a `geval` Event when some
   user interaction occurs.
 
 Using the higher order functions defined in `value-event` (
   change, submit, etc. ) allows you to not have to write any
   DOM event handling code in your application. `value-event` 
-  takes care of all the reading from the DOM
+  takes care of all the reading from the DOM.
 
 ## Motivation
 
