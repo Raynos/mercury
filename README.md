@@ -282,11 +282,8 @@ Most the time you will either create a computed Event that
 
 Using the higher order functions defined in `value-event` (
   change, submit, etc. ) allows you to not have to write any
-  DOM event handling code in your application.
-
-One of the philosophies of `mercury` is that custom DOM logic
-  should live in `node_modules` as higher order functions, an
-  application has no need to touch the DOM directly.
+  DOM event handling code in your application. `value-event` 
+  takes care of all the reading from the DOM
 
 ## Motivation
 
