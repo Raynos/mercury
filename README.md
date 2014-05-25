@@ -41,7 +41,6 @@ function render(clickCount) {
 }
 
 mercury.app(document.body, clickCount, render)
-
 ```
 
 ### Basic Examples
