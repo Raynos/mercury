@@ -337,6 +337,21 @@ npm test
  - `npm run examples` will start a HTTP server that shows examples
  - `npm run dist` will create a distributed version of mercury
 
+## Inspirations
+
+A lot of the philosophy and design of `mercury` is inspired by
+  the following:
+
+ - [`react`][react] for documenting and explaining the concept
+    of a virtual DOM and it's diffing algorithm
+ - [`om`][om] for explaining the concept and benefits of
+    immutable state and time travel.
+ - [`elm`][elm] for explaining the concept of FRP and having a
+    reference implementation of FRP in JavaScript. I wrote a 
+    pre-cursor to `mercury` that was literally a 
+    re-implementation of `elm` in javascript 
+    ([`graphics`][graphics])
+
 ## Contributors
 
  - Raynos
@@ -355,3 +370,8 @@ npm test
   [10]: https://david-dm.org/Raynos/mercury
   [11]: https://ci.testling.com/Raynos/mercury.png
   [12]: https://ci.testling.com/Raynos/mercury
+  
+  [graphics]: https://github.com/Raynos/graphics
+  [elm]: https://github.com/elm-lang/Elm
+  [react]: https://github.com/facebook/react
+  [om]: https://github.com/swannodette/om
