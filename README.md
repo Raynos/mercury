@@ -351,6 +351,8 @@ A lot of the philosophy and design of `mercury` is inspired by
     pre-cursor to `mercury` that was literally a 
     re-implementation of `elm` in javascript 
     ([`graphics`][graphics])
+ - [`reflex`][reflex] for demonstating the techniques used to
+    implement dynamic inputs.
 
 ## Contributors
 
@@ -375,3 +377,4 @@ A lot of the philosophy and design of `mercury` is inspired by
   [elm]: https://github.com/elm-lang/Elm
   [react]: https://github.com/facebook/react
   [om]: https://github.com/swannodette/om
+  [reflex]: https://github.com/Gozala/reflex
