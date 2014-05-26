@@ -45,11 +45,11 @@ mercury.app(document.body, clickCount, render)
 
 ### Basic Examples
 
- - [count](examples/count.js)
- - [shared-state](examples/shared-state.js)
- - [field-reset](examples/field-reset.js)
- - [bmi-counter](examples/bmi-counter.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=3020b3c7c7d9bea4d848)
- - [canvas](examples/canvas.js)
+ - [count](examples/count.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=3020b3c7c7d9bea4d848)
+ - [shared-state](examples/shared-state.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=e11f95b67ff92808eed0)
+ - [field-reset](examples/field-reset.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=6f286fc3641dbd199206)
+ - [bmi-counter](examples/bmi-counter.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=3752124345d5dbd8cccb)
+ - [canvas](examples/canvas.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=fb9c8a1938ab9d536879)
 
 ### Intermediate Examples
 
