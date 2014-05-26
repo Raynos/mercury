@@ -48,7 +48,7 @@ mercury.app(document.body, clickCount, render)
  - [count](examples/count.js)
  - [shared-state](examples/shared-state.js)
  - [field-reset](examples/field-reset.js)
- - [bmi-counter](examples/bmi-counter.js)
+ - [bmi-counter](examples/bmi-counter.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=3020b3c7c7d9bea4d848)
  - [canvas](examples/canvas.js)
 
 ### Intermediate Examples
