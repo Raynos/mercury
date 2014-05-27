@@ -104,3 +104,77 @@ h('div', {
 
 For another example of a hook see
     [TodoMVC focus hook](examples/todomvc/lib/do-mutable-focus.js)
+
+## How does `mercury.hash()` unwrapping work
+
+`mercury.hash()` takes an object whose values are either plain
+  values or observables.
+
+It then returns both an observable that contains an object
+  whose values are all plain values (if it sees any observables
+  it just gets the current value of the observables).
+
+The observable it returns also has the same key value properties
+  as you passed into `mercury.hash({ ... })`
+
+Example:
+
+```js
+var obj = mercury.hash({
+  key: 42,
+  key2: mercury.value(50)
+})
+
+assert.equal(obj.key, 42)
+assert.equal(typeof obj.key2, "function")
+assert.equal(obj.key2(), 50)
+assert.deepEqual(obj(), { key: 42, key2: 50 })
+```
+
+When any of the properties passed into `mercury.hash({ ... })` 
+  change then the value of the returned observable changes. 
+  Specifically the value of the observable is updated by updating
+  the changed key to the new plain value
+
+```js
+obj.key2.set(60)
+
+assert.deepEqual(obj(), { key: 42, key2: 60 })
+
+obj(function listen(newValue) {
+  assert.deepEqual(obj(), { key: 42, key2: 70 })
+})
+obj.key2.set(70)
+```
+
+Note that this will work recursively. If you set a value to
+  another `observ-hash` then when you change a nested property
+  on the nested `observ-hash` the hash updates which causes an
+  update to the parent hash.
+
+And since `observ-hash` always contains a plain value, the
+  parent `observ-hash` will also contain a nested plain value
+
+```js
+var obj2 = mercury.hash({
+  foo: mercury.hash({
+    bar: mercury.value(10)
+  })
+})
+
+assert.deepEqual(obj(), { foo: { bar: 10 } })
+
+obj2.foo.bar.set(20)
+assert.deepEqual(obj.foo(), { bar: 20 })
+assert.deepEqual(obj(), { foo: { bar: 20 } })
+
+
+obj.foo(function listen(newValue) {
+  assert.deepEqual(newValue, { bar: 30 })
+})
+obj(function listen(newValue)) {
+  assert.deepEqual(newValue, { foo: { bar: 30 } })
+})
+
+obj.foo.bar.set(30)
+```
