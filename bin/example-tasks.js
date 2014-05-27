@@ -10,6 +10,10 @@ var examplesTasks = [
     browserifyTask('todomvc'),
     browserifyTask('markdown'),
     browserifyTask('number-input'),
+    browserifyTask(path.join(
+        'unidirectional',
+        'backbone'
+    )),
     browserifyEditorTask('field-reset'),
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),

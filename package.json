@@ -39,6 +39,7 @@
     "virtual-hyperscript": "^2.2.0"
   },
   "devDependencies": {
+    "backbone": "^1.1.2",
     "browserify": "^3.38.0",
     "casperjs": "^1.1.0-beta3",
     "cuid": "^1.2.1",

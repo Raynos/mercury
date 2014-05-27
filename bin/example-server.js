@@ -16,8 +16,9 @@ router.addRoute('/', function (req, res) {
 
     var html = '<ul>\n'
     tasks.forEach(function (task) {
-        html += '  <li><a href="/' + task.name + '">' +
-            task.name + '</a></li>'
+        html += '  <li><a href="/' +
+            encodeURIComponent(task.name) + '">' +
+            encodeURIComponent(task.name) + '</a></li>'
     })
     html += '</ul>'
     res.end(html)
