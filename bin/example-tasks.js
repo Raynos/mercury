@@ -14,6 +14,10 @@ var examplesTasks = [
         'unidirectional',
         'backbone'
     )),
+    browserifyTask(path.join(
+        'unidirectional',
+        'jsx'
+    )),
     browserifyEditorTask('field-reset'),
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),
