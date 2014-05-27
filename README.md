@@ -59,6 +59,18 @@ mercury.app(document.body, clickCount, render)
  - [2048 (wip)](https://github.com/Raynos/mercury/tree/2048-wip/examples/2048)
  - [github issues (wip)](https://github.com/Raynos/mercury/tree/github-issues/examples/github-issues-viewer)
 
+### Unidirectional examples
+
+The following examples demonstrate how you can mix & match
+  mercury with other frameworks. This is possible because mercury
+  is fundamentally modular.
+
+**Disclaimer:** The following are neither "good" nor "bad" ideas.
+  Your milage may vary on using these ideas
+
+ - [Backbone + Mercury](examples/unidirectional/backbone)
+ - [JSX + Mercury](examples/unidirectional/jsx)
+
 ## Modules
 
 `mercury` is a small glue layer that composes a set of modules
