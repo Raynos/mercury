@@ -323,6 +323,12 @@ Using the higher order functions defined in `value-event` (
 
 ## Documentation
 
+### FAQ
+
+See the [FAQ document](docs/faq.md)
+
+### API
+
 WIP. In lieue of documentation please see examples :(
 
 ## Installation
