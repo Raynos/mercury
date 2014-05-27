@@ -178,3 +178,6 @@ obj(function listen(newValue)) {
 
 obj.foo.bar.set(30)
 ```
+
+The same idea also works for `mercury.array()` except that
+  is based on arrays instead of objects. 
