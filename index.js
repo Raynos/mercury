@@ -22,6 +22,7 @@ var mercury = module.exports = {
     array: require("observ-array"),
     hash: require("observ-hash"),
     value: require("observ"),
+    computed: require("observ/computed"),
 
     // Render
     diff: require("virtual-dom/diff"),
