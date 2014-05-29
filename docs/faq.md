@@ -98,7 +98,7 @@ AttributeHook.prototype.hook = function (elem, prop) {
 }
 
 h('div', {
-    class: AttributeHook('some-class-name')
+    class: new AttributeHook('some-class-name')
 })
 ```
 
