@@ -36,7 +36,6 @@ var state = new AppState({
 })
 
 events.add(function (data) {
-    console.log('wtf', data);
     state.get('items').add(data)
 })
 
