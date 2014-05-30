@@ -89,7 +89,7 @@ If you want to update a custom property on a DOM element, like
   use a hook
 
 ```js
-function AttributeHook(attr, value) {
+function AttributeHook(value) {
     this.value = value
 }
 
@@ -98,7 +98,7 @@ AttributeHook.prototype.hook = function (elem, prop) {
 }
 
 h('div', {
-    class: AttributeHook('some-class-name')
+    class: new AttributeHook('some-class-name')
 })
 ```
 
