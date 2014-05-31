@@ -70,7 +70,7 @@ The rules for a widget is that the first time it's seen we call
   `init()`, we expect `init()` to return a DOM element.
 
 The DOM element you return is yours to keep & mutate, virtual
-  DOM will touch it or its children. However you should never
+  DOM will not touch it or its children. However you should never
   touch `elem.parentNode` as that does not belong to the widget
 
 The second method is `update()` if we see a widget and we have
