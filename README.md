@@ -72,6 +72,37 @@ The following examples demonstrate how you can mix & match
  - [Backbone + Mercury](examples/unidirectional/backbone)
  - [JSX + Mercury](examples/unidirectional/jsx)
 
+## Motivation
+
+### Mercury vs React
+
+`mercury` is similar to react, however it's larger in scope, 
+  it is better compard against [`om`][om] or 
+  [`quiescent`][quiescent]
+  
+ - mercury leverages [`virtual-dom`][virtual-dom] which uses 
+    an immutable vdom structure
+ - mercury comes with [`observ-hash`][observ-hash] which uses 
+    immutable data for your state atom
+ - mercury is truly modular, you can trivially swap out 
+    subsets of it for other modules
+ - mercury source code itself is maintainable, the modules it 
+    uses are all small, well tested and well documented.
+    you should not be afraid to use mercury in production 
+    as it's easy to maintain & fix.
+ - mercury encourages zero dom manipulation in your application code. As far as your application is concerned
+    elements do not exist. This means you don't need to reference DOM elements when rendering or when handling
+    events
+ - mercury is compact, it's 11kb min.gzip.js, that's smaller than backbone.
+ - mercury strongly encourages FRP techniques and discourages local mutable state.
+ - mercury is highly performant, it's faster then React / Om / ember+htmlbars in multiple benchmarks
+    [TodoMVC benchmark](http://matt-esch.github.io/mercury-perf/)\
+    [animation benchmark](http://jsfiddle.net/sVPQL/11/) 
+    [TodoMVC benchmark source](https://github.com/matt-esch/mercury-perf)
+ - mercury comes with FP features like time-travel / easy undo out of the box.
+ - mercury is lean, it's an weekend's read at 2.5kloc. (virtual-dom is 1.1kloc, an evening's read.)
+    compared to react which is almost 20kloc (a month's read)
+
 ## Modules
 
 `mercury` is a small glue layer that composes a set of modules
@@ -313,37 +344,6 @@ Using the higher order functions defined in
   allows you to not have to write any DOM event handling 
   code in your application. [`value-event`][value-event]
   takes care of all the reading from the DOM.
-
-## Motivation
-
-### Mercury vs React
-
-`mercury` is similar to react, however it's larger in scope, 
-  it is better compard against [`om`][om] or 
-  [`quiescent`][quiescent]
-  
- - mercury leverages [`virtual-dom`][virtual-dom] which uses 
-    an immutable vdom structure
- - mercury comes with [`observ-hash`][observ-hash] which uses 
-    immutable data for your state atom
- - mercury is truly modular, you can trivially swap out 
-    subsets of it for other modules
- - mercury source code itself is maintainable, the modules it 
-    uses are all small, well tested and well documented.
-    you should not be afraid to use mercury in production 
-    as it's easy to maintain & fix.
- - mercury encourages zero dom manipulation in your application code. As far as your application is concerned
-    elements do not exist. This means you don't need to reference DOM elements when rendering or when handling
-    events
- - mercury is compact, it's 11kb min.gzip.js, that's smaller than backbone.
- - mercury strongly encourages FRP techniques and discourages local mutable state.
- - mercury is highly performant, it's faster then React / Om / ember+htmlbars in multiple benchmarks
-    [TodoMVC benchmark](http://matt-esch.github.io/mercury-perf/)\
-    [animation benchmark](http://jsfiddle.net/sVPQL/11/) 
-    [TodoMVC benchmark source](https://github.com/matt-esch/mercury-perf)
- - mercury comes with FP features like time-travel / easy undo out of the box.
- - mercury is lean, it's an weekend's read at 2.5kloc. (virtual-dom is 1.1kloc, an evening's read.)
-    compared to react which is almost 20kloc (a month's read)
 
 ## Documentation
 
