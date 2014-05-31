@@ -1,4 +1,4 @@
-var mercury = require('mercury');
+var mercury = require('../../index.js');
 var h = require('../../index.js').h;
 
 module.exports = render;

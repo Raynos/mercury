@@ -2,20 +2,22 @@ var http = require('http');
 var browserify = require('browserify');
 var path = require('path');
 var createElement = require('virtual-dom/create-element');
-var h = require('mercury').h;
+var h = require('../../index.js').h;
+
+var render = require('./render.js');
 
 var server = http.createServer(function (req, res) {
-    if (req.url === 'bundle.js') {
+    if (req.url === '/bundle.js') {
         res.setHeader('Content-Type', 'application/javascript')
         return browserify()
-            .add(path.join(__dirname, 'bundle.js'))
+            .add(path.join(__dirname, 'browser.js'))
             .bundle()
             .pipe(res)
     }
 
     var content = render({
         description: 'server description',
-        events: {},
+        events: { add: {} },
         items: [{
             name: 'server item name'
         }]
