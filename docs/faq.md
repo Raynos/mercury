@@ -82,7 +82,7 @@ The second method is `update()` if we see a widget and we have
 For another example of a widget see the
     [canvas demo](examples/canvas.js)
 
-### How do I update custom properties
+## How do I update custom properties
 
 If you want to update a custom property on a DOM element, like
   calling `setAttribute()` or calling `focus()` then you can
@@ -103,7 +103,64 @@ h('div', {
 ```
 
 For another example of a hook see
-    [TodoMVC focus hook](examples/todomvc/lib/do-mutable-focus.js)
+  [TodoMVC focus hook](examples/todomvc/lib/do-mutable-focus.js)
+
+## How do I get life cycle hooks for VNodes
+
+`VNode` only exposes one life cycle mechanism. which is the hook
+  mechanism.
+
+### Hooking into VNode creation
+
+If you want to do some custom DOM logic immediately once a VNode
+  is created you can add a hook, I normally add them to
+  `data-foo` properties.
+
+```js
+function MyHook(args) {
+  this.args = args
+}
+
+MyHook.prototype.hook = function (elem, propName) {
+  /* do DOM stuff */
+}
+
+h('div', {
+    'data-myHook': new MyHook(args)
+})
+```
+
+### Hooking into VNode after it's in the DOM
+
+If you want to a hook to fire after the DOM element has been
+  appended into the DOM you will have to delay the hook manually
+
+```js
+function MyHook(args) {
+  this.args = args
+}
+
+MyHook.prototype.hook = function (elem, propName) {
+  setImmediate(function () {
+    // DOM element will be in the real DOM by now
+    // do DOM stuff
+  })
+}
+
+h('div', {
+    'data-myHook': new MyHook(args)
+})
+```
+
+We only have one type of hook as maintaining both life cycles
+  seperately is very complex when it can simply be done at
+  the user level with a `setImmediate`
+
+We have the hook fire immediately by default because sometimes
+  you need to run DOM logic BEFORE the element is in the DOM.
+
+Firing the hook when the element is in the DOM makes it 
+  impossible to fire it when it's not in the DOM. 
 
 ## How does `mercury.hash()` unwrapping work
 
