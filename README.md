@@ -247,7 +247,7 @@ Generally applications built with mercury will have a single
   that every time the hash changes you get a fresh immutable 
   object.
 
-#### `observ-array`
+#### [`observ-array`][observ-array]
 
 [`observ-array`][observ-array] is an observable that contains 
   an array of observables. It's generally recommended that this a
@@ -285,7 +285,7 @@ Most of the time you will either create a computed Event that
   you pass to the UI renderer so it can emit events for dynamically
   created UI components.
 
-[`geval`][geva;] is basically an implementation of the 
+[`geval`][geval] is basically an implementation of the 
   `Event` type that is normally used in FRP.
 
 #### [`dom-delegator`][dom-delegator]
