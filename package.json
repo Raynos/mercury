@@ -70,7 +70,7 @@
     "test": "npm run jshint",
     "build": "node bin/build.js",
     "examples": "node bin/example-server.js",
-    "dist": "browserify --standalone mercury index.js > dist/mercury.js"
+    "dist": "node bin/dist.js"
   },
   "testling": {
     "files": "test/index.js",
