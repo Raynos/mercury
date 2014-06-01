@@ -238,3 +238,26 @@ obj.foo.bar.set(30)
 
 The same idea also works for `mercury.array()` except that
   is based on arrays instead of objects. 
+
+## How do I implement components or widgets (WIP)
+
+This section is a WIP
+
+show Component() -> { state: state } and Component.render()
+
+### How do I interact with components
+
+show that you can call functions
+
+### But I want to seperate my model state from my view state
+
+Talk about having two observables and setting up computed 
+  relationships
+
+### No i really, truly want local state
+
+Talk about how to use widgets and the caveats
+
+## How do I avoid deeply nested paths & structures (WIP)
+
+basically use components and embed the `events` hash at some path
