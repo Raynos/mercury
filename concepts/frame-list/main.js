@@ -7,7 +7,7 @@ var FrameData = require("./data/frames")
 // Load the data
 var initialFrameData = FrameData.load()
 
-var frames = mercury.hash(initialFrameData)
+var frames = mercury.struct(initialFrameData)
 var currentFrame = mercury.value(null)
 // Create the frameList component using the frames data
 // `frameList` is { state: state, events: events }
@@ -16,7 +16,7 @@ var frameList = FrameList(frames)
 // `frameEditor` is { state: state, events: events }
 var frameEditor = FrameEditor(currentFrame)
 
-var state = mercury.hash({
+var state = mercury.struct({
     frames: frames,
     currentFrame: currentFrame,
     editor: frameEditor.state,

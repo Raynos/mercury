@@ -1,4 +1,4 @@
-Auto generated from observ-array at version: 1.1.0.
+Auto generated from observ-array at version: 1.1.1.
 
 # observ-array
 
@@ -23,19 +23,19 @@ An `ObservArray` is an observable version of an array, every
 
 ```js
 var ObservArray = require("observ-array")
-var ObservHash = require("observ-hash")
+var ObservStruct = require("observ-struct")
 var Observ = require("observ")
 var uuid = require("uuid")
 
 function createTodo(title) {
-  return ObservHash({
+  return ObservStruct({
     id: uuid(),
     title: Observ(title || ""),
     completed: Observ(false)
   })
 }
 
-var state = ObservHash({
+var state = ObservStruct({
   todos: ObservArray([
     createTodo("some todo"),
     createTodo("some other todo")

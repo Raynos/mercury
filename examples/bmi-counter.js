@@ -2,7 +2,7 @@ var mercury = require("../index.js")
 var h = mercury.h
 
 var events = mercury.input(["height", "weight", "bmi"])
-var bmiData = mercury.hash({
+var bmiData = mercury.struct({
     height: mercury.value(180),
     weight: mercury.value(80),
     bmi: mercury.value(calcBmi(180, 80))

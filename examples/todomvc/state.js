@@ -25,10 +25,10 @@ module.exports = {
 function todoApp(events, initialState) {
     var state = extend(TodoApp, initialState)
 
-    return mercury.hash({
+    return mercury.struct({
         todos: mercury.array(state.todos.map(todoItem)),
         route: mercury.value(state.route),
-        field: mercury.hash({
+        field: mercury.struct({
             text :mercury.value(state.field.text)
         }),
         events: events
@@ -38,7 +38,7 @@ function todoApp(events, initialState) {
 function todoItem(item) {
     var state = extend(TodoItem, item)
 
-    return mercury.hash({
+    return mercury.struct({
         id: cuid(),
         title: mercury.value(state.title),
         editing: mercury.value(state.editing),

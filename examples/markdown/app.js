@@ -8,7 +8,7 @@ app.render = appRender
 module.exports = app
 
 function app() {
-	var state = mercury.hash({
+	var state = mercury.struct({
 		inlineEditor: inlineMdEditor({
 			placeholder: 'Enter some markdown...'
 		}),

@@ -3,7 +3,7 @@ var h = mercury.h
 
 var events = mercury.input(["reset"])
 
-var state = mercury.hash({
+var state = mercury.struct({
     isReset: mercury.value(false),
     events: events
 })

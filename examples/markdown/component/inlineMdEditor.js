@@ -29,7 +29,7 @@ function inlineMdEditor(options) {
 		shouldFocus: focusEditor
 	})
 	var renderer = mdRender({ value: options.value })
-	var state = mercury.hash({
+	var state = mercury.struct({
 		editor: editor,
 		renderer: renderer,
 		// if no initial value, show the editor

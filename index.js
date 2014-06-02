@@ -20,7 +20,9 @@ var mercury = module.exports = {
 
     // State
     array: require("observ-array"),
-    hash: require("observ-hash"),
+    struct: require("observ-struct"),
+    // alias struct as hash for back compat
+    hash: require("observ-struct"),
     value: require("observ"),
     computed: require("observ/computed"),
 

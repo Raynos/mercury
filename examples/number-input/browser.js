@@ -4,7 +4,7 @@ var h = mercury.h;
 var numberInput = require('./number-component.js')
 
 // main.js
-var state = mercury.hash({
+var state = mercury.struct({
     red: numberInput().state,
     blue: numberInput().state,
     green: numberInput().state

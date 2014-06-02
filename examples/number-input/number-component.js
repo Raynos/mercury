@@ -23,7 +23,7 @@ numberInput.Render = function (state) {
 };
 
 function numberInput() {
-    var state = mercury.hash({
+    var state = mercury.struct({
         value: mercury.value(0),
         events: mercury.input(['change', 'increase', 'decrease'])
     });

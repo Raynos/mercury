@@ -24,11 +24,11 @@ function createFrameList(parentState) {
     // I shouldn't have to mutate global state with a new key for my purpose
     // The internal state is still readable. This is still ref transparent
     // and this is still immutable.
-    var thumbnails = mercury.hash(map(parentState.frames, function (frame) {
+    var thumbnails = mercury.struct(map(parentState.frames, function (frame) {
         return thumbnailify(frame)
     }))
     
-    var state = mercury.hash({
+    var state = mercury.struct({
         thumbnails: thumbnails,
         lastSelect: mercury.value(null)
     })

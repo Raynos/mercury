@@ -1,6 +1,6 @@
-Auto generated from observ-hash at version: 2.0.0.
+Auto generated from observ-struct at version: 3.1.0.
 
-# observ-hash
+# observ-struct
 
 <!--
     [![build status][1]][2]
@@ -23,12 +23,12 @@ Nested keys will still be the same value if they were not changed
   in that particular `.set()` call.
 
 ```js
-var ObservHash = require("observ-hash")
+var ObservStruct = require("observ-struct")
 var Observ = require("observ")
 var assert = require("assert")
 
-var state = ObservHash({
-    fruits: ObservHash({
+var state = ObservStruct({
+    fruits: ObservStruct({
         apples: Observ(3),
         oranges: Observ(5)
     }),
@@ -55,9 +55,9 @@ state.fruits.apples.set(4)
 
 ## Docs
 
-### `var obj = ObservHash(opts)`
+### `var obj = ObservStruct(opts)`
 
-`ObservHash()` takes an object literal of string keys to either
+`ObservStruct()` takes an object literal of string keys to either
   normal values or observable values.
 
 It returns an `Observ` instance `obj`. The value of `obj` is 
@@ -71,7 +71,7 @@ Whenever one of the observables on a `key` changes the `obj` will
 
 ## Installation
 
-`npm install observ-hash`
+`npm install observ-struct`
 
 ## Contributors
 
@@ -79,15 +79,15 @@ Whenever one of the observables on a `key` changes the `obj` will
 
 ## MIT Licenced
 
-  [1]: https://secure.travis-ci.org/Raynos/observ-hash.png
-  [2]: https://travis-ci.org/Raynos/observ-hash
-  [3]: https://badge.fury.io/js/observ-hash.png
-  [4]: https://badge.fury.io/js/observ-hash
-  [5]: https://coveralls.io/repos/Raynos/observ-hash/badge.png
-  [6]: https://coveralls.io/r/Raynos/observ-hash
-  [7]: https://gemnasium.com/Raynos/observ-hash.png
-  [8]: https://gemnasium.com/Raynos/observ-hash
-  [9]: https://david-dm.org/Raynos/observ-hash.png
-  [10]: https://david-dm.org/Raynos/observ-hash
-  [11]: https://ci.testling.com/Raynos/observ-hash.png
-  [12]: https://ci.testling.com/Raynos/observ-hash
+  [1]: https://secure.travis-ci.org/Raynos/observ-struct.png
+  [2]: https://travis-ci.org/Raynos/observ-struct
+  [3]: https://badge.fury.io/js/observ-struct.png
+  [4]: https://badge.fury.io/js/observ-struct
+  [5]: https://coveralls.io/repos/Raynos/observ-struct/badge.png
+  [6]: https://coveralls.io/r/Raynos/observ-struct
+  [7]: https://gemnasium.com/Raynos/observ-struct.png
+  [8]: https://gemnasium.com/Raynos/observ-struct
+  [9]: https://david-dm.org/Raynos/observ-struct.png
+  [10]: https://david-dm.org/Raynos/observ-struct
+  [11]: https://ci.testling.com/Raynos/observ-struct.png
+  [12]: https://ci.testling.com/Raynos/observ-struct

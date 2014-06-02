@@ -16,7 +16,7 @@ function sideBySideMdEditor(options) {
 		name: options.name
 	})
 	var renderer = mdRender({ value: options.value })
-	var state = mercury.hash({
+	var state = mercury.struct({
 		editor: editor,
 		renderer: renderer
 	})

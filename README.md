@@ -82,7 +82,7 @@ The following examples demonstrate how you can mix & match
   
  - mercury leverages [`virtual-dom`][virtual-dom] which uses 
     an immutable vdom structure
- - mercury comes with [`observ-hash`][observ-hash] which uses 
+ - mercury comes with [`observ-struct`][observ-struct] which uses 
     immutable data for your state atom
  - mercury is truly modular, you can trivially swap out 
     subsets of it for other modules
@@ -114,7 +114,7 @@ If `mercury` is not ideal for your needs, you should check out
 Alternatively if the default set of modules in `mercury` doesn't
   work for you, you can just require other modules. It's possible
   to for example, swap out [`vtree`][vtree] with
-  [`react`][react] or swap out [`observ-hash`][observ-hash]
+  [`react`][react] or swap out [`observ-struct`][observ-struct]
   with [`backbone`][backbone]
 
 ### Input, State, Render and Output
@@ -219,7 +219,7 @@ It should be noted that [`vdom-thunk`][vdom-thunk] assumes
   arguments are immutable and thus does an O(1) `===` check 
   to see whether the arguments has changed. This will only 
   work if your state is immutable. Thankfully, 
-  [`observ-hash`][observ-hash] is immutable
+  [`observ-struct`][observ-struct] is immutable
 
 #### [`main-loop`][main-loop]
 
@@ -265,17 +265,17 @@ Generally applications built with mercury will have a single
 [`observ`][observ] is basically an implementation of the 
   `Signal` type that is normally used in FRP.
 
-#### [`observ-hash`][observ-hash]
+#### [`observ-struct`][observ-struct]
 
-[`observ-hash`][observ-hash] is an observable that contains an 
+[`observ-struct`][observ-struct] is an observable that contains an 
   object with a fixed number of keys. Generally the key-value 
-  pairs in [`observ-hash`][observ-hash] are themself 
+  pairs in [`observ-struct`][observ-struct] are themself 
   observables. You can change the value of any key in an 
-  [`observ-hash`][observ-hash] and the top level object 
+  [`observ-struct`][observ-struct] and the top level object 
   will also change to be a new object with that key changed.
 
-[`observ-hash`][observ-hash] uses shallow extension to ensure 
-  that every time the hash changes you get a fresh immutable 
+[`observ-struct`][observ-struct] uses shallow extension to ensure 
+  that every time the struct changes you get a fresh immutable 
   object.
 
 #### [`observ-array`][observ-array]
@@ -292,9 +292,9 @@ Generally applications built with mercury will have a single
 
 [`observ-array`][observ-array] has the benefit of being able 
   to add or remove items from the array, where as 
-  [`observ-hash`][observ-hash] has a fixed number
+  [`observ-struct`][observ-struct] has a fixed number
   of keys and you cannot add more keys to an 
-  [`observ-hash`][observ-hash]
+  [`observ-struct`][observ-struct]
 
 ### Input modules (The controller layer)
 
@@ -434,7 +434,7 @@ A lot of the philosophy and design of `mercury` is inspired by
   [vdom-thunk]: https://github.com/Raynos/vdom-thunk
   [observ]: https://github.com/Raynos/observ
   [observ-computed]: https://github.com/Raynos/observ/blob/master/computed.js
-  [observ-hash]: https://github.com/Raynos/observ-hash
+  [observ-struct]: https://github.com/Raynos/observ-struct
   [observ-array]: https://github.com/Raynos/observ-array
   [geval]: https://github.com/Raynos/geval
   [dom-delegator]: https://github.com/Raynos/dom-delegator

@@ -23,7 +23,7 @@ function textarea(options) {
 	options = options || {}
 
 	var events = input()
-	var state = mercury.hash({
+	var state = mercury.struct({
 		events: events,
 		value: mercury.value(options.value || ''),
 		placeholder: mercury.value(options.placeholder || ''),

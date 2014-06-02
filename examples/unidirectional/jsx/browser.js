@@ -5,14 +5,14 @@ var Render = require("./render.jsx")
 
 var events = mercury.input(["add", "changeText", "toggle"])
 
-var state = mercury.hash({
+var state = mercury.struct({
     description: mercury.value(""),
     list: mercury.array([]),
     events: events
 })
 
 events.add(function (description) {
-    state.list.push(mercury.hash({
+    state.list.push(mercury.struct({
         id: cuid(),
         description: mercury.value(description),
         done: mercury.value(false)

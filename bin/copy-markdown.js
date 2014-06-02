@@ -34,7 +34,7 @@ var projects = [
     'Raynos/dom-delegator',
     'Raynos/value-event',
     'Raynos/observ-array',
-    'Raynos/observ-hash',
+    'Raynos/observ-struct',
     'Raynos/observ',
     'Matt-Esch/virtual-dom',
     'Matt-Esch/vtree',

@@ -162,9 +162,9 @@ We have the hook fire immediately by default because sometimes
 Firing the hook when the element is in the DOM makes it 
   impossible to fire it when it's not in the DOM. 
 
-## How does `mercury.hash()` unwrapping work
+## How does `mercury.struct()` unwrapping work
 
-`mercury.hash()` takes an object whose values are either plain
+`mercury.struct()` takes an object whose values are either plain
   values or observables.
 
 It then returns both an observable that contains an object
@@ -172,12 +172,12 @@ It then returns both an observable that contains an object
   it just gets the current value of the observables).
 
 The observable it returns also has the same key value properties
-  as you passed into `mercury.hash({ ... })`
+  as you passed into `mercury.struct({ ... })`
 
 Example:
 
 ```js
-var obj = mercury.hash({
+var obj = mercury.struct({
   key: 42,
   key2: mercury.value(50)
 })
@@ -188,7 +188,7 @@ assert.equal(obj.key2(), 50)
 assert.deepEqual(obj(), { key: 42, key2: 50 })
 ```
 
-When any of the properties passed into `mercury.hash({ ... })` 
+When any of the properties passed into `mercury.struct({ ... })` 
   change then the value of the returned observable changes. 
   Specifically the value of the observable is updated by updating
   the changed key to the new plain value
@@ -205,16 +205,16 @@ obj.key2.set(70)
 ```
 
 Note that this will work recursively. If you set a value to
-  another `observ-hash` then when you change a nested property
-  on the nested `observ-hash` the hash updates which causes an
-  update to the parent hash.
+  another `observ-struct` then when you change a nested property
+  on the nested `observ-struct` the struct updates which causes an
+  update to the parent struct.
 
-And since `observ-hash` always contains a plain value, the
-  parent `observ-hash` will also contain a nested plain value
+And since `observ-struct` always contains a plain value, the
+  parent `observ-struct` will also contain a nested plain value
 
 ```js
-var obj2 = mercury.hash({
-  foo: mercury.hash({
+var obj2 = mercury.struct({
+  foo: mercury.struct({
     bar: mercury.value(10)
   })
 })
@@ -270,12 +270,12 @@ Let's say you have a calendar of events where each day can have
 Let's take a look at what the state might look like for it
 
 ```js
-var state = mercury.hash({
-  calendar: mercury.hash({
+var state = mercury.struct({
+  calendar: mercury.struct({
     days: mercury.array([
-      mercury.hash({
+      mercury.struct({
         events: mercury.array([
-          mercury.hash({
+          mercury.struct({
             name: 'event name',
             isOpen: mercury.value(false),
             description: 'event description'
@@ -338,7 +338,7 @@ What we want to do is get rid of the
   access `state.isOpen()` in the event handler, this is a lot
   cleaner.
 
-The best way to do this is to move the events hash from the top
+The best way to do this is to move the events object from the top
   level down to a lower level, basically embed it locally to
   the event so that we can make an assumption about the indices.
 
@@ -349,7 +349,7 @@ The best way to do this is to use a "mercury component" for the
 function EventComponent() {
   var events = mercury.input(['toggle']);
 
-  var state = mercury.hash({
+  var state = mercury.struct({
     name: 'event name',
     isOpen: mercury.value(false),
     description: 'event description',
@@ -387,10 +387,10 @@ We'll need to update our top level state and top level render
 
 
 ```js
-var state = mercury.hash({
-  calendar: mercury.hash({
+var state = mercury.struct({
+  calendar: mercury.struct({
     days: mercury.array([
-      mercury.hash({
+      mercury.struct({
         events: mercury.array([
           EventComponent(...).state
         ])

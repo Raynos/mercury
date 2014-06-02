@@ -9,7 +9,7 @@ module.exports = mdRender
 
 function mdRender(options) {
 	var events = input()
-	var state = mercury.hash({
+	var state = mercury.struct({
 		events: events,
 		value: mercury.value(options.value || '')
 	})

@@ -5,7 +5,7 @@ var shapes = require('./shapes.js')
 var dragEvent = require('./drag-handler.js')
 
 var events = mercury.input(['movePoint'])
-var state = mercury.hash({
+var state = mercury.struct({
     p1: mercury.value([100, 100]),
     p2: mercury.value([200, 200]),
     p3: mercury.value([100, 200]),
