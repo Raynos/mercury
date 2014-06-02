@@ -18,6 +18,10 @@ var examplesTasks = [
         'unidirectional',
         'jsx'
     )),
+    browserifyEditorTask(path.join(
+        'stateful-component',
+        'stateful'
+    )),
     browserifyEditorTask('field-reset'),
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),

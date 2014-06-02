@@ -1,4 +1,4 @@
-var mercury = require('mercury');
+var mercury = require('../../index.js');
 var h = mercury.h;
 
 var PopOver = (function () {
