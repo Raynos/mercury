@@ -258,6 +258,165 @@ Talk about having two observables and setting up computed
 
 Talk about how to use widgets and the caveats
 
-## How do I avoid deeply nested paths & structures (WIP)
+## How do I avoid deeply nested paths & structures
 
-basically use components and embed the `events` hash at some path
+Sometimes you might run into deeply nested data structures and
+  get frustrated with passing around keys & paths to the correct
+  thing in your data structure.
+
+Let's say you have a calendar of events where each day can have
+  multiple events.
+
+Let's take a look at what the state might look like for it
+
+```js
+var state = mercury.hash({
+  calendar: mercury.hash({
+    days: mercury.array([
+      mercury.hash({
+        events: mercury.array([
+          mercury.hash({
+            name: 'event name',
+            isOpen: mercury.value(false),
+            description: 'event description'
+          })
+        ])
+      })
+    ])
+  })
+})
+```
+
+Let's say we want to have an open & close event for this guy,
+  we might create an event and a UI like:
+
+```js
+var events = mercury.input(['eventToggle'])
+
+events.eventToggle(function (data) {
+  state.calendar.days.get(data.dayIndex)
+    .events.get(data.eventIndex).isOpen.set(data.value)
+})
+
+function render(calender) {
+  return h('ul', calendar.days.map(function (day, i) {
+    return h('li', [
+      h('ul', day.events.map(function (event, j) {
+        h('li', [
+          h('div', {
+            'data-click': mercury.event(events.eventToggle, {
+              eventIndex: j,
+              dayIndex: i,
+              value: !event.isOpen
+            })
+          }, event.name),
+          h('div', {
+            hidden: !event.isOpen
+          }, event.description)
+        ])
+      }))
+    ])
+  }))
+}
+```
+
+There is a problem with this example. We don't really want to
+  be writing `calendar.days.get(i).events.get(j).isOpen`. That
+  is far too long and you don't really care about all that.
+
+There is a second issue here as well. When we embed our
+  `'data-click'` event we have to pass up the `eventIndex` and
+  `dayIndex` because the event handler doesn't have this
+  context. This is really annoying because we can't put the 
+  event UI code in a seperate function without passing it
+  eventIndex and dayIndex.
+
+### Solution
+
+What we want to do is get rid of the
+  `.calendar.days.get(i).events.get(j)` path and instead just
+  access `state.isOpen()` in the event handler, this is a lot
+  cleaner.
+
+The best way to do this is to move the events hash from the top
+  level down to a lower level, basically embed it locally to
+  the event so that we can make an assumption about the indices.
+
+The best way to do this is to use a "mercury component" for the
+  actual event logic.
+
+```js
+function EventComponent() {
+  var events = mercury.input(['toggle']);
+
+  var state = mercury.hash({
+    name: 'event name',
+    isOpen: mercury.value(false),
+    description: 'event description',
+    events: events
+  });
+
+  events.toggle(function (data) {
+    state.isOpen.set(data.value)
+  })
+
+  return { state: state }
+}
+
+EventComponent.render = function (state) {
+  return h('div', [
+    h('div', {
+      'data-click': mercury.event(events.eventToggle, {
+        eventIndex: j,
+        dayIndex: i,
+        value: !event.isOpen
+      })
+    }, event.name),
+    h('div', {
+      hidden: !event.isOpen
+    }, event.description)
+  ])
+}
+```
+
+Now we've created a local events object for each event and have
+  completely gotten rid of all the path information.
+
+We'll need to update our top level state and top level render
+  logic.
+
+
+```js
+var state = mercury.hash({
+  calendar: mercury.hash({
+    days: mercury.array([
+      mercury.hash({
+        events: mercury.array([
+          EventComponent(...).state
+        ])
+      })
+    ])
+  })
+})
+```
+
+```js
+function render(calender) {
+  return h('ul', calendar.days.map(function (day, i) {
+    return h('li', [
+      h('ul', day.events.map(function (event, j) {
+        h('li', [
+          EventComponent.render(event)
+        ])
+      }))
+    ])
+  }))
+}
+```
+
+Look at how much cleaner this code is. The event component's
+  rendering logic no longer cares about the index or path in
+  the state that it is at.
+
+The EventComponent boundary also happened to be a really clean
+  place to use functions to seperate our code out.
