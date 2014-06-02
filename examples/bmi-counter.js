@@ -36,7 +36,7 @@ function slider(value, sink, min, max) {
     return h("input.slider", {
         type: "range", min: min, max: max, value: value,
         style: { width: "100%" }, name: "slider",
-        "data-event": mercury.changeEvent(sink)
+        "ev-event": mercury.changeEvent(sink)
     })
 }
 

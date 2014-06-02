@@ -8,7 +8,7 @@ var React = (function () {
       props = props || {};
       
       if (props.onKeyUp) {
-        props["data-keyup"] = props.onKeyUp;
+        props["ev-keyup"] = props.onKeyUp;
         props.onKeyUp = null;
       }
      

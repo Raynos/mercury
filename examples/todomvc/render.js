@@ -27,7 +27,7 @@ function render(state) {
 
 function header(field, events) {
     return h("header#header.header", {
-        "data-event": [
+        "ev-event": [
             mercury.changeEvent(events.setTodoField),
             mercury.submitEvent(events.add)
         ]
@@ -57,7 +57,7 @@ function mainSection(todos, route, events) {
             type: "checkbox",
             name: "toggle",
             checked: allCompleted,
-            "data-change": mercury.valueEvent(events.toggleAll)
+            "ev-change": mercury.valueEvent(events.toggleAll)
         }),
         h("label", { htmlFor: "toggle-all" }, "Mark all as complete"),
         h("ul#todo-list.todolist", visibleTodos.map(function (todo) {
@@ -75,18 +75,18 @@ function todoItem(todo, events) {
             h("input.toggle", {
                 type: "checkbox",
                 checked: todo.completed,
-                "data-change": mercury.event(events.toggle, {
+                "ev-change": mercury.event(events.toggle, {
                     id: todo.id,
                     completed: !todo.completed
                 })
             }),
             h("label", {
-                "data-dblclick": mercury.event(events.startEdit, {
+                "ev-dblclick": mercury.event(events.startEdit, {
                     id: todo.id 
                 })
             }, todo.title),
             h("button.destroy", {
-                "data-click": mercury.event(events.destroy, { id: todo.id })
+                "ev-click": mercury.event(events.destroy, { id: todo.id })
             })
         ]),
         h("input.edit", {
@@ -95,14 +95,14 @@ function todoItem(todo, events) {
             // when we need an RPC invocation we add a 
             // custom mutable operation into the tree to be
             // invoked at patch time
-            "data-focus": todo.editing ? doMutableFocus() : null,
-            "data-keydown": mercury.keyEvent(events.cancelEdit, ESCAPE, {
+            "ev-focus": todo.editing ? doMutableFocus() : null,
+            "ev-keydown": mercury.keyEvent(events.cancelEdit, ESCAPE, {
                 id: todo.id
             }),
-            "data-event": mercury.submitEvent(events.finishEdit, {
+            "ev-event": mercury.submitEvent(events.finishEdit, {
                 id: todo.id
             }),
-            "data-blur": mercury.valueEvent(events.finishEdit, { id: todo.id })
+            "ev-blur": mercury.valueEvent(events.finishEdit, { id: todo.id })
         })
     ])
 }
@@ -126,7 +126,7 @@ function statsSection(todos, route, events) {
         ]),
         h("button.clear-completed#clear-completed", {
             hidden: todosCompleted === 0,
-            "data-click": mercury.event(events.clearCompleted)
+            "ev-click": mercury.event(events.clearCompleted)
         }, "Clear completed (" + String(todosCompleted) + ")")
     ])
 }

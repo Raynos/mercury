@@ -7,17 +7,17 @@ numberInput.Render = function (state) {
             type: 'text',
             name: 'number',
             value: String(state.value),
-            'data-event': mercury.changeEvent(state.events.change)
+            'ev-event': mercury.changeEvent(state.events.change)
         }),
         h('input', {
             type: 'button',
             value: 'increase',
-            'data-click': mercury.event(state.events.increase)
+            'ev-click': mercury.event(state.events.increase)
         }, 'increase'),
         h('input', {
             type: 'button',
             value: 'decrease',
-            'data-click': mercury.event(state.events.decrease)
+            'ev-click': mercury.event(state.events.decrease)
         }, 'decrease')
     ]);
 };

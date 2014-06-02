@@ -25,7 +25,7 @@ function mdRenderRender(state) {
 	var events = state.events
 
 	return h('.markdown', {
-		'data-click': events.click
+		'ev-click': events.click
 	}, [
 		// using a nested node due to a bug with innerHTML in vtree
 		h('', { innerHTML: parseMarkdown(state.value) })

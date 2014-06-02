@@ -23,7 +23,7 @@ function render(state) {
         h("input.button", {
             type: "button",
             value: "Reset text field",
-            "data-click": mercury.event(state.events.reset, true)
+            "ev-click": mercury.event(state.events.reset, true)
         })
     ])
 }

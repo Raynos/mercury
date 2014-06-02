@@ -10,18 +10,18 @@ With `mercury` you can assign any event to be a plain function
 
 ```js
 h('div', {
-    'data-click': function (ev) {
+    'ev-click': function (ev) {
         /* do shit */
     }
 })
 ```
 
-`mercury` also has a special `data-event` which will get called
+`mercury` also has a special `ev-event` which will get called
   for every event trigger on an element
 
 ```js
 h('div', {
-    'data-event': function (ev) {
+    'ev-event': function (ev) {
         if (ev.type === 'keydown') {
             /* do shit */
         } else if (ev.type === 'keyup') {
@@ -114,7 +114,7 @@ For another example of a hook see
 
 If you want to do some custom DOM logic immediately once a VNode
   is created you can add a hook, I normally add them to
-  `data-foo` properties.
+  `ev-foo` properties.
 
 ```js
 function MyHook(args) {
@@ -126,7 +126,7 @@ MyHook.prototype.hook = function (elem, propName) {
 }
 
 h('div', {
-    'data-myHook': new MyHook(args)
+    'ev-myHook': new MyHook(args)
 })
 ```
 
@@ -148,7 +148,7 @@ MyHook.prototype.hook = function (elem, propName) {
 }
 
 h('div', {
-    'data-myHook': new MyHook(args)
+    'ev-myHook': new MyHook(args)
 })
 ```
 
@@ -304,7 +304,7 @@ function render(calender) {
       h('ul', day.events.map(function (event, j) {
         h('li', [
           h('div', {
-            'data-click': mercury.event(events.eventToggle, {
+            'ev-click': mercury.event(events.eventToggle, {
               eventIndex: j,
               dayIndex: i,
               value: !event.isOpen
@@ -325,7 +325,7 @@ There is a problem with this example. We don't really want to
   is far too long and you don't really care about all that.
 
 There is a second issue here as well. When we embed our
-  `'data-click'` event we have to pass up the `eventIndex` and
+  `'ev-click'` event we have to pass up the `eventIndex` and
   `dayIndex` because the event handler doesn't have this
   context. This is really annoying because we can't put the 
   event UI code in a seperate function without passing it
@@ -366,7 +366,7 @@ function EventComponent() {
 EventComponent.render = function (state) {
   return h('div', [
     h('div', {
-      'data-click': mercury.event(events.eventToggle, {
+      'ev-click': mercury.event(events.eventToggle, {
         eventIndex: j,
         dayIndex: i,
         value: !event.isOpen

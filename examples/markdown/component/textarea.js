@@ -46,10 +46,10 @@ function textareaRender(state) {
 
 	return h('.textarea', [
 		h('textarea.expanding', {
-			'data-blur': mercury.event(events.blur, state.value),
-			'data-change': events.change,
-			'data-input': events.input,
-			'data-focus': state.shouldFocus ? doMutableFocus() : null,
+			'ev-blur': mercury.event(events.blur, state.value),
+			'ev-change': events.change,
+			'ev-input': events.input,
+			'ev-focus': state.shouldFocus ? doMutableFocus() : null,
 			name: state.name,
 			placeholder: state.placeholder,
 			value: state.value

@@ -8,12 +8,12 @@ module.exports = render
 function render(state) {
     return <div>
         <input
-            data-event={mercury.changeEvent(state.events.changeText)}
+            ev-event={mercury.changeEvent(state.events.changeText)}
             name="description"
             value={state.description}
         />
         <button
-            data-click={mercury.event(state.events.add, state.description)}
+            ev-click={mercury.event(state.events.add, state.description)}
         >Add</button>
         <table>
             {state.list.map(renderTask)}
@@ -25,7 +25,7 @@ function render(state) {
             <td>
                 <input
                     type="checkbox"
-                    data-click={mercury.event(state.events.toggle, {
+                    ev-click={mercury.event(state.events.toggle, {
                         id: item.id
                     })}
                     checked={item.done}

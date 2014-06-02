@@ -56,7 +56,7 @@ function render(state) {
             ])
         })),
         h('div', {
-            'data-event': mercury.submitEvent(state.events.add)
+            'ev-event': mercury.submitEvent(state.events.add)
         }, [
             h('input', {
                 name: 'name',

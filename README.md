@@ -35,7 +35,7 @@ function render(clickCount) {
         " has value: " + clickCount + ".", h("input.button", {
             type: "button",
             value: "Click me!",
-            "data-click": mercury.event(clicks)
+            "ev-click": mercury.event(clicks)
         })
     ])
 }

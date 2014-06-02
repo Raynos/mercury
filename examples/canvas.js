@@ -34,7 +34,7 @@ function renderColor(color) {
         h('div', [
             h('span', color + ' '),
             h('input', {
-                'data-event': mercury.changeEvent(change),
+                'ev-event': mercury.changeEvent(change),
                 value: color,
                 name: 'color'
             })
