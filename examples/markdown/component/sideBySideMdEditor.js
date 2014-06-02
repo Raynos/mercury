@@ -13,7 +13,7 @@ function sideBySideMdEditor(options) {
 	var editor = textarea({
 		value: options.value,
 		placeholder: options.placeholder,
-		name: options.name
+		title: options.title
 	})
 	var renderer = mdRender({ value: options.value })
 	var state = mercury.struct({

@@ -25,7 +25,7 @@ function inlineMdEditor(options) {
 	var editor = textarea({
 		value: options.value,
 		placeholder: options.placeholder,
-		name: options.name,
+		title: options.title,
 		shouldFocus: focusEditor
 	})
 	var renderer = mdRender({ value: options.value })

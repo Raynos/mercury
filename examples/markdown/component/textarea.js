@@ -27,7 +27,7 @@ function textarea(options) {
 		events: events,
 		value: mercury.value(options.value || ''),
 		placeholder: mercury.value(options.placeholder || ''),
-		name: mercury.value(options.name || ''),
+		title: mercury.value(options.title || ''),
 		shouldFocus: options.shouldFocus
 	})
 
@@ -50,7 +50,7 @@ function textareaRender(state) {
 			'ev-change': events.change,
 			'ev-input': events.input,
 			'ev-focus': state.shouldFocus ? doMutableFocus() : null,
-			name: state.name,
+			name: state.title,
 			placeholder: state.placeholder,
 			value: state.value
 		}),
