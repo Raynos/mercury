@@ -1,4 +1,4 @@
-// mercury @ 3.2.4 
+// mercury @ 4.0.0 
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.mercury=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var SingleEvent = _dereq_("geval/single")
 var MultipleEvent = _dereq_("geval/multiple")
@@ -22,7 +22,9 @@ var mercury = module.exports = {
 
     // State
     array: _dereq_("observ-array"),
-    hash: _dereq_("observ-hash"),
+    struct: _dereq_("observ-struct"),
+    // alias struct as hash for back compat
+    hash: _dereq_("observ-struct"),
     value: _dereq_("observ"),
     computed: _dereq_("observ/computed"),
 
@@ -53,7 +55,7 @@ function app(elem, observ, render) {
     elem.appendChild(loop.target)
 }
 
-},{"dom-delegator":5,"geval/multiple":16,"geval/single":17,"main-loop":19,"observ":26,"observ-array":22,"observ-hash":24,"observ/computed":25,"value-event/change":28,"value-event/event":29,"value-event/key":30,"value-event/submit":36,"value-event/value":37,"vdom-thunk":38,"virtual-dom/create-element":39,"virtual-dom/diff":40,"virtual-dom/patch":43,"virtual-hyperscript":62,"virtual-hyperscript/svg":69}],2:[function(_dereq_,module,exports){
+},{"dom-delegator":5,"geval/multiple":16,"geval/single":17,"main-loop":19,"observ":26,"observ-array":22,"observ-struct":24,"observ/computed":25,"value-event/change":28,"value-event/event":29,"value-event/key":30,"value-event/submit":36,"value-event/value":37,"vdom-thunk":38,"virtual-dom/create-element":39,"virtual-dom/diff":40,"virtual-dom/patch":43,"virtual-hyperscript":63,"virtual-hyperscript/svg":70}],2:[function(_dereq_,module,exports){
 
 },{}],3:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
@@ -849,29 +851,35 @@ function splice(index, amount) {
 var Observ = _dereq_("observ")
 var extend = _dereq_("xtend")
 
-/* ObservHash := (Object<String, Observ<T>>) => 
+/* ObservStruct := (Object<String, Observ<T>>) => 
     Object<String, Observ<T>> &
         Observ<Object<String, T> & {
             _diff: Object<String, Any>
         }>
 
 */
-module.exports = ObservHash
+module.exports = ObservStruct
 
-function ObservHash(hash) {
-    var keys = Object.keys(hash)
+function ObservStruct(struct) {
+    var keys = Object.keys(struct)
 
     var initialState = {}
 
     keys.forEach(function (key) {
-        var observ = hash[key]
+        if (key === "name") {
+            throw new Error("cannot create an observ-struct " +
+                "with a key named 'name'. Clashes with " +
+                "`Function.prototype.name`.");
+        }
+
+        var observ = struct[key]
         initialState[key] = typeof observ === "function" ?
             observ() : observ
     })
 
     var obs = Observ(initialState)
     keys.forEach(function (key) {
-        var observ = hash[key]
+        var observ = struct[key]
         obs[key] = observ
 
         if (typeof observ === "function") {
@@ -890,7 +898,7 @@ function ObservHash(hash) {
     return obs
 }
 
-},{"observ":26,"xtend":70}],25:[function(_dereq_,module,exports){
+},{"observ":26,"xtend":71}],25:[function(_dereq_,module,exports){
 var Observable = _dereq_("./index.js")
 
 module.exports = computed
@@ -2287,7 +2295,27 @@ DataSetHook.prototype.hook = function (node, propertyName) {
     ds[propName] = this.value;
 };
 
-},{"data-set":64}],61:[function(_dereq_,module,exports){
+},{"data-set":65}],61:[function(_dereq_,module,exports){
+var DataSet = _dereq_("data-set")
+
+module.exports = DataSetHook;
+
+function DataSetHook(value) {
+    if (!(this instanceof DataSetHook)) {
+        return new DataSetHook(value);
+    }
+
+    this.value = value;
+}
+
+DataSetHook.prototype.hook = function (node, propertyName) {
+    var ds = DataSet(node)
+    var propName = propertyName.substr(3)
+
+    ds[propName] = this.value;
+};
+
+},{"data-set":65}],62:[function(_dereq_,module,exports){
 module.exports = SoftSetHook;
 
 function SoftSetHook(value) {
@@ -2304,7 +2332,7 @@ SoftSetHook.prototype.hook = function (node, propertyName) {
     }
 };
 
-},{}],62:[function(_dereq_,module,exports){
+},{}],63:[function(_dereq_,module,exports){
 var VNode = _dereq_("virtual-dom/vtree/vnode.js")
 var VText = _dereq_("virtual-dom/vtree/vtext.js")
 var isVNode = _dereq_("virtual-dom/vtree/is-vnode")
@@ -2315,6 +2343,7 @@ var isHook = _dereq_("virtual-dom/vtree/is-vhook")
 var parseTag = _dereq_("./parse-tag.js")
 var softSetHook = _dereq_("./hooks/soft-set-hook.js")
 var dataSetHook = _dereq_("./hooks/data-set-hook.js")
+var evHook = _dereq_("./hooks/ev-hook.js")
 
 module.exports = h
 
@@ -2355,15 +2384,26 @@ function h(tagName, properties, children) {
         props.value = softSetHook(props.value)
     }
 
-    // add data-set support
     var keys = Object.keys(props)
+    var propName, value
     for (var j = 0; j < keys.length; j++) {
-        var propName = keys[j]
-        var value = props[propName]
-        if (!isHook(value) && propName.substr(0, 5) === "data-") {
+        propName = keys[j]
+        value = props[propName]
+        if (isHook(value)) {
+            continue
+        }
+
+        // add data-foo support
+        if (propName.substr(0, 5) === "data-") {
             props[propName] = dataSetHook(value)
         }
+
+        // add ev-foo support
+        if (propName.substr(0, 3) === "ev-") {
+            props[propName] = evHook(value)
+        }
     }
+
 
     return new VNode(tag, props, childNodes, key, namespace)
 }
@@ -2388,17 +2428,17 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x) || isChild(x)
 }
 
-},{"./hooks/data-set-hook.js":60,"./hooks/soft-set-hook.js":61,"./parse-tag.js":68,"virtual-dom/vtree/is-vhook":51,"virtual-dom/vtree/is-vnode":52,"virtual-dom/vtree/is-vtext":53,"virtual-dom/vtree/is-widget":54,"virtual-dom/vtree/vnode.js":56,"virtual-dom/vtree/vtext.js":58}],63:[function(_dereq_,module,exports){
+},{"./hooks/data-set-hook.js":60,"./hooks/ev-hook.js":61,"./hooks/soft-set-hook.js":62,"./parse-tag.js":69,"virtual-dom/vtree/is-vhook":51,"virtual-dom/vtree/is-vnode":52,"virtual-dom/vtree/is-vtext":53,"virtual-dom/vtree/is-widget":54,"virtual-dom/vtree/vnode.js":56,"virtual-dom/vtree/vtext.js":58}],64:[function(_dereq_,module,exports){
 module.exports=_dereq_(6)
-},{}],64:[function(_dereq_,module,exports){
+},{}],65:[function(_dereq_,module,exports){
 module.exports=_dereq_(7)
-},{"./create-hash.js":63,"individual":65,"weakmap-shim/create-store":66}],65:[function(_dereq_,module,exports){
+},{"./create-hash.js":64,"individual":66,"weakmap-shim/create-store":67}],66:[function(_dereq_,module,exports){
 module.exports=_dereq_(11)
-},{}],66:[function(_dereq_,module,exports){
+},{}],67:[function(_dereq_,module,exports){
 module.exports=_dereq_(8)
-},{"./hidden-store.js":67}],67:[function(_dereq_,module,exports){
+},{"./hidden-store.js":68}],68:[function(_dereq_,module,exports){
 module.exports=_dereq_(9)
-},{}],68:[function(_dereq_,module,exports){
+},{}],69:[function(_dereq_,module,exports){
 var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
 var notClassId = /^\.|#/
 
@@ -2449,7 +2489,7 @@ function parseTag(tag, props) {
     return tagName ? tagName.toLowerCase() : "div"
 }
 
-},{}],69:[function(_dereq_,module,exports){
+},{}],70:[function(_dereq_,module,exports){
 var attributeHook = _dereq_("./hooks/attribute-hook.js")
 var h = _dereq_("./index.js")
 
@@ -2502,7 +2542,7 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x)
 }
 
-},{"./hooks/attribute-hook.js":59,"./index.js":62}],70:[function(_dereq_,module,exports){
+},{"./hooks/attribute-hook.js":59,"./index.js":63}],71:[function(_dereq_,module,exports){
 module.exports = extend
 
 function extend() {
