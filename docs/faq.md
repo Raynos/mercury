@@ -420,3 +420,29 @@ Look at how much cleaner this code is. The event component's
 
 The EventComponent boundary also happened to be a really clean
   place to use functions to seperate our code out.
+
+## How do I seperate serializable state from application state ? (WIP)
+
+Sometimes you want to be able to just do
+
+```js
+appState(function (state) {
+  save(state)
+})
+```
+
+However the `appState` generally contains all the application
+  state including local state and transient state that you don't
+  really want to save.
+
+The solution to this is to have two different state atoms. 
+  One for "model" state and one for "application" state.
+
+Another example of this is wanting to synchronize state between
+  multiple users, there is some state you want to share but other
+  state you don't want to share, for example currently selected
+  tab is not something you would want to share
+
+### Example seperating serializable state & application state
+
+// TODO
