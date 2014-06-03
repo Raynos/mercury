@@ -8,6 +8,7 @@ var MultipleEvent = require("geval/multiple")
 var mercury = module.exports = {
     // Entry
     main: require("main-loop"),
+    app: app,
 
     // Input
     Delegator: require("dom-delegator"),
@@ -24,7 +25,6 @@ var mercury = module.exports = {
     // alias struct as hash for back compat
     hash: require("observ-struct"),
     value: require("observ"),
-    computed: require("observ/computed"),
 
     // Render
     diff: require("virtual-dom/diff"),
@@ -34,8 +34,9 @@ var mercury = module.exports = {
     h: require("virtual-hyperscript"),
     svg: require("virtual-hyperscript/svg"),
 
-    // Utility
-    app: app
+    // Utilities
+    computed: require("observ/computed"),
+    watch: require("observ/watch")
 }
 
 function input(names) {
