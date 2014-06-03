@@ -1,4 +1,4 @@
-// mercury @ 4.0.0 
+// mercury @ 4.2.0 
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.mercury=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var SingleEvent = _dereq_("geval/single")
 var MultipleEvent = _dereq_("geval/multiple")
@@ -10,6 +10,7 @@ var MultipleEvent = _dereq_("geval/multiple")
 var mercury = module.exports = {
     // Entry
     main: _dereq_("main-loop"),
+    app: app,
 
     // Input
     Delegator: _dereq_("dom-delegator"),
@@ -26,7 +27,6 @@ var mercury = module.exports = {
     // alias struct as hash for back compat
     hash: _dereq_("observ-struct"),
     value: _dereq_("observ"),
-    computed: _dereq_("observ/computed"),
 
     // Render
     diff: _dereq_("virtual-dom/diff"),
@@ -36,8 +36,9 @@ var mercury = module.exports = {
     h: _dereq_("virtual-hyperscript"),
     svg: _dereq_("virtual-hyperscript/svg"),
 
-    // Utility
-    app: app
+    // Utilities
+    computed: _dereq_("observ/computed"),
+    watch: _dereq_("observ/watch")
 }
 
 function input(names) {
@@ -55,7 +56,7 @@ function app(elem, observ, render) {
     elem.appendChild(loop.target)
 }
 
-},{"dom-delegator":5,"geval/multiple":16,"geval/single":17,"main-loop":19,"observ":26,"observ-array":22,"observ-struct":24,"observ/computed":25,"value-event/change":28,"value-event/event":29,"value-event/key":30,"value-event/submit":36,"value-event/value":37,"vdom-thunk":38,"virtual-dom/create-element":39,"virtual-dom/diff":40,"virtual-dom/patch":43,"virtual-hyperscript":63,"virtual-hyperscript/svg":70}],2:[function(_dereq_,module,exports){
+},{"dom-delegator":5,"geval/multiple":15,"geval/single":16,"main-loop":18,"observ":27,"observ-array":21,"observ-struct":24,"observ/computed":26,"observ/watch":28,"value-event/change":30,"value-event/event":31,"value-event/key":32,"value-event/submit":38,"value-event/value":39,"vdom-thunk":40,"virtual-dom/create-element":41,"virtual-dom/diff":42,"virtual-dom/patch":46,"virtual-hyperscript":66,"virtual-hyperscript/svg":73}],2:[function(_dereq_,module,exports){
 
 },{}],3:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
@@ -208,7 +209,7 @@ function Listener(target, handlers) {
     this.handlers = handlers
 }
 
-},{"./add-event.js":3,"./proxy-event.js":13,"./remove-event.js":14,"data-set":7,"global/document":10}],5:[function(_dereq_,module,exports){
+},{"./add-event.js":3,"./proxy-event.js":12,"./remove-event.js":13,"data-set":7,"global/document":17}],5:[function(_dereq_,module,exports){
 var Individual = _dereq_("individual")
 
 var DOMDelegator = _dereq_("./dom-delegator.js")
@@ -252,7 +253,7 @@ function Delegator(opts) {
 
 
 
-},{"./dom-delegator.js":4,"individual":11}],6:[function(_dereq_,module,exports){
+},{"./dom-delegator.js":4,"individual":10}],6:[function(_dereq_,module,exports){
 module.exports = createHash
 
 function createHash(elem) {
@@ -296,7 +297,7 @@ function DataSet(elem) {
     return store.hash
 }
 
-},{"./create-hash.js":6,"individual":11,"weakmap-shim/create-store":8}],8:[function(_dereq_,module,exports){
+},{"./create-hash.js":6,"individual":10,"weakmap-shim/create-store":8}],8:[function(_dereq_,module,exports){
 var hiddenStore = _dereq_('./hidden-store.js');
 
 module.exports = createStore;
@@ -335,25 +336,6 @@ function hiddenStore(obj, key) {
 
 },{}],10:[function(_dereq_,module,exports){
 (function (global){
-var topLevel = typeof global !== 'undefined' ? global :
-    typeof window !== 'undefined' ? window : {}
-var minDoc = _dereq_('min-document');
-
-if (typeof document !== 'undefined') {
-    module.exports = document;
-} else {
-    var doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'];
-
-    if (!doccy) {
-        doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'] = minDoc;
-    }
-
-    module.exports = doccy;
-}
-
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"min-document":2}],11:[function(_dereq_,module,exports){
-(function (global){
 var root = typeof window !== 'undefined' ?
     window : typeof global !== 'undefined' ?
     global : {};
@@ -374,7 +356,7 @@ function Individual(key, value) {
 }
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],12:[function(_dereq_,module,exports){
+},{}],11:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -399,7 +381,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],13:[function(_dereq_,module,exports){
+},{}],12:[function(_dereq_,module,exports){
 var inherits = _dereq_("inherits")
 
 var ALL_PROPS = [
@@ -477,7 +459,7 @@ function KeyEvent(ev, listener) {
 
 inherits(KeyEvent, ProxyEvent)
 
-},{"inherits":12}],14:[function(_dereq_,module,exports){
+},{"inherits":11}],13:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
 
 module.exports = removeEvent
@@ -498,7 +480,7 @@ function removeEvent(target, type, handler) {
     }
 }
 
-},{"data-set":7}],15:[function(_dereq_,module,exports){
+},{"data-set":7}],14:[function(_dereq_,module,exports){
 module.exports = Event
 
 function Event() {
@@ -526,7 +508,7 @@ function Event() {
     }
 }
 
-},{}],16:[function(_dereq_,module,exports){
+},{}],15:[function(_dereq_,module,exports){
 var event = _dereq_("./single.js")
 
 module.exports = multiple
@@ -538,7 +520,7 @@ function multiple(names) {
     }, {})
 }
 
-},{"./single.js":17}],17:[function(_dereq_,module,exports){
+},{"./single.js":16}],16:[function(_dereq_,module,exports){
 var Event = _dereq_('./event.js')
 
 module.exports = Single
@@ -555,14 +537,26 @@ function Single() {
     }
 }
 
-},{"./event.js":15}],18:[function(_dereq_,module,exports){
-if (typeof document !== "undefined") {
+},{"./event.js":14}],17:[function(_dereq_,module,exports){
+(function (global){
+var topLevel = typeof global !== 'undefined' ? global :
+    typeof window !== 'undefined' ? window : {}
+var minDoc = _dereq_('min-document');
+
+if (typeof document !== 'undefined') {
     module.exports = document;
 } else {
-    module.exports = _dereq_("min-document");
+    var doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'];
+
+    if (!doccy) {
+        doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'] = minDoc;
+    }
+
+    module.exports = doccy;
 }
 
-},{"min-document":2}],19:[function(_dereq_,module,exports){
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"min-document":2}],18:[function(_dereq_,module,exports){
 var raf = _dereq_("raf/polyfill")
 var vdomCreate = _dereq_("virtual-dom/create-element")
 var vdomDiff = _dereq_("virtual-dom/diff")
@@ -577,14 +571,12 @@ function main(initialState, view, opts) {
     var create = opts.create || vdomCreate
     var diff = opts.diff || vdomDiff
     var patch = opts.patch || vdomPatch
-    var looping = true
+    var redrawScheduled = false
 
     var tree = view(currentState)
     var target = create(tree, opts)
 
     currentState = null
-
-    raf(redraw)
 
     return {
         target: target,
@@ -592,8 +584,8 @@ function main(initialState, view, opts) {
     }
 
     function update(state) {
-        if (currentState === null && !looping) {
-            looping = true
+        if (currentState === null && !redrawScheduled) {
+            redrawScheduled = true
             raf(redraw)
         }
 
@@ -601,8 +593,8 @@ function main(initialState, view, opts) {
     }
 
     function redraw() {
+        redrawScheduled = false;
         if (currentState === null) {
-            looping = false
             return
         }
 
@@ -617,12 +609,10 @@ function main(initialState, view, opts) {
 
         tree = newTree
         currentState = null
-
-        raf(redraw)
     }
 }
 
-},{"raf/polyfill":27,"virtual-dom/create-element":39,"virtual-dom/diff":40,"virtual-dom/patch":43}],20:[function(_dereq_,module,exports){
+},{"raf/polyfill":29,"virtual-dom/create-element":41,"virtual-dom/diff":42,"virtual-dom/patch":46}],19:[function(_dereq_,module,exports){
 module.exports = addListener
 
 function addListener(observArray, observ) {
@@ -650,7 +640,7 @@ function addListener(observArray, observ) {
     })
 }
 
-},{}],21:[function(_dereq_,module,exports){
+},{}],20:[function(_dereq_,module,exports){
 var ObservArray = _dereq_("./index.js")
 
 var slice = Array.prototype.slice
@@ -717,7 +707,7 @@ function notImplemented() {
     throw new Error("Pull request welcome")
 }
 
-},{"./index.js":22}],22:[function(_dereq_,module,exports){
+},{"./index.js":21}],21:[function(_dereq_,module,exports){
 var Observ = _dereq_("observ")
 
 // circular dep between ArrayMethods & this file
@@ -796,7 +786,36 @@ function getLength() {
     return this._list.length
 }
 
-},{"./add-listener.js":20,"./array-methods.js":21,"./splice.js":23,"observ":26}],23:[function(_dereq_,module,exports){
+},{"./add-listener.js":19,"./array-methods.js":20,"./splice.js":23,"observ":22}],22:[function(_dereq_,module,exports){
+module.exports = Observable
+
+function Observable(value) {
+    var listeners = []
+    value = value === undefined ? null : value
+
+    observable.set = function (v) {
+        value = v
+        listeners.forEach(function (f) {
+            f(v)
+        })
+    }
+
+    return observable
+
+    function observable(listener) {
+        if (!listener) {
+            return value
+        }
+
+        listeners.push(listener)
+
+        return function remove() {
+            listeners.splice(listeners.indexOf(listener), 1)
+        }
+    }
+}
+
+},{}],23:[function(_dereq_,module,exports){
 var slice = Array.prototype.slice
 
 var addListener = _dereq_("./add-listener.js")
@@ -847,7 +866,7 @@ function splice(index, amount) {
     return removed
 }
 
-},{"./add-listener.js":20}],24:[function(_dereq_,module,exports){
+},{"./add-listener.js":19}],24:[function(_dereq_,module,exports){
 var Observ = _dereq_("observ")
 var extend = _dereq_("xtend")
 
@@ -898,7 +917,9 @@ function ObservStruct(struct) {
     return obs
 }
 
-},{"observ":26,"xtend":71}],25:[function(_dereq_,module,exports){
+},{"observ":25,"xtend":74}],25:[function(_dereq_,module,exports){
+module.exports=_dereq_(22)
+},{}],26:[function(_dereq_,module,exports){
 var Observable = _dereq_("./index.js")
 
 module.exports = computed
@@ -919,36 +940,18 @@ function computed(observables, lambda) {
     return result
 }
 
-},{"./index.js":26}],26:[function(_dereq_,module,exports){
-module.exports = Observable
+},{"./index.js":27}],27:[function(_dereq_,module,exports){
+module.exports=_dereq_(22)
+},{}],28:[function(_dereq_,module,exports){
+module.exports = watch
 
-function Observable(value) {
-    var listeners = []
-    value = value === undefined ? null : value
-
-    observable.set = function (v) {
-        value = v
-        listeners.forEach(function (f) {
-            f(v)
-        })
-    }
-
-    return observable
-
-    function observable(listener) {
-        if (!listener) {
-            return value
-        }
-
-        listeners.push(listener)
-
-        return function remove() {
-            listeners.splice(listeners.indexOf(listener), 1)
-        }
-    }
+function watch(observable, listener) {
+    var remove = observable(listener)
+    listener(observable())
+    return remove
 }
 
-},{}],27:[function(_dereq_,module,exports){
+},{}],29:[function(_dereq_,module,exports){
 var global = typeof window === 'undefined' ? this : window
 
 var _raf =
@@ -966,7 +969,7 @@ var _raf =
 
 module.exports = _raf
 
-},{}],28:[function(_dereq_,module,exports){
+},{}],30:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -1007,7 +1010,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":32,"xtend":35}],29:[function(_dereq_,module,exports){
+},{"form-data-set/element":34,"xtend":37}],31:[function(_dereq_,module,exports){
 module.exports = SinkEventHandler
 
 function SinkEventHandler(sink, data) {
@@ -1030,7 +1033,7 @@ function handleEvent(ev) {
     }
 }
 
-},{}],30:[function(_dereq_,module,exports){
+},{}],32:[function(_dereq_,module,exports){
 module.exports = KeyEventHandler
 
 function KeyEventHandler(fn, key, data) {
@@ -1051,7 +1054,7 @@ function handleEvent(ev) {
     }
 }
 
-},{}],31:[function(_dereq_,module,exports){
+},{}],33:[function(_dereq_,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -1077,7 +1080,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],32:[function(_dereq_,module,exports){
+},{}],34:[function(_dereq_,module,exports){
 var walk = _dereq_('dom-walk')
 
 var FormData = _dereq_('./index.js')
@@ -1103,7 +1106,7 @@ function getFormData(rootElem) {
     return FormData(elements)
 }
 
-},{"./index.js":33,"dom-walk":31}],33:[function(_dereq_,module,exports){
+},{"./index.js":35,"dom-walk":33}],35:[function(_dereq_,module,exports){
 /*jshint maxcomplexity: 10*/
 
 module.exports = FormData
@@ -1180,7 +1183,7 @@ function filterNull(val) {
     return val !== null
 }
 
-},{}],34:[function(_dereq_,module,exports){
+},{}],36:[function(_dereq_,module,exports){
 module.exports = hasKeys
 
 function hasKeys(source) {
@@ -1189,7 +1192,7 @@ function hasKeys(source) {
         typeof source === "function")
 }
 
-},{}],35:[function(_dereq_,module,exports){
+},{}],37:[function(_dereq_,module,exports){
 var hasKeys = _dereq_("./has-keys")
 
 module.exports = extend
@@ -1214,7 +1217,7 @@ function extend() {
     return target
 }
 
-},{"./has-keys":34}],36:[function(_dereq_,module,exports){
+},{"./has-keys":36}],38:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -1259,7 +1262,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":32,"xtend":35}],37:[function(_dereq_,module,exports){
+},{"form-data-set/element":34,"xtend":37}],39:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -1288,7 +1291,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":32,"xtend":35}],38:[function(_dereq_,module,exports){
+},{"form-data-set/element":34,"xtend":37}],40:[function(_dereq_,module,exports){
 var createElement = _dereq_("virtual-dom/create-element")
 var diff = _dereq_("virtual-dom/diff")
 var patch = _dereq_("virtual-dom/patch")
@@ -1393,24 +1396,31 @@ function init() {
     return createElement(this.vnode)
 }
 
-},{"virtual-dom/create-element":39,"virtual-dom/diff":40,"virtual-dom/patch":43}],39:[function(_dereq_,module,exports){
+},{"virtual-dom/create-element":41,"virtual-dom/diff":42,"virtual-dom/patch":46}],41:[function(_dereq_,module,exports){
 var createElement = _dereq_("./vdom/create-element")
 
 module.exports = createElement
 
-},{"./vdom/create-element":45}],40:[function(_dereq_,module,exports){
+},{"./vdom/create-element":48}],42:[function(_dereq_,module,exports){
 var diff = _dereq_("./vtree/diff")
 
 module.exports = diff
 
-},{"./vtree/diff":50}],41:[function(_dereq_,module,exports){
+},{"./vtree/diff":53}],43:[function(_dereq_,module,exports){
+if (typeof document !== "undefined") {
+    module.exports = document;
+} else {
+    module.exports = _dereq_("min-document");
+}
+
+},{"min-document":2}],44:[function(_dereq_,module,exports){
 module.exports = isObject
 
 function isObject(x) {
     return typeof x === "object" && x !== null
 }
 
-},{}],42:[function(_dereq_,module,exports){
+},{}],45:[function(_dereq_,module,exports){
 var nativeIsArray = Array.isArray
 var toString = Object.prototype.toString
 
@@ -1420,12 +1430,12 @@ function isArray(obj) {
     return toString.call(obj) === "[object Array]"
 }
 
-},{}],43:[function(_dereq_,module,exports){
+},{}],46:[function(_dereq_,module,exports){
 var patch = _dereq_("./vdom/patch")
 
 module.exports = patch
 
-},{"./vdom/patch":48}],44:[function(_dereq_,module,exports){
+},{"./vdom/patch":51}],47:[function(_dereq_,module,exports){
 var isObject = _dereq_("is-object")
 
 var isHook = _dereq_("../vtree/is-vhook")
@@ -1456,7 +1466,7 @@ function applyProperties(node, props, previous) {
     }
 }
 
-},{"../vtree/is-vhook":51,"is-object":41}],45:[function(_dereq_,module,exports){
+},{"../vtree/is-vhook":54,"is-object":44}],48:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 
 var applyProperties = _dereq_("./apply-properties")
@@ -1501,7 +1511,7 @@ function createElement(vnode, opts) {
     return node
 }
 
-},{"../vtree/is-vnode":52,"../vtree/is-vtext":53,"../vtree/is-widget":54,"./apply-properties":44,"global/document":18}],46:[function(_dereq_,module,exports){
+},{"../vtree/is-vnode":55,"../vtree/is-vtext":56,"../vtree/is-widget":57,"./apply-properties":47,"global/document":43}],49:[function(_dereq_,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -1588,7 +1598,7 @@ function ascending(a, b) {
     return a > b ? 1 : -1
 }
 
-},{}],47:[function(_dereq_,module,exports){
+},{}],50:[function(_dereq_,module,exports){
 var applyProperties = _dereq_("./apply-properties")
 
 var isWidget = _dereq_("../vtree/is-widget")
@@ -1724,7 +1734,7 @@ function reorderChildren(domNode, bIndex) {
     }
 }
 
-},{"../vtree/is-widget":54,"../vtree/vpatch":57,"./apply-properties":44,"./create-element":45,"./update-widget":49}],48:[function(_dereq_,module,exports){
+},{"../vtree/is-widget":57,"../vtree/vpatch":60,"./apply-properties":47,"./create-element":48,"./update-widget":52}],51:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 var isArray = _dereq_("x-is-array")
 
@@ -1799,7 +1809,7 @@ function patchIndices(patches) {
     return indices
 }
 
-},{"./dom-index":46,"./patch-op":47,"global/document":18,"x-is-array":42}],49:[function(_dereq_,module,exports){
+},{"./dom-index":49,"./patch-op":50,"global/document":43,"x-is-array":45}],52:[function(_dereq_,module,exports){
 var isWidget = _dereq_("../vtree/is-widget")
 
 module.exports = updateWidget
@@ -1816,7 +1826,7 @@ function updateWidget(a, b) {
     return false
 }
 
-},{"../vtree/is-widget":54}],50:[function(_dereq_,module,exports){
+},{"../vtree/is-widget":57}],53:[function(_dereq_,module,exports){
 var isArray = _dereq_("x-is-array")
 var isObject = _dereq_("is-object")
 
@@ -2112,7 +2122,7 @@ function appendPatch(apply, patch) {
     }
 }
 
-},{"./is-vnode":52,"./is-vtext":53,"./is-widget":54,"./vpatch":57,"is-object":41,"x-is-array":42}],51:[function(_dereq_,module,exports){
+},{"./is-vnode":55,"./is-vtext":56,"./is-widget":57,"./vpatch":60,"is-object":44,"x-is-array":45}],54:[function(_dereq_,module,exports){
 module.exports = isHook
 
 function isHook(hook) {
@@ -2120,7 +2130,7 @@ function isHook(hook) {
         !hook.hasOwnProperty("hook")
 }
 
-},{}],52:[function(_dereq_,module,exports){
+},{}],55:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualNode
@@ -2133,7 +2143,7 @@ function isVirtualNode(x) {
     return x.type === "VirtualNode" && x.version === version
 }
 
-},{"./version":55}],53:[function(_dereq_,module,exports){
+},{"./version":58}],56:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualText
@@ -2146,17 +2156,17 @@ function isVirtualText(x) {
     return x.type === "VirtualText" && x.version === version
 }
 
-},{"./version":55}],54:[function(_dereq_,module,exports){
+},{"./version":58}],57:[function(_dereq_,module,exports){
 module.exports = isWidget
 
 function isWidget(w) {
     return w && typeof w.init === "function" && typeof w.update === "function"
 }
 
-},{}],55:[function(_dereq_,module,exports){
+},{}],58:[function(_dereq_,module,exports){
 module.exports = "1"
 
-},{}],56:[function(_dereq_,module,exports){
+},{}],59:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 var isVNode = _dereq_("./is-vnode")
 var isWidget = _dereq_("./is-widget")
@@ -2221,7 +2231,7 @@ function VirtualNode(tagName, properties, children, key, namespace) {
 VirtualNode.prototype.version = version
 VirtualNode.prototype.type = "VirtualNode"
 
-},{"./is-vhook":51,"./is-vnode":52,"./is-widget":54,"./version":55}],57:[function(_dereq_,module,exports){
+},{"./is-vhook":54,"./is-vnode":55,"./is-widget":57,"./version":58}],60:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 VirtualPatch.NONE = 0
@@ -2244,7 +2254,7 @@ function VirtualPatch(type, vNode, patch) {
 VirtualPatch.prototype.version = version.split(".")
 VirtualPatch.prototype.type = "VirtualPatch"
 
-},{"./version":55}],58:[function(_dereq_,module,exports){
+},{"./version":58}],61:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = VirtualText
@@ -2256,7 +2266,7 @@ function VirtualText(text) {
 VirtualText.prototype.version = version
 VirtualText.prototype.type = "VirtualText"
 
-},{"./version":55}],59:[function(_dereq_,module,exports){
+},{"./version":58}],62:[function(_dereq_,module,exports){
 module.exports = AttributeHook;
 
 function AttributeHook(value) {
@@ -2275,7 +2285,7 @@ AttributeHook.prototype.hook = function (node, prop, prev) {
     node.setAttributeNS(null, prop, this.value)
 }
 
-},{}],60:[function(_dereq_,module,exports){
+},{}],63:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
 
 module.exports = DataSetHook;
@@ -2295,7 +2305,7 @@ DataSetHook.prototype.hook = function (node, propertyName) {
     ds[propName] = this.value;
 };
 
-},{"data-set":65}],61:[function(_dereq_,module,exports){
+},{"data-set":68}],64:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
 
 module.exports = DataSetHook;
@@ -2315,7 +2325,7 @@ DataSetHook.prototype.hook = function (node, propertyName) {
     ds[propName] = this.value;
 };
 
-},{"data-set":65}],62:[function(_dereq_,module,exports){
+},{"data-set":68}],65:[function(_dereq_,module,exports){
 module.exports = SoftSetHook;
 
 function SoftSetHook(value) {
@@ -2332,7 +2342,7 @@ SoftSetHook.prototype.hook = function (node, propertyName) {
     }
 };
 
-},{}],63:[function(_dereq_,module,exports){
+},{}],66:[function(_dereq_,module,exports){
 var VNode = _dereq_("virtual-dom/vtree/vnode.js")
 var VText = _dereq_("virtual-dom/vtree/vtext.js")
 var isVNode = _dereq_("virtual-dom/vtree/is-vnode")
@@ -2428,17 +2438,17 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x) || isChild(x)
 }
 
-},{"./hooks/data-set-hook.js":60,"./hooks/ev-hook.js":61,"./hooks/soft-set-hook.js":62,"./parse-tag.js":69,"virtual-dom/vtree/is-vhook":51,"virtual-dom/vtree/is-vnode":52,"virtual-dom/vtree/is-vtext":53,"virtual-dom/vtree/is-widget":54,"virtual-dom/vtree/vnode.js":56,"virtual-dom/vtree/vtext.js":58}],64:[function(_dereq_,module,exports){
+},{"./hooks/data-set-hook.js":63,"./hooks/ev-hook.js":64,"./hooks/soft-set-hook.js":65,"./parse-tag.js":72,"virtual-dom/vtree/is-vhook":54,"virtual-dom/vtree/is-vnode":55,"virtual-dom/vtree/is-vtext":56,"virtual-dom/vtree/is-widget":57,"virtual-dom/vtree/vnode.js":59,"virtual-dom/vtree/vtext.js":61}],67:[function(_dereq_,module,exports){
 module.exports=_dereq_(6)
-},{}],65:[function(_dereq_,module,exports){
+},{}],68:[function(_dereq_,module,exports){
 module.exports=_dereq_(7)
-},{"./create-hash.js":64,"individual":66,"weakmap-shim/create-store":67}],66:[function(_dereq_,module,exports){
-module.exports=_dereq_(11)
-},{}],67:[function(_dereq_,module,exports){
+},{"./create-hash.js":67,"individual":69,"weakmap-shim/create-store":70}],69:[function(_dereq_,module,exports){
+module.exports=_dereq_(10)
+},{}],70:[function(_dereq_,module,exports){
 module.exports=_dereq_(8)
-},{"./hidden-store.js":68}],68:[function(_dereq_,module,exports){
+},{"./hidden-store.js":71}],71:[function(_dereq_,module,exports){
 module.exports=_dereq_(9)
-},{}],69:[function(_dereq_,module,exports){
+},{}],72:[function(_dereq_,module,exports){
 var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
 var notClassId = /^\.|#/
 
@@ -2489,7 +2499,7 @@ function parseTag(tag, props) {
     return tagName ? tagName.toLowerCase() : "div"
 }
 
-},{}],70:[function(_dereq_,module,exports){
+},{}],73:[function(_dereq_,module,exports){
 var attributeHook = _dereq_("./hooks/attribute-hook.js")
 var h = _dereq_("./index.js")
 
@@ -2542,7 +2552,7 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x)
 }
 
-},{"./hooks/attribute-hook.js":59,"./index.js":63}],71:[function(_dereq_,module,exports){
+},{"./hooks/attribute-hook.js":62,"./index.js":66}],74:[function(_dereq_,module,exports){
 module.exports = extend
 
 function extend() {
