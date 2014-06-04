@@ -45,7 +45,7 @@ mercury.app(document.body, clickCount, render)
 
 ### Basic Examples
 
- - [count](examples/count.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=3020b3c7c7d9bea4d848)
+ - [count](examples/count.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=1156430c25a28cd8cfe1)
  - [shared-state](examples/shared-state.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=e11f95b67ff92808eed0)
  - [field-reset](examples/field-reset.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=6f286fc3641dbd199206)
  - [bmi-counter](examples/bmi-counter.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=3752124345d5dbd8cccb)
