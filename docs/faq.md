@@ -103,7 +103,7 @@ h('div', {
 ```
 
 For another example of a hook see
-  [TodoMVC focus hook](examples/todomvc/lib/do-mutable-focus.js)
+  [TodoMVC focus hook](https://github.com/Raynos/mercury/blob/master/examples/todomvc/lib/do-mutable-focus.js)
 
 ## How do I get life cycle hooks for VNodes
 
