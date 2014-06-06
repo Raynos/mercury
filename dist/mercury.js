@@ -1,4 +1,4 @@
-// mercury @ 4.2.0 
+// mercury @ 4.3.0 
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.mercury=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var SingleEvent = _dereq_("geval/single")
 var MultipleEvent = _dereq_("geval/multiple")
@@ -26,6 +26,7 @@ var mercury = module.exports = {
     struct: _dereq_("observ-struct"),
     // alias struct as hash for back compat
     hash: _dereq_("observ-struct"),
+    varhash: _dereq_("observ-varhash"),
     value: _dereq_("observ"),
 
     // Render
@@ -49,14 +50,14 @@ function input(names) {
     return MultipleEvent(names)
 }
 
-function app(elem, observ, render) {
+function app(elem, observ, render, opts) {
     mercury.Delegator();
-    var loop = mercury.main(observ(), render)
+    var loop = mercury.main(observ(), render, opts)
     observ(loop.update)
     elem.appendChild(loop.target)
 }
 
-},{"dom-delegator":5,"geval/multiple":15,"geval/single":16,"main-loop":18,"observ":27,"observ-array":21,"observ-struct":24,"observ/computed":26,"observ/watch":28,"value-event/change":30,"value-event/event":31,"value-event/key":32,"value-event/submit":38,"value-event/value":39,"vdom-thunk":40,"virtual-dom/create-element":41,"virtual-dom/diff":42,"virtual-dom/patch":46,"virtual-hyperscript":66,"virtual-hyperscript/svg":73}],2:[function(_dereq_,module,exports){
+},{"dom-delegator":5,"geval/multiple":15,"geval/single":16,"main-loop":18,"observ":35,"observ-array":21,"observ-struct":24,"observ-varhash":26,"observ/computed":34,"observ/watch":36,"value-event/change":38,"value-event/event":39,"value-event/key":40,"value-event/submit":46,"value-event/value":47,"vdom-thunk":48,"virtual-dom/create-element":49,"virtual-dom/diff":50,"virtual-dom/patch":54,"virtual-hyperscript":74,"virtual-hyperscript/svg":81}],2:[function(_dereq_,module,exports){
 
 },{}],3:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
@@ -612,7 +613,7 @@ function main(initialState, view, opts) {
     }
 }
 
-},{"raf/polyfill":29,"virtual-dom/create-element":41,"virtual-dom/diff":42,"virtual-dom/patch":46}],19:[function(_dereq_,module,exports){
+},{"raf/polyfill":37,"virtual-dom/create-element":49,"virtual-dom/diff":50,"virtual-dom/patch":54}],19:[function(_dereq_,module,exports){
 module.exports = addListener
 
 function addListener(observArray, observ) {
@@ -917,9 +918,284 @@ function ObservStruct(struct) {
     return obs
 }
 
-},{"observ":25,"xtend":74}],25:[function(_dereq_,module,exports){
+},{"observ":25,"xtend":82}],25:[function(_dereq_,module,exports){
 module.exports=_dereq_(22)
 },{}],26:[function(_dereq_,module,exports){
+var Observ = _dereq_('observ')
+var extend = _dereq_('xtend')
+
+var TOMBSTONE = ObservVarhash.Tombstone = new Tombstone()
+
+module.exports = ObservVarhash
+
+function ObservVarhash(hash, createFn) {
+  createFn = createFn || function (obj) { return obj }
+
+  var keys = Object.keys(hash)
+  var initialState = {}
+
+  keys.forEach(function (key) {
+    if (key === 'name') {
+      throw new Error('cannot create an observ-varhash with a key named' +
+        '"name". Clashes with `Function.prototype.name`.')
+    }
+
+    var observ = hash[key]
+    initialState[key] = typeof observ === 'function' ? observ() : observ
+  })
+
+  var obs = Observ(initialState)
+
+  obs.get = get
+  obs.delete = del
+  obs.put = put(createFn)
+  obs._removeListeners = {}
+
+  keys.forEach(function (key) {
+    var observ = hash[key]
+    obs[key] = createFn(observ, key)
+
+    if (typeof observ === 'function') {
+      obs._removeListeners[key] = observ(watch(obs, key))
+    }
+  })
+
+  return obs
+}
+
+// api
+function get (key) { return this[key] }
+
+function put (createFn) {
+  return function (key, val) {
+    var obs = this
+    var observ = createFn(val, key)
+    var state = prepareChange(obs, key)
+    var value = typeof observ === 'function' ? observ() : observ
+
+    state[key] = value
+
+    if (typeof observ === 'function') {
+      obs._removeListeners[key] = observ(watch(obs, key))
+    }
+
+    state._diff = diff(key, value)
+    obs.set(state)
+    obs[key] = observ
+
+    return obs
+  }
+}
+
+function del (key) {
+  var state = prepareChange(this, key)
+
+  delete state[key]
+  state._diff = diff(key, TOMBSTONE)
+  this.set(state)
+
+  return this
+}
+
+// helpers
+function watch (obs, key, state) {
+  return function (value) {
+    var state = extend(obs())
+    state[key] = value
+    state._diff = diff(key, value)
+    obs.set(state)
+  }
+}
+
+function prepareChange (obs, key) {
+  var state = extend(obs())
+
+  if (obs._removeListeners[key]) {
+    obs._removeListeners[key]()
+    delete obs._removeListeners[key]
+  }
+
+  return state
+}
+
+function diff (key, value) {
+  var obj = {}
+  obj[key] = value && value._diff ? value._diff : value
+  return obj
+}
+
+function Tombstone () {
+  this.toString = function () { return '[object Tombstone]' }
+  this.toJSON = function () { return '[object Tombstone]' }
+}
+
+},{"observ":27,"xtend":29}],27:[function(_dereq_,module,exports){
+module.exports=_dereq_(22)
+},{}],28:[function(_dereq_,module,exports){
+module.exports = hasKeys
+
+function hasKeys(source) {
+    return source !== null &&
+        (typeof source === "object" ||
+        typeof source === "function")
+}
+
+},{}],29:[function(_dereq_,module,exports){
+var Keys = _dereq_("object-keys")
+var hasKeys = _dereq_("./has-keys")
+
+module.exports = extend
+
+function extend() {
+    var target = {}
+
+    for (var i = 0; i < arguments.length; i++) {
+        var source = arguments[i]
+
+        if (!hasKeys(source)) {
+            continue
+        }
+
+        var keys = Keys(source)
+
+        for (var j = 0; j < keys.length; j++) {
+            var name = keys[j]
+            target[name] = source[name]
+        }
+    }
+
+    return target
+}
+
+},{"./has-keys":28,"object-keys":31}],30:[function(_dereq_,module,exports){
+var hasOwn = Object.prototype.hasOwnProperty;
+var toString = Object.prototype.toString;
+
+var isFunction = function (fn) {
+	var isFunc = (typeof fn === 'function' && !(fn instanceof RegExp)) || toString.call(fn) === '[object Function]';
+	if (!isFunc && typeof window !== 'undefined') {
+		isFunc = fn === window.setTimeout || fn === window.alert || fn === window.confirm || fn === window.prompt;
+	}
+	return isFunc;
+};
+
+module.exports = function forEach(obj, fn) {
+	if (!isFunction(fn)) {
+		throw new TypeError('iterator must be a function');
+	}
+	var i, k,
+		isString = typeof obj === 'string',
+		l = obj.length,
+		context = arguments.length > 2 ? arguments[2] : null;
+	if (l === +l) {
+		for (i = 0; i < l; i++) {
+			if (context === null) {
+				fn(isString ? obj.charAt(i) : obj[i], i, obj);
+			} else {
+				fn.call(context, isString ? obj.charAt(i) : obj[i], i, obj);
+			}
+		}
+	} else {
+		for (k in obj) {
+			if (hasOwn.call(obj, k)) {
+				if (context === null) {
+					fn(obj[k], k, obj);
+				} else {
+					fn.call(context, obj[k], k, obj);
+				}
+			}
+		}
+	}
+};
+
+
+},{}],31:[function(_dereq_,module,exports){
+module.exports = Object.keys || _dereq_('./shim');
+
+
+},{"./shim":33}],32:[function(_dereq_,module,exports){
+var toString = Object.prototype.toString;
+
+module.exports = function isArguments(value) {
+	var str = toString.call(value);
+	var isArguments = str === '[object Arguments]';
+	if (!isArguments) {
+		isArguments = str !== '[object Array]'
+			&& value !== null
+			&& typeof value === 'object'
+			&& typeof value.length === 'number'
+			&& value.length >= 0
+			&& toString.call(value.callee) === '[object Function]';
+	}
+	return isArguments;
+};
+
+
+},{}],33:[function(_dereq_,module,exports){
+(function () {
+	"use strict";
+
+	// modified from https://github.com/kriskowal/es5-shim
+	var has = Object.prototype.hasOwnProperty,
+		toString = Object.prototype.toString,
+		forEach = _dereq_('./foreach'),
+		isArgs = _dereq_('./isArguments'),
+		hasDontEnumBug = !({'toString': null}).propertyIsEnumerable('toString'),
+		hasProtoEnumBug = (function () {}).propertyIsEnumerable('prototype'),
+		dontEnums = [
+			"toString",
+			"toLocaleString",
+			"valueOf",
+			"hasOwnProperty",
+			"isPrototypeOf",
+			"propertyIsEnumerable",
+			"constructor"
+		],
+		keysShim;
+
+	keysShim = function keys(object) {
+		var isObject = object !== null && typeof object === 'object',
+			isFunction = toString.call(object) === '[object Function]',
+			isArguments = isArgs(object),
+			theKeys = [];
+
+		if (!isObject && !isFunction && !isArguments) {
+			throw new TypeError("Object.keys called on a non-object");
+		}
+
+		if (isArguments) {
+			forEach(object, function (value) {
+				theKeys.push(value);
+			});
+		} else {
+			var name,
+				skipProto = hasProtoEnumBug && isFunction;
+
+			for (name in object) {
+				if (!(skipProto && name === 'prototype') && has.call(object, name)) {
+					theKeys.push(name);
+				}
+			}
+		}
+
+		if (hasDontEnumBug) {
+			var ctor = object.constructor,
+				skipConstructor = ctor && ctor.prototype === object;
+
+			forEach(dontEnums, function (dontEnum) {
+				if (!(skipConstructor && dontEnum === 'constructor') && has.call(object, dontEnum)) {
+					theKeys.push(dontEnum);
+				}
+			});
+		}
+		return theKeys;
+	};
+
+	module.exports = keysShim;
+}());
+
+
+},{"./foreach":30,"./isArguments":32}],34:[function(_dereq_,module,exports){
 var Observable = _dereq_("./index.js")
 
 module.exports = computed
@@ -940,9 +1216,9 @@ function computed(observables, lambda) {
     return result
 }
 
-},{"./index.js":27}],27:[function(_dereq_,module,exports){
+},{"./index.js":35}],35:[function(_dereq_,module,exports){
 module.exports=_dereq_(22)
-},{}],28:[function(_dereq_,module,exports){
+},{}],36:[function(_dereq_,module,exports){
 module.exports = watch
 
 function watch(observable, listener) {
@@ -951,7 +1227,7 @@ function watch(observable, listener) {
     return remove
 }
 
-},{}],29:[function(_dereq_,module,exports){
+},{}],37:[function(_dereq_,module,exports){
 var global = typeof window === 'undefined' ? this : window
 
 var _raf =
@@ -969,7 +1245,7 @@ var _raf =
 
 module.exports = _raf
 
-},{}],30:[function(_dereq_,module,exports){
+},{}],38:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -1010,7 +1286,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":34,"xtend":37}],31:[function(_dereq_,module,exports){
+},{"form-data-set/element":42,"xtend":45}],39:[function(_dereq_,module,exports){
 module.exports = SinkEventHandler
 
 function SinkEventHandler(sink, data) {
@@ -1033,7 +1309,7 @@ function handleEvent(ev) {
     }
 }
 
-},{}],32:[function(_dereq_,module,exports){
+},{}],40:[function(_dereq_,module,exports){
 module.exports = KeyEventHandler
 
 function KeyEventHandler(fn, key, data) {
@@ -1054,7 +1330,7 @@ function handleEvent(ev) {
     }
 }
 
-},{}],33:[function(_dereq_,module,exports){
+},{}],41:[function(_dereq_,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -1080,7 +1356,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],34:[function(_dereq_,module,exports){
+},{}],42:[function(_dereq_,module,exports){
 var walk = _dereq_('dom-walk')
 
 var FormData = _dereq_('./index.js')
@@ -1106,7 +1382,7 @@ function getFormData(rootElem) {
     return FormData(elements)
 }
 
-},{"./index.js":35,"dom-walk":33}],35:[function(_dereq_,module,exports){
+},{"./index.js":43,"dom-walk":41}],43:[function(_dereq_,module,exports){
 /*jshint maxcomplexity: 10*/
 
 module.exports = FormData
@@ -1183,16 +1459,9 @@ function filterNull(val) {
     return val !== null
 }
 
-},{}],36:[function(_dereq_,module,exports){
-module.exports = hasKeys
-
-function hasKeys(source) {
-    return source !== null &&
-        (typeof source === "object" ||
-        typeof source === "function")
-}
-
-},{}],37:[function(_dereq_,module,exports){
+},{}],44:[function(_dereq_,module,exports){
+module.exports=_dereq_(28)
+},{}],45:[function(_dereq_,module,exports){
 var hasKeys = _dereq_("./has-keys")
 
 module.exports = extend
@@ -1217,7 +1486,7 @@ function extend() {
     return target
 }
 
-},{"./has-keys":36}],38:[function(_dereq_,module,exports){
+},{"./has-keys":44}],46:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -1262,7 +1531,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":34,"xtend":37}],39:[function(_dereq_,module,exports){
+},{"form-data-set/element":42,"xtend":45}],47:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -1291,7 +1560,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":34,"xtend":37}],40:[function(_dereq_,module,exports){
+},{"form-data-set/element":42,"xtend":45}],48:[function(_dereq_,module,exports){
 var createElement = _dereq_("virtual-dom/create-element")
 var diff = _dereq_("virtual-dom/diff")
 var patch = _dereq_("virtual-dom/patch")
@@ -1396,31 +1665,31 @@ function init() {
     return createElement(this.vnode)
 }
 
-},{"virtual-dom/create-element":41,"virtual-dom/diff":42,"virtual-dom/patch":46}],41:[function(_dereq_,module,exports){
+},{"virtual-dom/create-element":49,"virtual-dom/diff":50,"virtual-dom/patch":54}],49:[function(_dereq_,module,exports){
 var createElement = _dereq_("./vdom/create-element")
 
 module.exports = createElement
 
-},{"./vdom/create-element":48}],42:[function(_dereq_,module,exports){
+},{"./vdom/create-element":56}],50:[function(_dereq_,module,exports){
 var diff = _dereq_("./vtree/diff")
 
 module.exports = diff
 
-},{"./vtree/diff":53}],43:[function(_dereq_,module,exports){
+},{"./vtree/diff":61}],51:[function(_dereq_,module,exports){
 if (typeof document !== "undefined") {
     module.exports = document;
 } else {
     module.exports = _dereq_("min-document");
 }
 
-},{"min-document":2}],44:[function(_dereq_,module,exports){
+},{"min-document":2}],52:[function(_dereq_,module,exports){
 module.exports = isObject
 
 function isObject(x) {
     return typeof x === "object" && x !== null
 }
 
-},{}],45:[function(_dereq_,module,exports){
+},{}],53:[function(_dereq_,module,exports){
 var nativeIsArray = Array.isArray
 var toString = Object.prototype.toString
 
@@ -1430,12 +1699,12 @@ function isArray(obj) {
     return toString.call(obj) === "[object Array]"
 }
 
-},{}],46:[function(_dereq_,module,exports){
+},{}],54:[function(_dereq_,module,exports){
 var patch = _dereq_("./vdom/patch")
 
 module.exports = patch
 
-},{"./vdom/patch":51}],47:[function(_dereq_,module,exports){
+},{"./vdom/patch":59}],55:[function(_dereq_,module,exports){
 var isObject = _dereq_("is-object")
 
 var isHook = _dereq_("../vtree/is-vhook")
@@ -1466,7 +1735,7 @@ function applyProperties(node, props, previous) {
     }
 }
 
-},{"../vtree/is-vhook":54,"is-object":44}],48:[function(_dereq_,module,exports){
+},{"../vtree/is-vhook":62,"is-object":52}],56:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 
 var applyProperties = _dereq_("./apply-properties")
@@ -1511,7 +1780,7 @@ function createElement(vnode, opts) {
     return node
 }
 
-},{"../vtree/is-vnode":55,"../vtree/is-vtext":56,"../vtree/is-widget":57,"./apply-properties":47,"global/document":43}],49:[function(_dereq_,module,exports){
+},{"../vtree/is-vnode":63,"../vtree/is-vtext":64,"../vtree/is-widget":65,"./apply-properties":55,"global/document":51}],57:[function(_dereq_,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -1598,7 +1867,7 @@ function ascending(a, b) {
     return a > b ? 1 : -1
 }
 
-},{}],50:[function(_dereq_,module,exports){
+},{}],58:[function(_dereq_,module,exports){
 var applyProperties = _dereq_("./apply-properties")
 
 var isWidget = _dereq_("../vtree/is-widget")
@@ -1734,7 +2003,7 @@ function reorderChildren(domNode, bIndex) {
     }
 }
 
-},{"../vtree/is-widget":57,"../vtree/vpatch":60,"./apply-properties":47,"./create-element":48,"./update-widget":52}],51:[function(_dereq_,module,exports){
+},{"../vtree/is-widget":65,"../vtree/vpatch":68,"./apply-properties":55,"./create-element":56,"./update-widget":60}],59:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 var isArray = _dereq_("x-is-array")
 
@@ -1809,7 +2078,7 @@ function patchIndices(patches) {
     return indices
 }
 
-},{"./dom-index":49,"./patch-op":50,"global/document":43,"x-is-array":45}],52:[function(_dereq_,module,exports){
+},{"./dom-index":57,"./patch-op":58,"global/document":51,"x-is-array":53}],60:[function(_dereq_,module,exports){
 var isWidget = _dereq_("../vtree/is-widget")
 
 module.exports = updateWidget
@@ -1826,7 +2095,7 @@ function updateWidget(a, b) {
     return false
 }
 
-},{"../vtree/is-widget":57}],53:[function(_dereq_,module,exports){
+},{"../vtree/is-widget":65}],61:[function(_dereq_,module,exports){
 var isArray = _dereq_("x-is-array")
 var isObject = _dereq_("is-object")
 
@@ -2122,7 +2391,7 @@ function appendPatch(apply, patch) {
     }
 }
 
-},{"./is-vnode":55,"./is-vtext":56,"./is-widget":57,"./vpatch":60,"is-object":44,"x-is-array":45}],54:[function(_dereq_,module,exports){
+},{"./is-vnode":63,"./is-vtext":64,"./is-widget":65,"./vpatch":68,"is-object":52,"x-is-array":53}],62:[function(_dereq_,module,exports){
 module.exports = isHook
 
 function isHook(hook) {
@@ -2130,7 +2399,7 @@ function isHook(hook) {
         !hook.hasOwnProperty("hook")
 }
 
-},{}],55:[function(_dereq_,module,exports){
+},{}],63:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualNode
@@ -2143,7 +2412,7 @@ function isVirtualNode(x) {
     return x.type === "VirtualNode" && x.version === version
 }
 
-},{"./version":58}],56:[function(_dereq_,module,exports){
+},{"./version":66}],64:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualText
@@ -2156,17 +2425,17 @@ function isVirtualText(x) {
     return x.type === "VirtualText" && x.version === version
 }
 
-},{"./version":58}],57:[function(_dereq_,module,exports){
+},{"./version":66}],65:[function(_dereq_,module,exports){
 module.exports = isWidget
 
 function isWidget(w) {
     return w && typeof w.init === "function" && typeof w.update === "function"
 }
 
-},{}],58:[function(_dereq_,module,exports){
+},{}],66:[function(_dereq_,module,exports){
 module.exports = "1"
 
-},{}],59:[function(_dereq_,module,exports){
+},{}],67:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 var isVNode = _dereq_("./is-vnode")
 var isWidget = _dereq_("./is-widget")
@@ -2231,7 +2500,7 @@ function VirtualNode(tagName, properties, children, key, namespace) {
 VirtualNode.prototype.version = version
 VirtualNode.prototype.type = "VirtualNode"
 
-},{"./is-vhook":54,"./is-vnode":55,"./is-widget":57,"./version":58}],60:[function(_dereq_,module,exports){
+},{"./is-vhook":62,"./is-vnode":63,"./is-widget":65,"./version":66}],68:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 VirtualPatch.NONE = 0
@@ -2254,7 +2523,7 @@ function VirtualPatch(type, vNode, patch) {
 VirtualPatch.prototype.version = version.split(".")
 VirtualPatch.prototype.type = "VirtualPatch"
 
-},{"./version":58}],61:[function(_dereq_,module,exports){
+},{"./version":66}],69:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = VirtualText
@@ -2266,7 +2535,7 @@ function VirtualText(text) {
 VirtualText.prototype.version = version
 VirtualText.prototype.type = "VirtualText"
 
-},{"./version":58}],62:[function(_dereq_,module,exports){
+},{"./version":66}],70:[function(_dereq_,module,exports){
 module.exports = AttributeHook;
 
 function AttributeHook(value) {
@@ -2285,7 +2554,7 @@ AttributeHook.prototype.hook = function (node, prop, prev) {
     node.setAttributeNS(null, prop, this.value)
 }
 
-},{}],63:[function(_dereq_,module,exports){
+},{}],71:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
 
 module.exports = DataSetHook;
@@ -2305,7 +2574,7 @@ DataSetHook.prototype.hook = function (node, propertyName) {
     ds[propName] = this.value;
 };
 
-},{"data-set":68}],64:[function(_dereq_,module,exports){
+},{"data-set":76}],72:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
 
 module.exports = DataSetHook;
@@ -2325,7 +2594,7 @@ DataSetHook.prototype.hook = function (node, propertyName) {
     ds[propName] = this.value;
 };
 
-},{"data-set":68}],65:[function(_dereq_,module,exports){
+},{"data-set":76}],73:[function(_dereq_,module,exports){
 module.exports = SoftSetHook;
 
 function SoftSetHook(value) {
@@ -2342,7 +2611,7 @@ SoftSetHook.prototype.hook = function (node, propertyName) {
     }
 };
 
-},{}],66:[function(_dereq_,module,exports){
+},{}],74:[function(_dereq_,module,exports){
 var VNode = _dereq_("virtual-dom/vtree/vnode.js")
 var VText = _dereq_("virtual-dom/vtree/vtext.js")
 var isVNode = _dereq_("virtual-dom/vtree/is-vnode")
@@ -2438,17 +2707,17 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x) || isChild(x)
 }
 
-},{"./hooks/data-set-hook.js":63,"./hooks/ev-hook.js":64,"./hooks/soft-set-hook.js":65,"./parse-tag.js":72,"virtual-dom/vtree/is-vhook":54,"virtual-dom/vtree/is-vnode":55,"virtual-dom/vtree/is-vtext":56,"virtual-dom/vtree/is-widget":57,"virtual-dom/vtree/vnode.js":59,"virtual-dom/vtree/vtext.js":61}],67:[function(_dereq_,module,exports){
+},{"./hooks/data-set-hook.js":71,"./hooks/ev-hook.js":72,"./hooks/soft-set-hook.js":73,"./parse-tag.js":80,"virtual-dom/vtree/is-vhook":62,"virtual-dom/vtree/is-vnode":63,"virtual-dom/vtree/is-vtext":64,"virtual-dom/vtree/is-widget":65,"virtual-dom/vtree/vnode.js":67,"virtual-dom/vtree/vtext.js":69}],75:[function(_dereq_,module,exports){
 module.exports=_dereq_(6)
-},{}],68:[function(_dereq_,module,exports){
+},{}],76:[function(_dereq_,module,exports){
 module.exports=_dereq_(7)
-},{"./create-hash.js":67,"individual":69,"weakmap-shim/create-store":70}],69:[function(_dereq_,module,exports){
+},{"./create-hash.js":75,"individual":77,"weakmap-shim/create-store":78}],77:[function(_dereq_,module,exports){
 module.exports=_dereq_(10)
-},{}],70:[function(_dereq_,module,exports){
+},{}],78:[function(_dereq_,module,exports){
 module.exports=_dereq_(8)
-},{"./hidden-store.js":71}],71:[function(_dereq_,module,exports){
+},{"./hidden-store.js":79}],79:[function(_dereq_,module,exports){
 module.exports=_dereq_(9)
-},{}],72:[function(_dereq_,module,exports){
+},{}],80:[function(_dereq_,module,exports){
 var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
 var notClassId = /^\.|#/
 
@@ -2499,7 +2768,7 @@ function parseTag(tag, props) {
     return tagName ? tagName.toLowerCase() : "div"
 }
 
-},{}],73:[function(_dereq_,module,exports){
+},{}],81:[function(_dereq_,module,exports){
 var attributeHook = _dereq_("./hooks/attribute-hook.js")
 var h = _dereq_("./index.js")
 
@@ -2552,7 +2821,7 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x)
 }
 
-},{"./hooks/attribute-hook.js":62,"./index.js":66}],74:[function(_dereq_,module,exports){
+},{"./hooks/attribute-hook.js":70,"./index.js":74}],82:[function(_dereq_,module,exports){
 module.exports = extend
 
 function extend() {
