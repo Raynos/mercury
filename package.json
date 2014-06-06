@@ -30,6 +30,7 @@
     "observ": "^0.2.0",
     "observ-array": "^1.0.3",
     "observ-struct": "^3.1.0",
+    "observ-varhash": "^0.0.2",
     "value-event": "^1.3.4",
     "vdom-thunk": "^2.0.0",
     "virtual-dom": "0.0.8",
