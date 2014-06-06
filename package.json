@@ -71,7 +71,8 @@
     "test": "npm run jshint",
     "build": "node bin/build.js",
     "examples": "node bin/example-server.js",
-    "dist": "node bin/dist.js"
+    "dist": "node bin/dist.js",
+    "prepublish": "npm run dist && git add dist/mercury.js && git commit -m 'dist'"
   },
   "testling": {
     "files": "test/index.js",
