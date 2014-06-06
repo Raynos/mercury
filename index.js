@@ -48,9 +48,9 @@ function input(names) {
     return MultipleEvent(names)
 }
 
-function app(elem, observ, render) {
+function app(elem, observ, render, opts) {
     mercury.Delegator();
-    var loop = mercury.main(observ(), render)
+    var loop = mercury.main(observ(), render, opts)
     observ(loop.update)
     elem.appendChild(loop.target)
 }
