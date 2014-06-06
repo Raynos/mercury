@@ -24,6 +24,7 @@ var mercury = module.exports = {
     struct: require("observ-struct"),
     // alias struct as hash for back compat
     hash: require("observ-struct"),
+    varhash: require("observ-varhash"),
     value: require("observ"),
 
     // Render
