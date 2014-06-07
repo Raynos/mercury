@@ -48,6 +48,7 @@
     "jshint": "^2.5.0",
     "marked": "^0.3.2",
     "mercury-jsxify": "^0.14.0",
+    "min-document": "^2.7.0",
     "next-tick": "^0.2.2",
     "process": "^0.7.0",
     "raf": "^0.1.3",
@@ -56,6 +57,7 @@
     "run-parallel": "^1.0.0",
     "run-series": "^1.0.2",
     "st": "^0.4.1",
+    "synthetic-dom-events": "git://github.com/Raynos/synthetic-dom-events",
     "tape": "^2.12.3",
     "xtend": "^3.0.0"
   },
@@ -68,7 +70,7 @@
   "scripts": {
     "jshint": "jshint . --verbose",
     "disc": "browserify index.js --full-paths | discify > disc.html && xdg-open disc.html",
-    "test": "npm run jshint",
+    "test": "npm run jshint && node test/synthetic-events.js",
     "build": "node bin/build.js",
     "examples": "node bin/example-server.js",
     "dist": "node bin/dist.js",

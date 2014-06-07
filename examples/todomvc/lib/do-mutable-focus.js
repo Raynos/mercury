@@ -1,5 +1,5 @@
 var document = require("global/document")
-var nextTick = require('next-tick')
+var nextTick = require("next-tick")
 
 module.exports = MutableFocusHook
 
