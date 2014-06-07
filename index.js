@@ -49,7 +49,7 @@ function input(names) {
 }
 
 function app(elem, observ, render, opts) {
-    mercury.Delegator();
+    mercury.Delegator(opts);
     var loop = mercury.main(observ(), render, opts)
     observ(loop.update)
     elem.appendChild(loop.target)
