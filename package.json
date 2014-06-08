@@ -24,7 +24,7 @@
     "email": "raynos2@gmail.com"
   },
   "dependencies": {
-    "dom-delegator": "^8.0.1",
+    "dom-delegator": "^9.0.0",
     "geval": "^2.1.1",
     "main-loop": "^1.7.0",
     "observ": "^0.2.0",
@@ -51,13 +51,15 @@
     "min-document": "^2.7.0",
     "next-tick": "^0.2.2",
     "process": "^0.7.0",
-    "raf": "^0.1.3",
+    "raf": "^2.0.0",
+    "require-modify": "^0.1.0",
     "rimraf": "^2.2.8",
     "routes-router": "^1.5.4",
     "run-parallel": "^1.0.0",
     "run-series": "^1.0.2",
     "st": "^0.4.1",
     "synthetic-dom-events": "git://github.com/Raynos/synthetic-dom-events",
+    "tap-spec": "^0.2.0",
     "tape": "^2.12.3",
     "xtend": "^3.0.0"
   },
@@ -70,11 +72,11 @@
   "scripts": {
     "jshint": "jshint . --verbose",
     "disc": "browserify index.js --full-paths | discify > disc.html && xdg-open disc.html",
-    "test": "npm run jshint && node test/synthetic-events.js",
+    "test": "npm run jshint && node test/index.js | tap-spec",
     "build": "node bin/build.js",
     "examples": "node bin/example-server.js",
     "dist": "node bin/dist.js",
-    "prepublish": "npm run dist && git add dist/mercury.js && git commit -m 'dist'"
+    "dist-publish": "npm run dist && git add dist/mercury.js && git commit -m 'dist' && npm publish"
   },
   "testling": {
     "files": "test/index.js",
