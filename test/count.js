@@ -1,26 +1,14 @@
 var test = require('tape');
 var path = require('path');
-var requireModify = require('require-modify');
 var event = require('synthetic-dom-events');
 var document = require('min-document');
 var raf = require('raf');
 
-var mercury = require('../index.js');
-
-var appRegex = /mercury\.app\([\w\.]+,\s([\w]+),\s([\w]+)\)/
+var loadExample = require('./lib/load-example.js')
+var embedComponent = require('./lib/embed-component.js')
 
 var src = path.join(__dirname, '../examples/count.js')
-var count = requireModify(src, function (source) {
-    source = source.replace(appRegex,
-        function (match, state, render) {
-            return 'module.exports = {\n' +
-                '    state: ' + state + ',\n' +
-                '    render: ' + render + '\n' +
-                '}'
-        })
-
-    return source
-});
+var count = loadExample(src)
 
 test('count state is a number', function (assert) {
     assert.equal(typeof count.state(), 'number');
@@ -29,10 +17,7 @@ test('count state is a number', function (assert) {
 });
 
 test('count increments on click', function (assert) {
-    var div = document.createElement('div')
-    document.body.appendChild(div)
-
-    var remove = mercury.app(div, count.state, count.render)
+    var comp = embedComponent(count)
 
     var button = document.getElementsByClassName('button')[0];
 
@@ -42,15 +27,13 @@ test('count increments on click', function (assert) {
     assert.equal(count.state(), 2);
 
     raf(function () {
-        var elem = div.childNodes[0].childNodes[2];
+        var elem = comp.target.childNodes[0].childNodes[2];
         console.log('elem', elem.data);
 
         assert.equal(elem.data, ' has value: 2.');
 
-        assert.end();
+        comp.destroy()
 
-        count.state.set(0);
-        document.body.removeChild(div);
-        remove();
+        assert.end()
     })
 });

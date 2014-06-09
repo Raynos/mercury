@@ -51,7 +51,7 @@
     "min-document": "^2.7.0",
     "next-tick": "^0.2.2",
     "process": "^0.7.0",
-    "raf": "^2.0.0",
+    "raf": "git://github.com/Raynos/raf",
     "require-modify": "^0.1.0",
     "rimraf": "^2.2.8",
     "routes-router": "^1.5.4",
@@ -60,7 +60,7 @@
     "st": "^0.4.1",
     "synthetic-dom-events": "git://github.com/Raynos/synthetic-dom-events",
     "tap-spec": "^0.2.0",
-    "tape": "^2.12.3",
+    "tape": "^2.13.2",
     "xtend": "^3.0.0"
   },
   "licenses": [

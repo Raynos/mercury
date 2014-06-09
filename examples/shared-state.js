@@ -12,6 +12,7 @@ function inputBox(value, sink) {
     return h("input.input", {
         value: value,
         name: "text",
+        type: "text",
         "ev-event": mercury.changeEvent(sink)
     })
 }
