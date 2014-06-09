@@ -45,11 +45,11 @@ mercury.app(document.body, clickCount, render)
 
 ### Basic Examples
 
- - [count](examples/count.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=1156430c25a28cd8cfe1)
- - [shared-state](examples/shared-state.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=e11f95b67ff92808eed0)
- - [field-reset](examples/field-reset.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=6f286fc3641dbd199206)
- - [bmi-counter](examples/bmi-counter.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=3752124345d5dbd8cccb)
- - [canvas](examples/canvas.js) [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=fb9c8a1938ab9d536879)
+ - [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=1156430c25a28cd8cfe1) [count](examples/count.js)
+ - [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=e11f95b67ff92808eed0) [shared-state](examples/shared-state.js)
+ - [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=6f286fc3641dbd199206) [field-reset](examples/field-reset.js)
+ - [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=3752124345d5dbd8cccb) [bmi-counter](examples/bmi-counter.js)
+ - [![view on requirebin](http://requirebin.com/badge.png)](http://requirebin.com/?gist=fb9c8a1938ab9d536879) [canvas](examples/canvas.js)
 
 ### Intermediate Examples
 
