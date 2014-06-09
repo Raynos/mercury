@@ -50,6 +50,7 @@
     "mercury-jsxify": "^0.14.0",
     "min-document": "^2.7.0",
     "next-tick": "^0.2.2",
+    "pre-commit": "0.0.7",
     "process": "^0.7.0",
     "raf": "git://github.com/Raynos/raf",
     "require-modify": "^0.1.0",
