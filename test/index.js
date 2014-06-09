@@ -9,3 +9,4 @@ test("mercury is a object", function (assert) {
 
 require("./synthetic-events.js")
 require("./count.js")
+require("./shared-state.js")
