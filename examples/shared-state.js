@@ -1,12 +1,13 @@
-var mercury = require("../index.js")
-var h = mercury.h
+var document = require("global/document");
+var mercury = require("../index.js");
+var h = mercury.h;
 
-var events = mercury.input(["change"])
-var textValue = mercury.value("")
+var events = mercury.input(["change"]);
+var state = mercury.value("");
 
 events.change(function (data) {
-    textValue.set(data.text)
-})
+    state.set(data.text);
+});
 
 function inputBox(value, sink) {
     return h("input.input", {
@@ -14,7 +15,7 @@ function inputBox(value, sink) {
         name: "text",
         type: "text",
         "ev-event": mercury.changeEvent(sink)
-    })
+    });
 }
 
 function render(textValue) {
@@ -24,7 +25,7 @@ function render(textValue) {
             "Change it here: ",
             inputBox(textValue, events.change)
         ])
-    ])
+    ]);
 }
 
-mercury.app(document.body, textValue, render)
+mercury.app(document.body, state, render);

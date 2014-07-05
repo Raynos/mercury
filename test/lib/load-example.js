@@ -1,19 +1,22 @@
 var requireModify = require('require-modify');
 
-var appRegex = /mercury\.app\([\w\.]+,\s([\w]+),\s([\w]+)\)/
+var appRegex = /mercury\.app\([\w\.]+,\s([\w]+),\s([\w]+)\)/;
 
-module.exports = loadExample
+module.exports = loadExample;
 
 function loadExample(fileName) {
-    return requireModify(fileName, function (source) {
-        source = source.replace(appRegex,
-            function (match, state, render) {
-                return 'module.exports = {\n' +
-                    '    state: ' + state + ',\n' +
-                    '    render: ' + render + '\n' +
-                    '}'
-            })
+    return requireModify(fileName, transformSource);
 
-        return source
-    });
+    function transformSource(source) {
+        source = source.replace(appRegex, replacer);
+
+        return source;
+    }
+
+    function replacer(match, state, render) {
+        return 'module.exports = {\n' +
+            '    state: ' + state + ',\n' +
+            '    render: ' + render + '\n' +
+            '}';
+    }
 }

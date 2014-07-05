@@ -1,38 +1,30 @@
 {
-    "maxdepth": 4,
-    "maxstatements": 200,
-    "maxcomplexity": 12,
-    "maxlen": 80,
-    "maxparams": 5,
-
-    "curly": true,
+    "bitwise": false,
+    "camelcase": true,
+    "curly": false,
     "eqeqeq": true,
+    "forin": true,
     "immed": true,
-    "latedef": false,
+    "indent": 4,
+    "latedef": "func",
+    "newcap": false,
     "noarg": true,
-    "noempty": true,
     "nonew": true,
+    "plusplus": false,
+    "quotmark": false,
+    "regexp": false,
     "undef": true,
-    "unused": "vars",
+    "unused": true,
+    "strict": false,
     "trailing": true,
-
-    "quotmark": true,
-    "expr": true,
-    "asi": true,
-
-    "browser": false,
-    "esnext": true,
-    "devel": false,
-    "node": false,
-    "nonstandard": false,
-
-    "predef": {
-        "require": false,
-        "module": false,
-        "__dirname": false,
-        "__filename":false,
-        "console": true,
-        "window": true,
-        "document": true
+    "noempty": true,
+    "maxdepth": 4,
+    "maxparams": 4,
+    "shadow": "outer",
+    "globals": {
+        "require": true,
+        "module": true,
+        "__dirname": true,
+        "console": true
     }
 }

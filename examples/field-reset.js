@@ -1,45 +1,46 @@
-var mercury = require("../index.js")
-var h = mercury.h
+var document = require('global/document');
+var mercury = require('../index.js');
+var h = mercury.h;
 
-var events = mercury.input(["reset"])
+var events = mercury.input(['reset']);
 
-var state = mercury.struct({
+var app = mercury.struct({
     isReset: mercury.value(false),
     events: events
-})
+});
 
 events.reset(function (bool) {
-    state.isReset.set(bool)
-})
+    app.isReset.set(bool);
+});
 
 function render(state) {
-    return h("div", [
-        "Text field: ",
-        h("input.input", {
+    return h('div', [
+        'Text field: ',
+        h('input.input', {
             value: state.isReset ?
-                resetHook("", state.events.reset) :
+                resetHook('', state.events.reset) :
                 undefined
         }),
-        h("input.button", {
-            type: "button",
-            value: "Reset text field",
-            "ev-click": mercury.event(state.events.reset, true)
+        h('input.button', {
+            type: 'button',
+            value: 'Reset text field',
+            'ev-click': mercury.event(state.events.reset, true)
         })
-    ])
+    ]);
 }
 
-mercury.app(document.body, state, render)
+mercury.app(document.body, app, render);
 
 function resetHook(value, sink) {
     if (!(this instanceof resetHook)) {
-        return new resetHook(value, sink)
+        return new resetHook(value, sink);
     }
 
-    this.value = value
-    this.sink = sink
+    this.value = value;
+    this.sink = sink;
 }
 
 resetHook.prototype.hook = function (elem, propName) {
-    elem[propName] = this.value
-    this.sink(false)
-}
+    elem[propName] = this.value;
+    this.sink(false);
+};

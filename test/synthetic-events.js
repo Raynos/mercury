@@ -4,12 +4,12 @@ var event = require('synthetic-dom-events');
 var document = require('min-document');
 var test = require('tape');
 
-test('events happen', function (assert) {
+test('events happen', function t(assert) {
     var callCount = 0;
 
     var click = mercury.input();
 
-    click(function() {
+    click(function onClick() {
         callCount++;
     });
 
@@ -34,4 +34,4 @@ test('events happen', function (assert) {
     // assert
     assert.equal(callCount, 1);
     assert.end();
-})
+});
