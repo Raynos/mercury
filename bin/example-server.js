@@ -32,7 +32,14 @@ router.addRoute('/:name', function (req, res, opts) {
     }
 
     res.setHeader('Content-Type', 'text/html')
-    task.createStream().pipe(res)
+    var stream = task.createStream()
+    stream.on('error', function (error) {
+        console.log('error', error)
+        res.end('(' + function (err) {
+            throw new Error(err)
+        } + '(' + JSON.stringify(error.message) + '))</script>')
+    })
+    stream.pipe(res)
 })
 
 router.addRoute('*', st({
