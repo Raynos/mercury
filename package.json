@@ -26,7 +26,7 @@
   "dependencies": {
     "dom-delegator": "^9.0.0",
     "geval": "^2.1.1",
-    "main-loop": "^1.7.0",
+    "main-loop": "^1.9.0",
     "observ": "^0.2.0",
     "observ-array": "^1.0.3",
     "observ-struct": "^3.1.0",
@@ -46,6 +46,7 @@
     "indexhtmlify": "git://github.com/Raynos/indexhtmlify#v1.1.1-module2",
     "javascript-editor": "^0.2.1",
     "jshint": "^2.5.0",
+    "json-globals": "^0.2.1",
     "marked": "^0.3.2",
     "mercury-jsxify": "^0.14.0",
     "min-document": "^2.7.0",
@@ -64,6 +65,7 @@
     "tap-spec": "^0.2.0",
     "tape": "^2.13.2",
     "valid-email": "0.0.1",
+    "vdom-virtualize": "0.0.1",
     "virtual-dom-stringify": "^0.2.0",
     "xtend": "^3.0.0"
   },

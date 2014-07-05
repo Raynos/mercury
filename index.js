@@ -51,6 +51,8 @@ function input(names) {
 function app(elem, observ, render, opts) {
     mercury.Delegator(opts);
     var loop = mercury.main(observ(), render, opts)
-    elem.appendChild(loop.target)
+    if (elem) {
+        elem.appendChild(loop.target)
+    }
     return observ(loop.update)
 }
