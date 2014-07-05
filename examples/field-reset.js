@@ -9,7 +9,7 @@ var app = mercury.struct({
     events: events
 });
 
-events.reset(function (bool) {
+events.reset(function reset(bool) {
     app.isReset.set(bool);
 });
 
