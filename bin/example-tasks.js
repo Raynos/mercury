@@ -18,6 +18,7 @@ var examplesTasks = [
         'unidirectional',
         'jsx'
     )),
+    browserifyTask('login-form'),
     browserifyEditorTask('field-reset'),
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),
@@ -40,8 +41,14 @@ function browserifyTask(folder) {
     return task
 
     function createStream() {
-        return browserifyBundle(task.src)
-            .pipe(indexhtmlify({}))
+        var stream = browserifyBundle(task.src)
+        var result = stream.pipe(indexhtmlify({}))
+
+        stream.on('error', function (err) {
+            result.emit('error', err)
+        })
+
+        return result
     }
 }
 

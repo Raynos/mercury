@@ -53,6 +53,7 @@
     "pre-commit": "0.0.7",
     "process": "^0.7.0",
     "raf": "git://github.com/Raynos/raf",
+    "rcss": "git://github.com/chenglou/rcss#424fc1ac17cdc2860736f73722e8135be96e1ba6",
     "require-modify": "^0.1.0",
     "rimraf": "^2.2.8",
     "routes-router": "^1.5.4",
@@ -62,6 +63,7 @@
     "synthetic-dom-events": "git://github.com/Raynos/synthetic-dom-events",
     "tap-spec": "^0.2.0",
     "tape": "^2.13.2",
+    "valid-email": "0.0.1",
     "xtend": "^3.0.0"
   },
   "licenses": [
