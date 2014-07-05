@@ -39,6 +39,7 @@
   "devDependencies": {
     "backbone": "^1.1.2",
     "browserify": "^3.38.0",
+    "callify": "^0.2.0",
     "casperjs": "^1.1.0-beta3",
     "cuid": "^1.2.1",
     "global": "^4.2.1",
@@ -53,7 +54,7 @@
     "next-tick": "^0.2.2",
     "pre-commit": "0.0.7",
     "process": "^0.7.0",
-    "raf": "git://github.com/Raynos/raf",
+    "raf": "^2.0.1",
     "rcss": "git://github.com/chenglou/rcss#424fc1ac17cdc2860736f73722e8135be96e1ba6",
     "require-modify": "^0.1.0",
     "rimraf": "^2.2.8",

@@ -1,4 +1,4 @@
-var document = require('min-document');
+var document = require('global/document');
 
 var mercury = require('../../index.js');
 

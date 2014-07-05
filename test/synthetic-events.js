@@ -1,7 +1,7 @@
 var mercury = require('../index.js');
 var h = mercury.h;
 var event = require('synthetic-dom-events');
-var document = require('min-document');
+var document = require('global/document');
 var test = require('tape');
 
 test('events happen', function t(assert) {
@@ -33,5 +33,7 @@ test('events happen', function t(assert) {
 
     // assert
     assert.equal(callCount, 1);
+
+    document.body.removeChild(div);
     assert.end();
 });

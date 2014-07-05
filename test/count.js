@@ -1,14 +1,19 @@
 var test = require('tape');
 var path = require('path');
 var event = require('synthetic-dom-events');
-var document = require('min-document');
+var document = require('global/document');
 var raf = require('raf');
 
-var loadExample = require('./lib/load-example.js');
 var embedComponent = require('./lib/embed-component.js');
 
-var src = path.join(__dirname, '../examples/count.js');
-var count = loadExample(src);
+var count;
+if (typeof window !== 'undefined') {
+    count = require('../examples/count.js');
+} else {
+    var src = path.join(__dirname, '../examples/count.js');
+    var loadExample = require('./lib/load-example.js');
+    count = loadExample(src);
+}
 
 test('count state is a number', function t(assert) {
     assert.equal(typeof count.state(), 'number');

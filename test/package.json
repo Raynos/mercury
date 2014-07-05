@@ -1,0 +1,12 @@
+{
+    "name": "mercury.test",
+    "version": "1.0.0",
+    "browser": {
+        "./lib/load-example.js": false
+    },
+    "browserify": {
+        "transform": [
+            "./transforms/intercept-mercury-app.js"
+        ]
+    }
+}
