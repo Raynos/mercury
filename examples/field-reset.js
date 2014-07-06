@@ -40,7 +40,7 @@ function resetHook(value, sink) {
     this.sink = sink;
 }
 
-resetHook.prototype.hook = function (elem, propName) {
+resetHook.prototype.hook = function hook(elem, propName) {
     elem[propName] = this.value;
     this.sink(false);
 };
