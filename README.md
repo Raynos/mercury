@@ -399,6 +399,10 @@ A lot of the philosophy and design of `mercury` is inspired by
 ## Contributors
 
  - Raynos
+ - Matt-Esch
+ - neonstalwart
+ - parshap
+ - nrw
 
 ## MIT Licenced
 
