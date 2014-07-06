@@ -41,7 +41,6 @@
     "backbone": "^1.1.2",
     "browserify": "^3.38.0",
     "callify": "^0.2.0",
-    "casperjs": "^1.1.0-beta3",
     "cuid": "^1.2.1",
     "global": "^4.2.1",
     "hash-router": "^0.4.0",
