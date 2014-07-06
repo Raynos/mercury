@@ -1,6 +1,6 @@
 {
   "name": "mercury",
-  "version": "5.0.2",
+  "version": "5.1.0",
   "description": "A truly modular frontend framework",
   "keywords": [
     "framework",
@@ -81,7 +81,7 @@
   "scripts": {
     "jshint": "jshint . --verbose",
     "disc": "browserify index.js --full-paths | discify > disc.html && xdg-open disc.html",
-    "test": "npm run jshint && node test/index.js | tap-spec",
+    "test": "node test/index.js | tap-spec",
     "cover": "istanbul cover --report html --print detail ./test/index.js",
     "view-cover": "istanbul report html && google-chrome ./coverage/index.html",
     "build": "node bin/build.js",
