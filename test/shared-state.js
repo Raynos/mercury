@@ -1,5 +1,4 @@
 var test = require('tape');
-var path = require('path');
 var event = require('synthetic-dom-events');
 var document = require('global/document');
 var raf = require('raf');
@@ -10,9 +9,8 @@ var shared;
 if (typeof window !== 'undefined') {
     shared = require('../examples/shared-state.js');
 } else {
-    var src = path.join(__dirname, '../examples/shared-state.js');
-    var loadExample = require('./lib/load-example.js');
-    shared = loadExample(src);
+    require('./lib/load-hook.js');
+    shared = require('../examples/shared-state.js');
 }
 
 test('shared state is a string', function t(assert) {

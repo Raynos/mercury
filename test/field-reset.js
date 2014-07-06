@@ -1,5 +1,4 @@
 var test = require('tape');
-var path = require('path');
 var document = require('global/document');
 var raf = require('raf');
 var event = require('synthetic-dom-events');
@@ -10,9 +9,8 @@ var fieldReset;
 if (typeof window !== 'undefined') {
     fieldReset = require('../examples/field-reset.js');
 } else {
-    var src = path.join(__dirname, '..', 'examples', 'field-reset.js');
-    var loadExample = require('./lib/load-example.js');
-    fieldReset = loadExample(src);
+    require('./lib/load-hook.js');
+    fieldReset = require('../examples/field-reset.js');
 }
 
 test('fieldReset state is an object', function t(assert) {

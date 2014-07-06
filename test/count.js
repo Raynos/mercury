@@ -1,5 +1,4 @@
 var test = require('tape');
-var path = require('path');
 var event = require('synthetic-dom-events');
 var document = require('global/document');
 var raf = require('raf');
@@ -10,9 +9,8 @@ var count;
 if (typeof window !== 'undefined') {
     count = require('../examples/count.js');
 } else {
-    var src = path.join(__dirname, '../examples/count.js');
-    var loadExample = require('./lib/load-example.js');
-    count = loadExample(src);
+    require('./lib/load-hook.js');
+    count = require('../examples/count.js');
 }
 
 test('count state is a number', function t(assert) {
