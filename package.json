@@ -68,6 +68,7 @@
     "valid-email": "0.0.1",
     "vdom-virtualize": "0.0.1",
     "virtual-dom-stringify": "^0.2.0",
+    "vtree-select": "^1.0.1",
     "xtend": "^3.0.0"
   },
   "licenses": [
