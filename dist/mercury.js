@@ -1,4 +1,4 @@
-// mercury @ 5.0.2 
+// mercury @ 5.2.1 
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.mercury=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var SingleEvent = _dereq_("geval/single")
 var MultipleEvent = _dereq_("geval/multiple")
@@ -53,11 +53,13 @@ function input(names) {
 function app(elem, observ, render, opts) {
     mercury.Delegator(opts);
     var loop = mercury.main(observ(), render, opts)
-    observ(loop.update)
-    elem.appendChild(loop.target)
+    if (elem) {
+        elem.appendChild(loop.target)
+    }
+    return observ(loop.update)
 }
 
-},{"dom-delegator":6,"geval/multiple":16,"geval/single":17,"main-loop":19,"observ":36,"observ-array":22,"observ-struct":25,"observ-varhash":27,"observ/computed":35,"observ/watch":37,"value-event/change":39,"value-event/event":40,"value-event/key":41,"value-event/submit":47,"value-event/value":48,"vdom-thunk":49,"virtual-dom/create-element":50,"virtual-dom/diff":51,"virtual-dom/patch":55,"virtual-hyperscript":75,"virtual-hyperscript/svg":82}],2:[function(_dereq_,module,exports){
+},{"dom-delegator":6,"geval/multiple":16,"geval/single":17,"main-loop":19,"observ":30,"observ-array":23,"observ-struct":26,"observ-varhash":28,"observ/computed":29,"observ/watch":31,"value-event/change":32,"value-event/event":33,"value-event/key":34,"value-event/submit":40,"value-event/value":41,"vdom-thunk":42,"virtual-dom/create-element":43,"virtual-dom/diff":44,"virtual-dom/patch":48,"virtual-hyperscript":68,"virtual-hyperscript/svg":75}],2:[function(_dereq_,module,exports){
 
 },{}],3:[function(_dereq_,module,exports){
 /**
@@ -327,10 +329,11 @@ function Listener(target, handlers) {
 },{"./add-event.js":4,"./proxy-event.js":13,"./remove-event.js":14,"data-set":8,"global/document":18}],6:[function(_dereq_,module,exports){
 var Individual = _dereq_("individual")
 var cuid = _dereq_("cuid")
+var globalDocument = _dereq_("global/document")
 
 var DOMDelegator = _dereq_("./dom-delegator.js")
 
-var delegatorCache = Individual("__DOM_DELEGATOR_CACHE@8", {
+var delegatorCache = Individual("__DOM_DELEGATOR_CACHE@9", {
     delegators: {}
 })
 var commonEvents = [
@@ -353,14 +356,13 @@ module.exports = Delegator
 
 function Delegator(opts) {
     opts = opts || {}
-    var document = opts.document
+    var document = opts.document || globalDocument
 
-    var cacheKey = document ? 
-        document["__DOM_DELEGATOR_CACHE_TOKEN@8"] : "global"
+    var cacheKey = document["__DOM_DELEGATOR_CACHE_TOKEN@9"]
 
     if (!cacheKey) {
         cacheKey =
-            document["__DOM_DELEGATOR_CACHE_TOKEN@8"] = cuid()
+            document["__DOM_DELEGATOR_CACHE_TOKEN@9"] = cuid()
     }
 
     var delegator = delegatorCache.delegators[cacheKey]
@@ -381,7 +383,7 @@ function Delegator(opts) {
 
 
 
-},{"./dom-delegator.js":5,"cuid":3,"individual":11}],7:[function(_dereq_,module,exports){
+},{"./dom-delegator.js":5,"cuid":3,"global/document":18,"individual":11}],7:[function(_dereq_,module,exports){
 module.exports = createHash
 
 function createHash(elem) {
@@ -701,8 +703,8 @@ function main(initialState, view, opts) {
     var patch = opts.patch || vdomPatch
     var redrawScheduled = false
 
-    var tree = view(currentState)
-    var target = create(tree, opts)
+    var tree = opts.initialTree || view(currentState)
+    var target = opts.target || create(tree, opts)
 
     currentState = null
 
@@ -732,7 +734,7 @@ function main(initialState, view, opts) {
             create(newTree, opts)
         } else {
             var patches = diff(tree, newTree, opts)
-            patch(target, patches, opts)
+            target = patch(target, patches, opts)
         }
 
         tree = newTree
@@ -740,7 +742,25 @@ function main(initialState, view, opts) {
     }
 }
 
-},{"raf/polyfill":38,"virtual-dom/create-element":50,"virtual-dom/diff":51,"virtual-dom/patch":55}],20:[function(_dereq_,module,exports){
+},{"raf/polyfill":20,"virtual-dom/create-element":43,"virtual-dom/diff":44,"virtual-dom/patch":48}],20:[function(_dereq_,module,exports){
+var global = typeof window === 'undefined' ? this : window
+
+var _raf =
+  global.requestAnimationFrame ||
+  global.webkitRequestAnimationFrame ||
+  global.mozRequestAnimationFrame ||
+  global.msRequestAnimationFrame ||
+  global.oRequestAnimationFrame ||
+  (global.setImmediate ? function(fn, el) {
+    setImmediate(fn)
+  } :
+  function(fn, el) {
+    setTimeout(fn, 0)
+  })
+
+module.exports = _raf
+
+},{}],21:[function(_dereq_,module,exports){
 module.exports = addListener
 
 function addListener(observArray, observ) {
@@ -768,7 +788,7 @@ function addListener(observArray, observ) {
     })
 }
 
-},{}],21:[function(_dereq_,module,exports){
+},{}],22:[function(_dereq_,module,exports){
 var ObservArray = _dereq_("./index.js")
 
 var slice = Array.prototype.slice
@@ -835,7 +855,7 @@ function notImplemented() {
     throw new Error("Pull request welcome")
 }
 
-},{"./index.js":22}],22:[function(_dereq_,module,exports){
+},{"./index.js":23}],23:[function(_dereq_,module,exports){
 var Observ = _dereq_("observ")
 
 // circular dep between ArrayMethods & this file
@@ -914,7 +934,7 @@ function getLength() {
     return this._list.length
 }
 
-},{"./add-listener.js":20,"./array-methods.js":21,"./splice.js":24,"observ":23}],23:[function(_dereq_,module,exports){
+},{"./add-listener.js":21,"./array-methods.js":22,"./splice.js":25,"observ":24}],24:[function(_dereq_,module,exports){
 module.exports = Observable
 
 function Observable(value) {
@@ -943,7 +963,7 @@ function Observable(value) {
     }
 }
 
-},{}],24:[function(_dereq_,module,exports){
+},{}],25:[function(_dereq_,module,exports){
 var slice = Array.prototype.slice
 
 var addListener = _dereq_("./add-listener.js")
@@ -994,7 +1014,7 @@ function splice(index, amount) {
     return removed
 }
 
-},{"./add-listener.js":20}],25:[function(_dereq_,module,exports){
+},{"./add-listener.js":21}],26:[function(_dereq_,module,exports){
 var Observ = _dereq_("observ")
 var extend = _dereq_("xtend")
 
@@ -1045,104 +1065,99 @@ function ObservStruct(struct) {
     return obs
 }
 
-},{"observ":26,"xtend":83}],26:[function(_dereq_,module,exports){
-module.exports=_dereq_(23)
-},{}],27:[function(_dereq_,module,exports){
+},{"observ":27,"xtend":76}],27:[function(_dereq_,module,exports){
+module.exports=_dereq_(24)
+},{}],28:[function(_dereq_,module,exports){
 var Observ = _dereq_('observ')
 var extend = _dereq_('xtend')
 
-var TOMBSTONE = ObservVarhash.Tombstone = new Tombstone()
+ObservVarhash.Tombstone = new Tombstone()
 
 module.exports = ObservVarhash
 
-function ObservVarhash(hash, createFn) {
-  createFn = createFn || function (obj) { return obj }
+function ObservVarhash (hash, createValue) {
+  createValue = createValue || function (obj) { return obj }
 
-  var keys = Object.keys(hash)
   var initialState = {}
 
-  keys.forEach(function (key) {
-    if (key === 'name') {
-      throw new Error('cannot create an observ-varhash with a key named' +
-        '"name". Clashes with `Function.prototype.name`.')
-    }
-
+  for (var key in hash) {
     var observ = hash[key]
-    initialState[key] = typeof observ === 'function' ? observ() : observ
-  })
+    checkKey(key)
+    initialState[key] = isFunc(observ) ? observ() : observ
+  }
 
   var obs = Observ(initialState)
-
-  obs.get = get
-  obs.delete = del
-  obs.put = put(createFn)
   obs._removeListeners = {}
 
-  keys.forEach(function (key) {
-    var observ = hash[key]
-    obs[key] = createFn(observ, key)
+  var actions = methods(createValue)
+  for (var k in actions) {
+    obs[k] = actions[k]
+  }
 
-    if (typeof observ === 'function') {
-      obs._removeListeners[key] = observ(watch(obs, key))
+  for (key in hash) {
+    obs[key] = createValue(hash[key], key)
+
+    if (isFunc(obs[key])) {
+      obs._removeListeners[key] = obs[key](watch(obs, key))
     }
-  })
-
+  }
   return obs
 }
 
-// api
-function get (key) { return this[key] }
+function methods (createValue) {
+  return {
+    get: function (key) {
+      return this[key]
+    },
 
-function put (createFn) {
-  return function (key, val) {
-    var obs = this
-    var observ = createFn(val, key)
-    var state = prepareChange(obs, key)
-    var value = typeof observ === 'function' ? observ() : observ
+    put: function (key, val) {
+      checkKey(key)
 
-    state[key] = value
+      var observ = createValue(val, key)
+      var state = extend(this())
 
-    if (typeof observ === 'function') {
-      obs._removeListeners[key] = observ(watch(obs, key))
+      state[key] = isFunc(observ) ? observ() : observ
+
+      if (isFunc(this._removeListeners[key])) {
+        this._removeListeners[key]()
+      }
+
+      this._removeListeners[key] = isFunc(observ) ?
+        observ(watch(this, key)) : null
+
+      state._diff = diff(key, state[key])
+
+      this.set(state)
+      this[key] = observ
+
+      return this
+    },
+
+    'delete': function (key) {
+      var state = extend(this())
+      if (isFunc(this._removeListeners[key])) {
+        this._removeListeners[key]()
+      }
+
+      delete this._removeListeners[key]
+      delete state[key]
+
+      state._diff = diff(key, ObservVarhash.Tombstone)
+
+      this.set(state)
+
+      return this
     }
-
-    state._diff = diff(key, value)
-    obs.set(state)
-    obs[key] = observ
-
-    return obs
   }
 }
 
-function del (key) {
-  var state = prepareChange(this, key)
-
-  delete state[key]
-  state._diff = diff(key, TOMBSTONE)
-  this.set(state)
-
-  return this
-}
-
-// helpers
-function watch (obs, key, state) {
+function watch (obs, key) {
   return function (value) {
     var state = extend(obs())
     state[key] = value
     state._diff = diff(key, value)
-    obs.set(state)
+    return obs.set(state)
   }
-}
-
-function prepareChange (obs, key) {
-  var state = extend(obs())
-
-  if (obs._removeListeners[key]) {
-    obs._removeListeners[key]()
-    delete obs._removeListeners[key]
-  }
-
-  return state
 }
 
 function diff (key, value) {
@@ -1151,178 +1166,52 @@ function diff (key, value) {
   return obj
 }
 
-function Tombstone () {
-  this.toString = function () { return '[object Tombstone]' }
-  this.toJSON = function () { return '[object Tombstone]' }
+function checkKey (key) {
+  var msg = getKeyError(key)
+
+  if (msg) {
+    throw new Error(msg)
+  }
 }
 
-},{"observ":28,"xtend":30}],28:[function(_dereq_,module,exports){
-module.exports=_dereq_(23)
-},{}],29:[function(_dereq_,module,exports){
-module.exports = hasKeys
-
-function hasKeys(source) {
-    return source !== null &&
-        (typeof source === "object" ||
-        typeof source === "function")
-}
-
-},{}],30:[function(_dereq_,module,exports){
-var Keys = _dereq_("object-keys")
-var hasKeys = _dereq_("./has-keys")
-
-module.exports = extend
-
-function extend() {
-    var target = {}
-
-    for (var i = 0; i < arguments.length; i++) {
-        var source = arguments[i]
-
-        if (!hasKeys(source)) {
-            continue
-        }
-
-        var keys = Keys(source)
-
-        for (var j = 0; j < keys.length; j++) {
-            var name = keys[j]
-            target[name] = source[name]
-        }
+function getKeyError (key) {
+  switch (key) {
+    case 'name': {
+      return format(key, 'Clashes with `Function.prototype.name`.')
     }
-
-    return target
+    case 'get':
+    case 'put':
+    case 'delete':
+    case '_diff':
+    case '_removeListeners': {
+      return format(key, 'Clashes with observ-varhash method')
+    }
+    default: {
+      return ''
+    }
+  }
 }
 
-},{"./has-keys":29,"object-keys":32}],31:[function(_dereq_,module,exports){
-var hasOwn = Object.prototype.hasOwnProperty;
-var toString = Object.prototype.toString;
+function formatError (key, reason) {
+  return 'cannot create an observ-varhash with key `' + key + '`, ' + reason
+}
 
-var isFunction = function (fn) {
-	var isFunc = (typeof fn === 'function' && !(fn instanceof RegExp)) || toString.call(fn) === '[object Function]';
-	if (!isFunc && typeof window !== 'undefined') {
-		isFunc = fn === window.setTimeout || fn === window.alert || fn === window.confirm || fn === window.prompt;
-	}
-	return isFunc;
-};
+function isFunc (obj) {
+  return typeof obj === 'function'
+}
 
-module.exports = function forEach(obj, fn) {
-	if (!isFunction(fn)) {
-		throw new TypeError('iterator must be a function');
-	}
-	var i, k,
-		isString = typeof obj === 'string',
-		l = obj.length,
-		context = arguments.length > 2 ? arguments[2] : null;
-	if (l === +l) {
-		for (i = 0; i < l; i++) {
-			if (context === null) {
-				fn(isString ? obj.charAt(i) : obj[i], i, obj);
-			} else {
-				fn.call(context, isString ? obj.charAt(i) : obj[i], i, obj);
-			}
-		}
-	} else {
-		for (k in obj) {
-			if (hasOwn.call(obj, k)) {
-				if (context === null) {
-					fn(obj[k], k, obj);
-				} else {
-					fn.call(context, obj[k], k, obj);
-				}
-			}
-		}
-	}
-};
+// identify deletes
+function Tombstone () {}
 
+Tombstone.prototype.toJSON = nameTombstone
+Tombstone.prototype.inspect = nameTombstone
+Tombstone.prototype.toString = nameTombstone
 
-},{}],32:[function(_dereq_,module,exports){
-module.exports = Object.keys || _dereq_('./shim');
+function nameTombstone () {
+  return '[object Tombstone]'
+}
 
-
-},{"./shim":34}],33:[function(_dereq_,module,exports){
-var toString = Object.prototype.toString;
-
-module.exports = function isArguments(value) {
-	var str = toString.call(value);
-	var isArguments = str === '[object Arguments]';
-	if (!isArguments) {
-		isArguments = str !== '[object Array]'
-			&& value !== null
-			&& typeof value === 'object'
-			&& typeof value.length === 'number'
-			&& value.length >= 0
-			&& toString.call(value.callee) === '[object Function]';
-	}
-	return isArguments;
-};
-
-
-},{}],34:[function(_dereq_,module,exports){
-(function () {
-	"use strict";
-
-	// modified from https://github.com/kriskowal/es5-shim
-	var has = Object.prototype.hasOwnProperty,
-		toString = Object.prototype.toString,
-		forEach = _dereq_('./foreach'),
-		isArgs = _dereq_('./isArguments'),
-		hasDontEnumBug = !({'toString': null}).propertyIsEnumerable('toString'),
-		hasProtoEnumBug = (function () {}).propertyIsEnumerable('prototype'),
-		dontEnums = [
-			"toString",
-			"toLocaleString",
-			"valueOf",
-			"hasOwnProperty",
-			"isPrototypeOf",
-			"propertyIsEnumerable",
-			"constructor"
-		],
-		keysShim;
-
-	keysShim = function keys(object) {
-		var isObject = object !== null && typeof object === 'object',
-			isFunction = toString.call(object) === '[object Function]',
-			isArguments = isArgs(object),
-			theKeys = [];
-
-		if (!isObject && !isFunction && !isArguments) {
-			throw new TypeError("Object.keys called on a non-object");
-		}
-
-		if (isArguments) {
-			forEach(object, function (value) {
-				theKeys.push(value);
-			});
-		} else {
-			var name,
-				skipProto = hasProtoEnumBug && isFunction;
-
-			for (name in object) {
-				if (!(skipProto && name === 'prototype') && has.call(object, name)) {
-					theKeys.push(name);
-				}
-			}
-		}
-
-		if (hasDontEnumBug) {
-			var ctor = object.constructor,
-				skipConstructor = ctor && ctor.prototype === object;
-
-			forEach(dontEnums, function (dontEnum) {
-				if (!(skipConstructor && dontEnum === 'constructor') && has.call(object, dontEnum)) {
-					theKeys.push(dontEnum);
-				}
-			});
-		}
-		return theKeys;
-	};
-
-	module.exports = keysShim;
-}());
-
-
-},{"./foreach":31,"./isArguments":33}],35:[function(_dereq_,module,exports){
+},{"observ":30,"xtend":76}],29:[function(_dereq_,module,exports){
 var Observable = _dereq_("./index.js")
 
 module.exports = computed
@@ -1343,9 +1232,9 @@ function computed(observables, lambda) {
     return result
 }
 
-},{"./index.js":36}],36:[function(_dereq_,module,exports){
-module.exports=_dereq_(23)
-},{}],37:[function(_dereq_,module,exports){
+},{"./index.js":30}],30:[function(_dereq_,module,exports){
+module.exports=_dereq_(24)
+},{}],31:[function(_dereq_,module,exports){
 module.exports = watch
 
 function watch(observable, listener) {
@@ -1354,25 +1243,7 @@ function watch(observable, listener) {
     return remove
 }
 
-},{}],38:[function(_dereq_,module,exports){
-var global = typeof window === 'undefined' ? this : window
-
-var _raf =
-  global.requestAnimationFrame ||
-  global.webkitRequestAnimationFrame ||
-  global.mozRequestAnimationFrame ||
-  global.msRequestAnimationFrame ||
-  global.oRequestAnimationFrame ||
-  (global.setImmediate ? function(fn, el) {
-    setImmediate(fn)
-  } :
-  function(fn, el) {
-    setTimeout(fn, 0)
-  })
-
-module.exports = _raf
-
-},{}],39:[function(_dereq_,module,exports){
+},{}],32:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -1413,7 +1284,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":43,"xtend":46}],40:[function(_dereq_,module,exports){
+},{"form-data-set/element":36,"xtend":39}],33:[function(_dereq_,module,exports){
 module.exports = SinkEventHandler
 
 function SinkEventHandler(sink, data) {
@@ -1436,7 +1307,7 @@ function handleEvent(ev) {
     }
 }
 
-},{}],41:[function(_dereq_,module,exports){
+},{}],34:[function(_dereq_,module,exports){
 module.exports = KeyEventHandler
 
 function KeyEventHandler(fn, key, data) {
@@ -1457,7 +1328,7 @@ function handleEvent(ev) {
     }
 }
 
-},{}],42:[function(_dereq_,module,exports){
+},{}],35:[function(_dereq_,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -1483,7 +1354,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],43:[function(_dereq_,module,exports){
+},{}],36:[function(_dereq_,module,exports){
 var walk = _dereq_('dom-walk')
 
 var FormData = _dereq_('./index.js')
@@ -1509,7 +1380,7 @@ function getFormData(rootElem) {
     return FormData(elements)
 }
 
-},{"./index.js":44,"dom-walk":42}],44:[function(_dereq_,module,exports){
+},{"./index.js":37,"dom-walk":35}],37:[function(_dereq_,module,exports){
 /*jshint maxcomplexity: 10*/
 
 module.exports = FormData
@@ -1586,9 +1457,16 @@ function filterNull(val) {
     return val !== null
 }
 
-},{}],45:[function(_dereq_,module,exports){
-module.exports=_dereq_(29)
-},{}],46:[function(_dereq_,module,exports){
+},{}],38:[function(_dereq_,module,exports){
+module.exports = hasKeys
+
+function hasKeys(source) {
+    return source !== null &&
+        (typeof source === "object" ||
+        typeof source === "function")
+}
+
+},{}],39:[function(_dereq_,module,exports){
 var hasKeys = _dereq_("./has-keys")
 
 module.exports = extend
@@ -1613,7 +1491,7 @@ function extend() {
     return target
 }
 
-},{"./has-keys":45}],47:[function(_dereq_,module,exports){
+},{"./has-keys":38}],40:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -1639,10 +1517,16 @@ function handleEvent(ev) {
 
     var isValid =
         (ev.type === 'click' && target.tagName === 'BUTTON') ||
+        (ev.type === 'click' && target.type === 'submit') ||
         (
-            (target.type === 'text' || target.tagName === 'TEXTAREA') &&
-            (ev.keyCode === ENTER && !ev.shiftKey && ev.type === 'keydown')
+            (target.type === 'text') &&
+            (ev.keyCode === ENTER && ev.type === 'keydown')
         )
+
+    // prevent forms form refreshing page
+    if (ev.type === 'submit') {
+        ev.preventDefualt();
+    }
 
     if (!isValid) {
         return
@@ -1658,7 +1542,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":43,"xtend":46}],48:[function(_dereq_,module,exports){
+},{"form-data-set/element":36,"xtend":39}],41:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -1687,7 +1571,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":43,"xtend":46}],49:[function(_dereq_,module,exports){
+},{"form-data-set/element":36,"xtend":39}],42:[function(_dereq_,module,exports){
 var createElement = _dereq_("virtual-dom/create-element")
 var diff = _dereq_("virtual-dom/diff")
 var patch = _dereq_("virtual-dom/patch")
@@ -1792,31 +1676,31 @@ function init() {
     return createElement(this.vnode)
 }
 
-},{"virtual-dom/create-element":50,"virtual-dom/diff":51,"virtual-dom/patch":55}],50:[function(_dereq_,module,exports){
+},{"virtual-dom/create-element":43,"virtual-dom/diff":44,"virtual-dom/patch":48}],43:[function(_dereq_,module,exports){
 var createElement = _dereq_("./vdom/create-element")
 
 module.exports = createElement
 
-},{"./vdom/create-element":57}],51:[function(_dereq_,module,exports){
+},{"./vdom/create-element":50}],44:[function(_dereq_,module,exports){
 var diff = _dereq_("./vtree/diff")
 
 module.exports = diff
 
-},{"./vtree/diff":62}],52:[function(_dereq_,module,exports){
+},{"./vtree/diff":55}],45:[function(_dereq_,module,exports){
 if (typeof document !== "undefined") {
     module.exports = document;
 } else {
     module.exports = _dereq_("min-document");
 }
 
-},{"min-document":2}],53:[function(_dereq_,module,exports){
+},{"min-document":2}],46:[function(_dereq_,module,exports){
 module.exports = isObject
 
 function isObject(x) {
     return typeof x === "object" && x !== null
 }
 
-},{}],54:[function(_dereq_,module,exports){
+},{}],47:[function(_dereq_,module,exports){
 var nativeIsArray = Array.isArray
 var toString = Object.prototype.toString
 
@@ -1826,12 +1710,12 @@ function isArray(obj) {
     return toString.call(obj) === "[object Array]"
 }
 
-},{}],55:[function(_dereq_,module,exports){
+},{}],48:[function(_dereq_,module,exports){
 var patch = _dereq_("./vdom/patch")
 
 module.exports = patch
 
-},{"./vdom/patch":60}],56:[function(_dereq_,module,exports){
+},{"./vdom/patch":53}],49:[function(_dereq_,module,exports){
 var isObject = _dereq_("is-object")
 
 var isHook = _dereq_("../vtree/is-vhook")
@@ -1862,7 +1746,7 @@ function applyProperties(node, props, previous) {
     }
 }
 
-},{"../vtree/is-vhook":63,"is-object":53}],57:[function(_dereq_,module,exports){
+},{"../vtree/is-vhook":56,"is-object":46}],50:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 
 var applyProperties = _dereq_("./apply-properties")
@@ -1907,7 +1791,7 @@ function createElement(vnode, opts) {
     return node
 }
 
-},{"../vtree/is-vnode":64,"../vtree/is-vtext":65,"../vtree/is-widget":66,"./apply-properties":56,"global/document":52}],58:[function(_dereq_,module,exports){
+},{"../vtree/is-vnode":57,"../vtree/is-vtext":58,"../vtree/is-widget":59,"./apply-properties":49,"global/document":45}],51:[function(_dereq_,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -1994,7 +1878,7 @@ function ascending(a, b) {
     return a > b ? 1 : -1
 }
 
-},{}],59:[function(_dereq_,module,exports){
+},{}],52:[function(_dereq_,module,exports){
 var applyProperties = _dereq_("./apply-properties")
 
 var isWidget = _dereq_("../vtree/is-widget")
@@ -2130,7 +2014,7 @@ function reorderChildren(domNode, bIndex) {
     }
 }
 
-},{"../vtree/is-widget":66,"../vtree/vpatch":69,"./apply-properties":56,"./create-element":57,"./update-widget":61}],60:[function(_dereq_,module,exports){
+},{"../vtree/is-widget":59,"../vtree/vpatch":62,"./apply-properties":49,"./create-element":50,"./update-widget":54}],53:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 var isArray = _dereq_("x-is-array")
 
@@ -2205,7 +2089,7 @@ function patchIndices(patches) {
     return indices
 }
 
-},{"./dom-index":58,"./patch-op":59,"global/document":52,"x-is-array":54}],61:[function(_dereq_,module,exports){
+},{"./dom-index":51,"./patch-op":52,"global/document":45,"x-is-array":47}],54:[function(_dereq_,module,exports){
 var isWidget = _dereq_("../vtree/is-widget")
 
 module.exports = updateWidget
@@ -2222,7 +2106,7 @@ function updateWidget(a, b) {
     return false
 }
 
-},{"../vtree/is-widget":66}],62:[function(_dereq_,module,exports){
+},{"../vtree/is-widget":59}],55:[function(_dereq_,module,exports){
 var isArray = _dereq_("x-is-array")
 var isObject = _dereq_("is-object")
 
@@ -2518,7 +2402,7 @@ function appendPatch(apply, patch) {
     }
 }
 
-},{"./is-vnode":64,"./is-vtext":65,"./is-widget":66,"./vpatch":69,"is-object":53,"x-is-array":54}],63:[function(_dereq_,module,exports){
+},{"./is-vnode":57,"./is-vtext":58,"./is-widget":59,"./vpatch":62,"is-object":46,"x-is-array":47}],56:[function(_dereq_,module,exports){
 module.exports = isHook
 
 function isHook(hook) {
@@ -2526,7 +2410,7 @@ function isHook(hook) {
         !hook.hasOwnProperty("hook")
 }
 
-},{}],64:[function(_dereq_,module,exports){
+},{}],57:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualNode
@@ -2539,7 +2423,7 @@ function isVirtualNode(x) {
     return x.type === "VirtualNode" && x.version === version
 }
 
-},{"./version":67}],65:[function(_dereq_,module,exports){
+},{"./version":60}],58:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualText
@@ -2552,17 +2436,17 @@ function isVirtualText(x) {
     return x.type === "VirtualText" && x.version === version
 }
 
-},{"./version":67}],66:[function(_dereq_,module,exports){
+},{"./version":60}],59:[function(_dereq_,module,exports){
 module.exports = isWidget
 
 function isWidget(w) {
     return w && typeof w.init === "function" && typeof w.update === "function"
 }
 
-},{}],67:[function(_dereq_,module,exports){
+},{}],60:[function(_dereq_,module,exports){
 module.exports = "1"
 
-},{}],68:[function(_dereq_,module,exports){
+},{}],61:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 var isVNode = _dereq_("./is-vnode")
 var isWidget = _dereq_("./is-widget")
@@ -2627,7 +2511,7 @@ function VirtualNode(tagName, properties, children, key, namespace) {
 VirtualNode.prototype.version = version
 VirtualNode.prototype.type = "VirtualNode"
 
-},{"./is-vhook":63,"./is-vnode":64,"./is-widget":66,"./version":67}],69:[function(_dereq_,module,exports){
+},{"./is-vhook":56,"./is-vnode":57,"./is-widget":59,"./version":60}],62:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 VirtualPatch.NONE = 0
@@ -2650,7 +2534,7 @@ function VirtualPatch(type, vNode, patch) {
 VirtualPatch.prototype.version = version.split(".")
 VirtualPatch.prototype.type = "VirtualPatch"
 
-},{"./version":67}],70:[function(_dereq_,module,exports){
+},{"./version":60}],63:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = VirtualText
@@ -2662,7 +2546,7 @@ function VirtualText(text) {
 VirtualText.prototype.version = version
 VirtualText.prototype.type = "VirtualText"
 
-},{"./version":67}],71:[function(_dereq_,module,exports){
+},{"./version":60}],64:[function(_dereq_,module,exports){
 module.exports = AttributeHook;
 
 function AttributeHook(value) {
@@ -2681,7 +2565,7 @@ AttributeHook.prototype.hook = function (node, prop, prev) {
     node.setAttributeNS(null, prop, this.value)
 }
 
-},{}],72:[function(_dereq_,module,exports){
+},{}],65:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
 
 module.exports = DataSetHook;
@@ -2701,7 +2585,7 @@ DataSetHook.prototype.hook = function (node, propertyName) {
     ds[propName] = this.value;
 };
 
-},{"data-set":77}],73:[function(_dereq_,module,exports){
+},{"data-set":70}],66:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
 
 module.exports = DataSetHook;
@@ -2721,7 +2605,7 @@ DataSetHook.prototype.hook = function (node, propertyName) {
     ds[propName] = this.value;
 };
 
-},{"data-set":77}],74:[function(_dereq_,module,exports){
+},{"data-set":70}],67:[function(_dereq_,module,exports){
 module.exports = SoftSetHook;
 
 function SoftSetHook(value) {
@@ -2738,7 +2622,7 @@ SoftSetHook.prototype.hook = function (node, propertyName) {
     }
 };
 
-},{}],75:[function(_dereq_,module,exports){
+},{}],68:[function(_dereq_,module,exports){
 var VNode = _dereq_("virtual-dom/vtree/vnode.js")
 var VText = _dereq_("virtual-dom/vtree/vtext.js")
 var isVNode = _dereq_("virtual-dom/vtree/is-vnode")
@@ -2834,17 +2718,17 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x) || isChild(x)
 }
 
-},{"./hooks/data-set-hook.js":72,"./hooks/ev-hook.js":73,"./hooks/soft-set-hook.js":74,"./parse-tag.js":81,"virtual-dom/vtree/is-vhook":63,"virtual-dom/vtree/is-vnode":64,"virtual-dom/vtree/is-vtext":65,"virtual-dom/vtree/is-widget":66,"virtual-dom/vtree/vnode.js":68,"virtual-dom/vtree/vtext.js":70}],76:[function(_dereq_,module,exports){
+},{"./hooks/data-set-hook.js":65,"./hooks/ev-hook.js":66,"./hooks/soft-set-hook.js":67,"./parse-tag.js":74,"virtual-dom/vtree/is-vhook":56,"virtual-dom/vtree/is-vnode":57,"virtual-dom/vtree/is-vtext":58,"virtual-dom/vtree/is-widget":59,"virtual-dom/vtree/vnode.js":61,"virtual-dom/vtree/vtext.js":63}],69:[function(_dereq_,module,exports){
 module.exports=_dereq_(7)
-},{}],77:[function(_dereq_,module,exports){
+},{}],70:[function(_dereq_,module,exports){
 module.exports=_dereq_(8)
-},{"./create-hash.js":76,"individual":78,"weakmap-shim/create-store":79}],78:[function(_dereq_,module,exports){
+},{"./create-hash.js":69,"individual":71,"weakmap-shim/create-store":72}],71:[function(_dereq_,module,exports){
 module.exports=_dereq_(11)
-},{}],79:[function(_dereq_,module,exports){
+},{}],72:[function(_dereq_,module,exports){
 module.exports=_dereq_(9)
-},{"./hidden-store.js":80}],80:[function(_dereq_,module,exports){
+},{"./hidden-store.js":73}],73:[function(_dereq_,module,exports){
 module.exports=_dereq_(10)
-},{}],81:[function(_dereq_,module,exports){
+},{}],74:[function(_dereq_,module,exports){
 var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
 var notClassId = /^\.|#/
 
@@ -2895,7 +2779,7 @@ function parseTag(tag, props) {
     return tagName ? tagName.toLowerCase() : "div"
 }
 
-},{}],82:[function(_dereq_,module,exports){
+},{}],75:[function(_dereq_,module,exports){
 var attributeHook = _dereq_("./hooks/attribute-hook.js")
 var h = _dereq_("./index.js")
 
@@ -2948,7 +2832,7 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x)
 }
 
-},{"./hooks/attribute-hook.js":71,"./index.js":75}],83:[function(_dereq_,module,exports){
+},{"./hooks/attribute-hook.js":64,"./index.js":68}],76:[function(_dereq_,module,exports){
 module.exports = extend
 
 function extend() {
