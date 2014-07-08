@@ -4,7 +4,7 @@ var LoginComponent = require('./login-component.js')
 
 var comp = LoginComponent()
 
-comp.events.onSuccess(function onSuccess(err, opts) {
+comp.events.onSuccess(function onSuccess(opts) {
     state.loginDone.set(true)
 
     if (opts.type === 'login') {
