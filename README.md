@@ -5,7 +5,7 @@
 [![Coverage Status][5]][6]
 [![Davis Dependency status][9]][10]
 
-<!-- [![browser support][11]][12] -->
+[![browser support][11]][12]
 
 A truly modular frontend framework
 

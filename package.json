@@ -109,12 +109,12 @@
   "testling": {
     "files": "test/index.js",
     "browsers": [
-      "ie/8..latest",
-      "firefox/16..latest",
+      "ie/9..latest",
+      "firefox/26..latest",
       "firefox/nightly",
-      "chrome/22..latest",
+      "chrome/31..latest",
       "chrome/canary",
-      "opera/12..latest",
+      "opera/18..latest",
       "opera/next",
       "safari/5.1..latest",
       "ipad/6.0..latest",
