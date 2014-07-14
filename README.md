@@ -5,7 +5,7 @@
 [![Coverage Status][5]][6]
 [![Davis Dependency status][9]][10]
 
-[![browser support][11]][12]
+<!-- [![browser support][11]][12] -->
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/raynos.svg)](https://saucelabs.com/u/raynos)
 
