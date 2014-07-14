@@ -7,6 +7,8 @@
 
 [![browser support][11]][12]
 
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/raynos.svg)](https://saucelabs.com/u/raynos)
+
 A truly modular frontend framework
 
 To understand what I mean by truly modular just [read the source](https://github.com/Raynos/mercury/blob/master/index.js)
