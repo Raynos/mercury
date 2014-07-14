@@ -84,7 +84,8 @@
     "vdom-virtualize": "0.0.1",
     "virtual-dom-stringify": "^0.2.0",
     "vtree-select": "^1.0.1",
-    "xtend": "^3.0.0"
+    "xtend": "^3.0.0",
+    "zuul": "^1.9.0"
   },
   "licenses": [
     {
@@ -96,7 +97,7 @@
     "jshint": "jshint . --verbose",
     "disc": "browserify index.js --full-paths | discify > disc.html && xdg-open disc.html",
     "test": "node test/index.js | tap-spec",
-    "travis-test": "npm run phantom && npm run cover && istanbul report lcov && ((cat coverage/lcov.info | coveralls) || exit 0)",
+    "travis-test": "npm run phantom && npm run cover && istanbul report lcov && ((cat coverage/lcov.info | coveralls) || exit 0) && zuul -- test.js",
     "phantom": "run-browser test/index.js -b | tap-spec",
     "browser": "run-browser test/index.js",
     "cover": "istanbul cover --report html --print detail ./test/index.js",

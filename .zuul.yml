@@ -1,0 +1,10 @@
+ui: tape
+browsers:
+  - name: chrome
+    version: 27..latest
+  - name: ie
+    version: 10..latest
+  - name: firefox
+    version: 25..latest
+  - name: iphone
+    version: 6.1
