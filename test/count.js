@@ -3,7 +3,7 @@ var event = require('synthetic-dom-events');
 var document = require('global/document');
 var raf = require('raf');
 
-if (typeof window !== 'undefined') {
+if (typeof window === 'undefined') {
     require('./lib/load-hook.js');
 }
 
