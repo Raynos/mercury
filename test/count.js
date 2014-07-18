@@ -3,15 +3,12 @@ var event = require('synthetic-dom-events');
 var document = require('global/document');
 var raf = require('raf');
 
-var embedComponent = require('./lib/embed-component.js');
-
-var count;
-if (typeof window !== 'undefined') {
-    count = require('../examples/count.js');
-} else {
+if (typeof window === 'undefined') {
     require('./lib/load-hook.js');
-    count = require('../examples/count.js');
 }
+
+var embedComponent = require('./lib/embed-component.js');
+var count = require('../examples/count.js');
 
 test('count state is a number', function t(assert) {
     assert.equal(typeof count.state(), 'number');

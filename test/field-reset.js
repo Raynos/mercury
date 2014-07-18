@@ -3,15 +3,12 @@ var document = require('global/document');
 var raf = require('raf');
 var event = require('synthetic-dom-events');
 
-var embedComponent = require('./lib/embed-component.js');
-
-var fieldReset;
-if (typeof window !== 'undefined') {
-    fieldReset = require('../examples/field-reset.js');
-} else {
+if (typeof window === 'undefined') {
     require('./lib/load-hook.js');
-    fieldReset = require('../examples/field-reset.js');
 }
+
+var embedComponent = require('./lib/embed-component.js');
+var fieldReset = require('../examples/field-reset.js');
 
 test('fieldReset state is an object', function t(assert) {
     var state = fieldReset.state();

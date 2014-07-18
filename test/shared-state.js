@@ -3,15 +3,12 @@ var event = require('synthetic-dom-events');
 var document = require('global/document');
 var raf = require('raf');
 
-var embedComponent = require('./lib/embed-component.js');
-
-var shared;
-if (typeof window !== 'undefined') {
-    shared = require('../examples/shared-state.js');
-} else {
+if (typeof window === 'undefined') {
     require('./lib/load-hook.js');
-    shared = require('../examples/shared-state.js');
 }
+
+var embedComponent = require('./lib/embed-component.js');
+var shared = require('../examples/shared-state.js');
 
 test('shared state is a string', function t(assert) {
     assert.equal(typeof shared.state(), 'string');
