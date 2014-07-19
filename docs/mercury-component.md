@@ -76,3 +76,7 @@ property on it's own state and interally calls `updateState`,
 since the state it returns is a lens it will "mutate" the top
 level state that the caller of the component has embedded the
 component into thus triggering a redraw.
+
+Note: this article is written based on my reply to the Elm
+discuss thread about modularity, to see other techniques used
+by Elm & om, read more at https://groups.google.com/forum/#!msg/elm-discuss/sv7DVJ47QkE/VhLr9_V-5E4J
