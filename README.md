@@ -405,15 +405,15 @@ A lot of the philosophy and design of `mercury` is inspired by
 
 ## MIT Licenced
 
-  [1]: https://secure.travis-ci.org/Raynos/mercury.png
+  [1]: https://secure.travis-ci.org/Raynos/mercury.svg
   [2]: https://travis-ci.org/Raynos/mercury
-  [3]: https://badge.fury.io/js/mercury.png
+  [3]: https://badge.fury.io/js/mercury.svg
   [4]: https://badge.fury.io/js/mercury
-  [5]: https://coveralls.io/repos/Raynos/mercury/badge.png
+  [5]: https://coveralls.io/repos/Raynos/mercury/badge.svg
   [6]: https://coveralls.io/r/Raynos/mercury
   [7]: https://gemnasium.com/Raynos/mercury.png
   [8]: https://gemnasium.com/Raynos/mercury
-  [9]: https://david-dm.org/Raynos/mercury.png
+  [9]: https://david-dm.org/Raynos/mercury.svg
   [10]: https://david-dm.org/Raynos/mercury
   [11]: https://ci.testling.com/Raynos/mercury.png
   [12]: https://ci.testling.com/Raynos/mercury
