@@ -409,7 +409,7 @@ A lot of the philosophy and design of `mercury` is inspired by
   [2]: https://travis-ci.org/Raynos/mercury
   [3]: https://badge.fury.io/js/mercury.svg
   [4]: https://badge.fury.io/js/mercury
-  [5]: https://coveralls.io/repos/Raynos/mercury/badge.svg
+  [5]: http://img.shields.io/coveralls/Raynos/mercury.svg
   [6]: https://coveralls.io/r/Raynos/mercury
   [7]: https://gemnasium.com/Raynos/mercury.png
   [8]: https://gemnasium.com/Raynos/mercury
