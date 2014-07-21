@@ -76,7 +76,7 @@ The following examples demonstrate how you can mix & match
 ### Mercury vs React
 
 `mercury` is similar to react, however it's larger in scope, 
-  it is better compard against [`om`][om] or 
+  it is better compared against [`om`][om] or 
   [`quiescent`][quiescent]
   
  - mercury leverages [`virtual-dom`][virtual-dom] which uses 
@@ -185,7 +185,7 @@ You can also use [`vdom`][vdom] and
   minimal fake DOM for use on the server, you can pass 
   [`vdom`][vdom] any `document` you want. In this case 
   [`min-document`][min-document] contains the logic to convert 
-  it's fake DOM into a HTML string.
+  its fake DOM into a HTML string.
 
 #### [`virtual-hyperscript`][virtual-hyperscript]
 
@@ -268,7 +268,7 @@ Generally applications built with mercury will have a single
 
 [`observ-struct`][observ-struct] is an observable that contains an 
   object with a fixed number of keys. Generally the key-value 
-  pairs in [`observ-struct`][observ-struct] are themself 
+  pairs in [`observ-struct`][observ-struct] are themselves 
   observables. You can change the value of any key in an 
   [`observ-struct`][observ-struct] and the top level object 
   will also change to be a new object with that key changed.
@@ -298,7 +298,7 @@ Generally applications built with mercury will have a single
 ### Input modules (The controller layer)
 
 In `mercury` we model all the inputs to our application
-  explicitely. We define an input object that contains a bunch of
+  explicitly. We define an input object that contains a bunch of
   [`geval`][geval] Event instances.
 
 Somewhere else in our application we listen to the Input and
@@ -352,7 +352,7 @@ See the [FAQ document](docs/faq.md)
 
 ### API
 
-WIP. In lieue of documentation please see examples :(
+WIP. In lieu of documentation please see examples :(
 
 ## Installation
 
@@ -384,7 +384,7 @@ A lot of the philosophy and design of `mercury` is inspired by
   the following:
 
  - [`react`][react] for documenting and explaining the concept
-    of a virtual DOM and it's diffing algorithm
+    of a virtual DOM and its diffing algorithm
  - [`om`][om] for explaining the concept and benefits of
     immutable state and time travel.
  - [`elm`][elm] for explaining the concept of FRP and having a
@@ -392,7 +392,7 @@ A lot of the philosophy and design of `mercury` is inspired by
     pre-cursor to `mercury` that was literally a 
     re-implementation of [`elm`][elm] in javascript 
     ([`graphics`][graphics])
- - [`reflex`][reflex] for demonstating the techniques used to
+ - [`reflex`][reflex] for demonstrating the techniques used to
     implement dynamic inputs.
 
 ## Contributors
