@@ -28,10 +28,10 @@ var mercury = module.exports = {
     value: require("observ"),
 
     // Render
-    diff: require("virtual-dom/diff"),
-    patch: require("virtual-dom/patch"),
+    diff: require("vtree/diff"),
+    patch: require("vdom/patch"),
     partial: require("vdom-thunk"),
-    create: require("virtual-dom/create-element"),
+    create: require("vdom/create-element"),
     h: require("virtual-hyperscript"),
     svg: require("virtual-hyperscript/svg"),
 
