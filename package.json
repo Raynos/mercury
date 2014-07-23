@@ -44,11 +44,11 @@
     "observ-array": "^1.0.3",
     "observ-struct": "^4.1.0",
     "observ-varhash": "^0.1.3",
-    "value-event": "^1.3.4",
+    "value-event": "^2.1.0",
+    "vdom": "0.0.16",
     "vdom-thunk": "^3.0.0",
     "virtual-hyperscript": "^4.4.0",
-    "vtree": "0.0.16",
-    "vdom": "0.0.16"
+    "vtree": "0.0.16"
   },
   "devDependencies": {
     "backbone": "^1.1.2",
