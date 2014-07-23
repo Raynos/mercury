@@ -1,4 +1,6 @@
 var document = require('global/document');
+var setTimeout = require('timers').setTimeout;
+
 var mercury = require('../index.js');
 var h = mercury.h;
 
@@ -41,6 +43,9 @@ function resetHook(value, sink) {
 }
 
 resetHook.prototype.hook = function hook(elem, propName) {
-    elem[propName] = this.value;
-    this.sink(false);
+    var self = this;
+    elem[propName] = self.value;
+    setTimeout(function lol() {
+        self.sink(false);
+    }, 0);
 };
