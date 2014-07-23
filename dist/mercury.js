@@ -30,10 +30,10 @@ var mercury = module.exports = {
     value: _dereq_("observ"),
 
     // Render
-    diff: _dereq_("virtual-dom/diff"),
-    patch: _dereq_("virtual-dom/patch"),
+    diff: _dereq_("vtree/diff"),
+    patch: _dereq_("vdom/patch"),
     partial: _dereq_("vdom-thunk"),
-    create: _dereq_("virtual-dom/create-element"),
+    create: _dereq_("vdom/create-element"),
     h: _dereq_("virtual-hyperscript"),
     svg: _dereq_("virtual-hyperscript/svg"),
 
@@ -59,7 +59,7 @@ function app(elem, observ, render, opts) {
     return observ(loop.update)
 }
 
-},{"dom-delegator":6,"geval/multiple":16,"geval/single":17,"main-loop":19,"observ":30,"observ-array":23,"observ-struct":26,"observ-varhash":28,"observ/computed":29,"observ/watch":31,"value-event/change":32,"value-event/event":33,"value-event/key":34,"value-event/submit":40,"value-event/value":41,"vdom-thunk":42,"virtual-dom/create-element":43,"virtual-dom/diff":44,"virtual-dom/patch":48,"virtual-hyperscript":68,"virtual-hyperscript/svg":75}],2:[function(_dereq_,module,exports){
+},{"dom-delegator":6,"geval/multiple":16,"geval/single":17,"main-loop":19,"observ":41,"observ-array":35,"observ-struct":38,"observ-varhash":39,"observ/computed":40,"observ/watch":42,"value-event/change":46,"value-event/event":47,"value-event/key":48,"value-event/submit":54,"value-event/value":55,"vdom-thunk":57,"vdom/create-element":61,"vdom/patch":66,"virtual-hyperscript":72,"virtual-hyperscript/svg":92,"vtree/diff":93}],2:[function(_dereq_,module,exports){
 
 },{}],3:[function(_dereq_,module,exports){
 /**
@@ -687,10 +687,24 @@ if (typeof document !== 'undefined') {
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"min-document":2}],19:[function(_dereq_,module,exports){
-var raf = _dereq_("raf/polyfill")
-var vdomCreate = _dereq_("virtual-dom/create-element")
-var vdomDiff = _dereq_("virtual-dom/diff")
-var vdomPatch = _dereq_("virtual-dom/patch")
+var raf = _dereq_("raf")
+var vtreeDiff = _dereq_("vtree/diff")
+var vdomCreate = _dereq_("vdom/create-element")
+var vdomPatch = _dereq_("vdom/patch")
+var TypedError = _dereq_("error/typed")
+
+var InvalidUpdateInRender = TypedError({
+    type: "main-loop.invalid.update.in-render",
+    message: "main-loop: Unexpected update occurred in loop.\n" +
+        "We are currently rendering a view, " +
+            "you can't change state right now.\n" +
+        "The diff is: {stringDiff}.\n" +
+        "SUGGESTED FIX: find the state mutation in your view " +
+            "or rendering function and remove it.\n" +
+        "The view should not have any side effects.\n",
+    diff: null,
+    stringDiff: null
+})
 
 module.exports = main
 
@@ -699,12 +713,13 @@ function main(initialState, view, opts) {
 
     var currentState = initialState
     var create = opts.create || vdomCreate
-    var diff = opts.diff || vdomDiff
+    var diff = opts.diff || vtreeDiff
     var patch = opts.patch || vdomPatch
     var redrawScheduled = false
 
     var tree = opts.initialTree || view(currentState)
     var target = opts.target || create(tree, opts)
+    var inRenderingTransaction = false
 
     currentState = null
 
@@ -714,6 +729,13 @@ function main(initialState, view, opts) {
     }
 
     function update(state) {
+        if (inRenderingTransaction) {
+            throw InvalidUpdateInRender({
+                diff: state._diff,
+                stringDiff: JSON.stringify(state._diff)
+            })
+        }
+
         if (currentState === null && !redrawScheduled) {
             redrawScheduled = true
             raf(redraw)
@@ -728,6 +750,7 @@ function main(initialState, view, opts) {
             return
         }
 
+        inRenderingTransaction = true
         var newTree = view(currentState)
 
         if (opts.createOnly) {
@@ -737,30 +760,1272 @@ function main(initialState, view, opts) {
             target = patch(target, patches, opts)
         }
 
+        inRenderingTransaction = false
         tree = newTree
         currentState = null
     }
 }
 
-},{"raf/polyfill":20,"virtual-dom/create-element":43,"virtual-dom/diff":44,"virtual-dom/patch":48}],20:[function(_dereq_,module,exports){
-var global = typeof window === 'undefined' ? this : window
+},{"error/typed":32,"raf":44,"vdom/create-element":61,"vdom/patch":66,"vtree/diff":93}],20:[function(_dereq_,module,exports){
+// http://wiki.commonjs.org/wiki/Unit_Testing/1.0
+//
+// THIS IS NOT TESTED NOR LIKELY TO WORK OUTSIDE V8!
+//
+// Originally from narwhal.js (http://narwhaljs.org)
+// Copyright (c) 2009 Thomas Robinson <280north.com>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the 'Software'), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-var _raf =
-  global.requestAnimationFrame ||
-  global.webkitRequestAnimationFrame ||
-  global.mozRequestAnimationFrame ||
-  global.msRequestAnimationFrame ||
-  global.oRequestAnimationFrame ||
-  (global.setImmediate ? function(fn, el) {
-    setImmediate(fn)
-  } :
-  function(fn, el) {
-    setTimeout(fn, 0)
-  })
+// when used in node, this will actually load the util module we depend on
+// versus loading the builtin util module as happens otherwise
+// this is a bug in node module loading as far as I am concerned
+var util = _dereq_('util/');
 
-module.exports = _raf
+var pSlice = Array.prototype.slice;
+var hasOwn = Object.prototype.hasOwnProperty;
 
-},{}],21:[function(_dereq_,module,exports){
+// 1. The assert module provides functions that throw
+// AssertionError's when particular conditions are not met. The
+// assert module must conform to the following interface.
+
+var assert = module.exports = ok;
+
+// 2. The AssertionError is defined in assert.
+// new assert.AssertionError({ message: message,
+//                             actual: actual,
+//                             expected: expected })
+
+assert.AssertionError = function AssertionError(options) {
+  this.name = 'AssertionError';
+  this.actual = options.actual;
+  this.expected = options.expected;
+  this.operator = options.operator;
+  if (options.message) {
+    this.message = options.message;
+    this.generatedMessage = false;
+  } else {
+    this.message = getMessage(this);
+    this.generatedMessage = true;
+  }
+  var stackStartFunction = options.stackStartFunction || fail;
+
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(this, stackStartFunction);
+  }
+  else {
+    // non v8 browsers so we can have a stacktrace
+    var err = new Error();
+    if (err.stack) {
+      var out = err.stack;
+
+      // try to strip useless frames
+      var fn_name = stackStartFunction.name;
+      var idx = out.indexOf('\n' + fn_name);
+      if (idx >= 0) {
+        // once we have located the function frame
+        // we need to strip out everything before it (and its line)
+        var next_line = out.indexOf('\n', idx + 1);
+        out = out.substring(next_line + 1);
+      }
+
+      this.stack = out;
+    }
+  }
+};
+
+// assert.AssertionError instanceof Error
+util.inherits(assert.AssertionError, Error);
+
+function replacer(key, value) {
+  if (util.isUndefined(value)) {
+    return '' + value;
+  }
+  if (util.isNumber(value) && (isNaN(value) || !isFinite(value))) {
+    return value.toString();
+  }
+  if (util.isFunction(value) || util.isRegExp(value)) {
+    return value.toString();
+  }
+  return value;
+}
+
+function truncate(s, n) {
+  if (util.isString(s)) {
+    return s.length < n ? s : s.slice(0, n);
+  } else {
+    return s;
+  }
+}
+
+function getMessage(self) {
+  return truncate(JSON.stringify(self.actual, replacer), 128) + ' ' +
+         self.operator + ' ' +
+         truncate(JSON.stringify(self.expected, replacer), 128);
+}
+
+// At present only the three keys mentioned above are used and
+// understood by the spec. Implementations or sub modules can pass
+// other keys to the AssertionError's constructor - they will be
+// ignored.
+
+// 3. All of the following functions must throw an AssertionError
+// when a corresponding condition is not met, with a message that
+// may be undefined if not provided.  All assertion methods provide
+// both the actual and expected values to the assertion error for
+// display purposes.
+
+function fail(actual, expected, message, operator, stackStartFunction) {
+  throw new assert.AssertionError({
+    message: message,
+    actual: actual,
+    expected: expected,
+    operator: operator,
+    stackStartFunction: stackStartFunction
+  });
+}
+
+// EXTENSION! allows for well behaved errors defined elsewhere.
+assert.fail = fail;
+
+// 4. Pure assertion tests whether a value is truthy, as determined
+// by !!guard.
+// assert.ok(guard, message_opt);
+// This statement is equivalent to assert.equal(true, !!guard,
+// message_opt);. To test strictly for the value true, use
+// assert.strictEqual(true, guard, message_opt);.
+
+function ok(value, message) {
+  if (!value) fail(value, true, message, '==', assert.ok);
+}
+assert.ok = ok;
+
+// 5. The equality assertion tests shallow, coercive equality with
+// ==.
+// assert.equal(actual, expected, message_opt);
+
+assert.equal = function equal(actual, expected, message) {
+  if (actual != expected) fail(actual, expected, message, '==', assert.equal);
+};
+
+// 6. The non-equality assertion tests for whether two objects are not equal
+// with != assert.notEqual(actual, expected, message_opt);
+
+assert.notEqual = function notEqual(actual, expected, message) {
+  if (actual == expected) {
+    fail(actual, expected, message, '!=', assert.notEqual);
+  }
+};
+
+// 7. The equivalence assertion tests a deep equality relation.
+// assert.deepEqual(actual, expected, message_opt);
+
+assert.deepEqual = function deepEqual(actual, expected, message) {
+  if (!_deepEqual(actual, expected)) {
+    fail(actual, expected, message, 'deepEqual', assert.deepEqual);
+  }
+};
+
+function _deepEqual(actual, expected) {
+  // 7.1. All identical values are equivalent, as determined by ===.
+  if (actual === expected) {
+    return true;
+
+  } else if (util.isBuffer(actual) && util.isBuffer(expected)) {
+    if (actual.length != expected.length) return false;
+
+    for (var i = 0; i < actual.length; i++) {
+      if (actual[i] !== expected[i]) return false;
+    }
+
+    return true;
+
+  // 7.2. If the expected value is a Date object, the actual value is
+  // equivalent if it is also a Date object that refers to the same time.
+  } else if (util.isDate(actual) && util.isDate(expected)) {
+    return actual.getTime() === expected.getTime();
+
+  // 7.3 If the expected value is a RegExp object, the actual value is
+  // equivalent if it is also a RegExp object with the same source and
+  // properties (`global`, `multiline`, `lastIndex`, `ignoreCase`).
+  } else if (util.isRegExp(actual) && util.isRegExp(expected)) {
+    return actual.source === expected.source &&
+           actual.global === expected.global &&
+           actual.multiline === expected.multiline &&
+           actual.lastIndex === expected.lastIndex &&
+           actual.ignoreCase === expected.ignoreCase;
+
+  // 7.4. Other pairs that do not both pass typeof value == 'object',
+  // equivalence is determined by ==.
+  } else if (!util.isObject(actual) && !util.isObject(expected)) {
+    return actual == expected;
+
+  // 7.5 For all other Object pairs, including Array objects, equivalence is
+  // determined by having the same number of owned properties (as verified
+  // with Object.prototype.hasOwnProperty.call), the same set of keys
+  // (although not necessarily the same order), equivalent values for every
+  // corresponding key, and an identical 'prototype' property. Note: this
+  // accounts for both named and indexed properties on Arrays.
+  } else {
+    return objEquiv(actual, expected);
+  }
+}
+
+function isArguments(object) {
+  return Object.prototype.toString.call(object) == '[object Arguments]';
+}
+
+function objEquiv(a, b) {
+  if (util.isNullOrUndefined(a) || util.isNullOrUndefined(b))
+    return false;
+  // an identical 'prototype' property.
+  if (a.prototype !== b.prototype) return false;
+  //~~~I've managed to break Object.keys through screwy arguments passing.
+  //   Converting to array solves the problem.
+  if (isArguments(a)) {
+    if (!isArguments(b)) {
+      return false;
+    }
+    a = pSlice.call(a);
+    b = pSlice.call(b);
+    return _deepEqual(a, b);
+  }
+  try {
+    var ka = objectKeys(a),
+        kb = objectKeys(b),
+        key, i;
+  } catch (e) {//happens when one is a string literal and the other isn't
+    return false;
+  }
+  // having the same number of owned properties (keys incorporates
+  // hasOwnProperty)
+  if (ka.length != kb.length)
+    return false;
+  //the same set of keys (although not necessarily the same order),
+  ka.sort();
+  kb.sort();
+  //~~~cheap key test
+  for (i = ka.length - 1; i >= 0; i--) {
+    if (ka[i] != kb[i])
+      return false;
+  }
+  //equivalent values for every corresponding key, and
+  //~~~possibly expensive deep test
+  for (i = ka.length - 1; i >= 0; i--) {
+    key = ka[i];
+    if (!_deepEqual(a[key], b[key])) return false;
+  }
+  return true;
+}
+
+// 8. The non-equivalence assertion tests for any deep inequality.
+// assert.notDeepEqual(actual, expected, message_opt);
+
+assert.notDeepEqual = function notDeepEqual(actual, expected, message) {
+  if (_deepEqual(actual, expected)) {
+    fail(actual, expected, message, 'notDeepEqual', assert.notDeepEqual);
+  }
+};
+
+// 9. The strict equality assertion tests strict equality, as determined by ===.
+// assert.strictEqual(actual, expected, message_opt);
+
+assert.strictEqual = function strictEqual(actual, expected, message) {
+  if (actual !== expected) {
+    fail(actual, expected, message, '===', assert.strictEqual);
+  }
+};
+
+// 10. The strict non-equality assertion tests for strict inequality, as
+// determined by !==.  assert.notStrictEqual(actual, expected, message_opt);
+
+assert.notStrictEqual = function notStrictEqual(actual, expected, message) {
+  if (actual === expected) {
+    fail(actual, expected, message, '!==', assert.notStrictEqual);
+  }
+};
+
+function expectedException(actual, expected) {
+  if (!actual || !expected) {
+    return false;
+  }
+
+  if (Object.prototype.toString.call(expected) == '[object RegExp]') {
+    return expected.test(actual);
+  } else if (actual instanceof expected) {
+    return true;
+  } else if (expected.call({}, actual) === true) {
+    return true;
+  }
+
+  return false;
+}
+
+function _throws(shouldThrow, block, expected, message) {
+  var actual;
+
+  if (util.isString(expected)) {
+    message = expected;
+    expected = null;
+  }
+
+  try {
+    block();
+  } catch (e) {
+    actual = e;
+  }
+
+  message = (expected && expected.name ? ' (' + expected.name + ').' : '.') +
+            (message ? ' ' + message : '.');
+
+  if (shouldThrow && !actual) {
+    fail(actual, expected, 'Missing expected exception' + message);
+  }
+
+  if (!shouldThrow && expectedException(actual, expected)) {
+    fail(actual, expected, 'Got unwanted exception' + message);
+  }
+
+  if ((shouldThrow && actual && expected &&
+      !expectedException(actual, expected)) || (!shouldThrow && actual)) {
+    throw actual;
+  }
+}
+
+// 11. Expected to throw an error:
+// assert.throws(block, Error_opt, message_opt);
+
+assert.throws = function(block, /*optional*/error, /*optional*/message) {
+  _throws.apply(this, [true].concat(pSlice.call(arguments)));
+};
+
+// EXTENSION! This is annoying to write outside this module.
+assert.doesNotThrow = function(block, /*optional*/message) {
+  _throws.apply(this, [false].concat(pSlice.call(arguments)));
+};
+
+assert.ifError = function(err) { if (err) {throw err;}};
+
+var objectKeys = Object.keys || function (obj) {
+  var keys = [];
+  for (var key in obj) {
+    if (hasOwn.call(obj, key)) keys.push(key);
+  }
+  return keys;
+};
+
+},{"util/":23}],21:[function(_dereq_,module,exports){
+module.exports=_dereq_(12)
+},{}],22:[function(_dereq_,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],23:[function(_dereq_,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = _dereq_('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = _dereq_('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+}).call(this,_dereq_("g5I+bs"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":22,"g5I+bs":43,"inherits":21}],24:[function(_dereq_,module,exports){
+module.exports = function(obj) {
+    if (typeof obj === 'string') return camelCase(obj);
+    return walk(obj);
+};
+
+function walk (obj) {
+    if (!obj || typeof obj !== 'object') return obj;
+    if (isArray(obj)) return map(obj, walk);
+    return reduce(objectKeys(obj), function (acc, key) {
+        var camel = camelCase(key);
+        acc[camel] = walk(obj[key]);
+        return acc;
+    }, {});
+}
+
+function camelCase(str) {
+    return str.replace(/[_.-](\w|$)/g, function (_,x) {
+        return x.toUpperCase()
+    });
+}
+
+var isArray = Array.isArray || function (obj) {
+    return Object.prototype.toString.call(obj) === '[object Array]';
+};
+
+var has = Object.prototype.hasOwnProperty;
+var objectKeys = Object.keys || function (obj) {
+    var keys = [];
+    for (var key in obj) {
+        if (has.call(obj, key)) keys.push(key);
+    }
+    return keys;
+};
+
+function map (xs, f) {
+    if (xs.map) return xs.map(f);
+    var res = [];
+    for (var i = 0; i < xs.length; i++) {
+        res.push(f(xs[i], i));
+    }
+    return res;
+}
+
+function reduce (xs, f, acc) {
+    if (xs.reduce) return xs.reduce(f, acc);
+    for (var i = 0; i < xs.length; i++) {
+        acc = f(acc, xs[i], i);
+    }
+    return acc;
+}
+
+},{}],25:[function(_dereq_,module,exports){
+var nargs = /\{([0-9a-zA-Z]+)\}/g
+var slice = Array.prototype.slice
+
+module.exports = template
+
+function template(string) {
+    var args
+    
+    if (arguments.length === 2 && typeof arguments[1] === "object") {
+        args = arguments[1]
+    } else {
+        args = slice.call(arguments, 1)
+    }
+
+    if (!args || !args.hasOwnProperty) {
+        args = {}
+    }
+
+    return string.replace(nargs, function replaceArg(match, i, index) {
+        var result
+
+        if (string[index - 1] === "{" &&
+            string[index + match.length] === "}") {
+            return i
+        } else {
+            result = args.hasOwnProperty(i) ? args[i] : null
+            if (result === null || result === undefined) {
+                return ""
+            }
+
+            return result
+        }
+    })
+}
+},{}],26:[function(_dereq_,module,exports){
+module.exports = hasKeys
+
+function hasKeys(source) {
+    return source !== null &&
+        (typeof source === "object" ||
+        typeof source === "function")
+}
+
+},{}],27:[function(_dereq_,module,exports){
+var Keys = _dereq_("object-keys")
+var hasKeys = _dereq_("./has-keys")
+
+module.exports = extend
+
+function extend(target) {
+    var sources = [].slice.call(arguments, 1)
+
+    for (var i = 0; i < sources.length; i++) {
+        var source = sources[i]
+
+        if (!hasKeys(source)) {
+            continue
+        }
+
+        var keys = Keys(source)
+
+        for (var j = 0; j < keys.length; j++) {
+            var name = keys[j]
+            target[name] = source[name]
+        }
+    }
+
+    return target
+}
+
+},{"./has-keys":26,"object-keys":29}],28:[function(_dereq_,module,exports){
+var hasOwn = Object.prototype.hasOwnProperty;
+var toString = Object.prototype.toString;
+
+var isFunction = function (fn) {
+	var isFunc = (typeof fn === 'function' && !(fn instanceof RegExp)) || toString.call(fn) === '[object Function]';
+	if (!isFunc && typeof window !== 'undefined') {
+		isFunc = fn === window.setTimeout || fn === window.alert || fn === window.confirm || fn === window.prompt;
+	}
+	return isFunc;
+};
+
+module.exports = function forEach(obj, fn) {
+	if (!isFunction(fn)) {
+		throw new TypeError('iterator must be a function');
+	}
+	var i, k,
+		isString = typeof obj === 'string',
+		l = obj.length,
+		context = arguments.length > 2 ? arguments[2] : null;
+	if (l === +l) {
+		for (i = 0; i < l; i++) {
+			if (context === null) {
+				fn(isString ? obj.charAt(i) : obj[i], i, obj);
+			} else {
+				fn.call(context, isString ? obj.charAt(i) : obj[i], i, obj);
+			}
+		}
+	} else {
+		for (k in obj) {
+			if (hasOwn.call(obj, k)) {
+				if (context === null) {
+					fn(obj[k], k, obj);
+				} else {
+					fn.call(context, obj[k], k, obj);
+				}
+			}
+		}
+	}
+};
+
+
+},{}],29:[function(_dereq_,module,exports){
+module.exports = Object.keys || _dereq_('./shim');
+
+
+},{"./shim":31}],30:[function(_dereq_,module,exports){
+var toString = Object.prototype.toString;
+
+module.exports = function isArguments(value) {
+	var str = toString.call(value);
+	var isArguments = str === '[object Arguments]';
+	if (!isArguments) {
+		isArguments = str !== '[object Array]'
+			&& value !== null
+			&& typeof value === 'object'
+			&& typeof value.length === 'number'
+			&& value.length >= 0
+			&& toString.call(value.callee) === '[object Function]';
+	}
+	return isArguments;
+};
+
+
+},{}],31:[function(_dereq_,module,exports){
+(function () {
+	"use strict";
+
+	// modified from https://github.com/kriskowal/es5-shim
+	var has = Object.prototype.hasOwnProperty,
+		toString = Object.prototype.toString,
+		forEach = _dereq_('./foreach'),
+		isArgs = _dereq_('./isArguments'),
+		hasDontEnumBug = !({'toString': null}).propertyIsEnumerable('toString'),
+		hasProtoEnumBug = (function () {}).propertyIsEnumerable('prototype'),
+		dontEnums = [
+			"toString",
+			"toLocaleString",
+			"valueOf",
+			"hasOwnProperty",
+			"isPrototypeOf",
+			"propertyIsEnumerable",
+			"constructor"
+		],
+		keysShim;
+
+	keysShim = function keys(object) {
+		var isObject = object !== null && typeof object === 'object',
+			isFunction = toString.call(object) === '[object Function]',
+			isArguments = isArgs(object),
+			theKeys = [];
+
+		if (!isObject && !isFunction && !isArguments) {
+			throw new TypeError("Object.keys called on a non-object");
+		}
+
+		if (isArguments) {
+			forEach(object, function (value) {
+				theKeys.push(value);
+			});
+		} else {
+			var name,
+				skipProto = hasProtoEnumBug && isFunction;
+
+			for (name in object) {
+				if (!(skipProto && name === 'prototype') && has.call(object, name)) {
+					theKeys.push(name);
+				}
+			}
+		}
+
+		if (hasDontEnumBug) {
+			var ctor = object.constructor,
+				skipConstructor = ctor && ctor.prototype === object;
+
+			forEach(dontEnums, function (dontEnum) {
+				if (!(skipConstructor && dontEnum === 'constructor') && has.call(object, dontEnum)) {
+					theKeys.push(dontEnum);
+				}
+			});
+		}
+		return theKeys;
+	};
+
+	module.exports = keysShim;
+}());
+
+
+},{"./foreach":28,"./isArguments":30}],32:[function(_dereq_,module,exports){
+var assert = _dereq_("assert/")
+var camelize = _dereq_("camelize")
+var template = _dereq_("string-template")
+var extend = _dereq_("xtend/mutable")
+
+module.exports = TypedError
+
+function TypedError(args) {
+    assert(args, "args is required");
+    assert(args.type, "args.type is required")
+    assert(args.message, "args.message is required")
+
+    var message = args.message
+
+    if (args.type && !args.name) {
+        var errorName = camelize(args.type) + "Error"
+        args.name = errorName[0].toUpperCase() + errorName.substr(1)
+    }
+
+    createError.type = args.type;
+    createError._name = args.name;
+
+    return createError;
+
+    function createError(opts) {
+        var result = new Error()
+
+        Object.defineProperty(result, "type", {
+            value: result.type,
+            enumerable: true,
+            writable: true,
+            configurable: true
+        })
+
+        var options = extend({}, args, opts)
+
+        extend(result, options)
+        result.message = template(message, options)
+
+        return result
+    }
+}
+
+
+},{"assert/":20,"camelize":24,"string-template":25,"xtend/mutable":27}],33:[function(_dereq_,module,exports){
+var setNonEnumerable = _dereq_("./lib/set-non-enumerable.js");
+
 module.exports = addListener
 
 function addListener(observArray, observ) {
@@ -782,13 +2047,13 @@ function addListener(observArray, observ) {
         }
 
         valueList.splice(index, 1, value)
-        valueList._diff = [index, 1, value]
+        setNonEnumerable(valueList, "_diff", [index, 1, value])
 
         observArray.set(valueList)
     })
 }
 
-},{}],22:[function(_dereq_,module,exports){
+},{"./lib/set-non-enumerable.js":36}],34:[function(_dereq_,module,exports){
 var ObservArray = _dereq_("./index.js")
 
 var slice = Array.prototype.slice
@@ -855,7 +2120,7 @@ function notImplemented() {
     throw new Error("Pull request welcome")
 }
 
-},{"./index.js":23}],23:[function(_dereq_,module,exports){
+},{"./index.js":35}],35:[function(_dereq_,module,exports){
 var Observ = _dereq_("observ")
 
 // circular dep between ArrayMethods & this file
@@ -934,39 +2199,23 @@ function getLength() {
     return this._list.length
 }
 
-},{"./add-listener.js":21,"./array-methods.js":22,"./splice.js":25,"observ":24}],24:[function(_dereq_,module,exports){
-module.exports = Observable
+},{"./add-listener.js":33,"./array-methods.js":34,"./splice.js":37,"observ":41}],36:[function(_dereq_,module,exports){
+module.exports = setNonEnumerable;
 
-function Observable(value) {
-    var listeners = []
-    value = value === undefined ? null : value
-
-    observable.set = function (v) {
-        value = v
-        listeners.forEach(function (f) {
-            f(v)
-        })
-    }
-
-    return observable
-
-    function observable(listener) {
-        if (!listener) {
-            return value
-        }
-
-        listeners.push(listener)
-
-        return function remove() {
-            listeners.splice(listeners.indexOf(listener), 1)
-        }
-    }
+function setNonEnumerable(object, key, value) {
+    Object.defineProperty(object, key, {
+        value: value,
+        writable: true,
+        configurable: true,
+        enumerable: false
+    });
 }
 
-},{}],25:[function(_dereq_,module,exports){
+},{}],37:[function(_dereq_,module,exports){
 var slice = Array.prototype.slice
 
 var addListener = _dereq_("./add-listener.js")
+var setNonEnumerable = _dereq_("./lib/set-non-enumerable.js");
 
 module.exports = splice
 
@@ -1008,15 +2257,24 @@ function splice(index, amount) {
         }
     })
 
-    valueList._diff = valueArgs
+    setNonEnumerable(valueList, "_diff", valueArgs)
 
     obs.set(valueList)
     return removed
 }
 
-},{"./add-listener.js":21}],26:[function(_dereq_,module,exports){
+},{"./add-listener.js":33,"./lib/set-non-enumerable.js":36}],38:[function(_dereq_,module,exports){
 var Observ = _dereq_("observ")
 var extend = _dereq_("xtend")
+
+var blackList = ["name", "_diff", "_type", "_version"]
+var blackListReasons = {
+    "name": "Clashes with `Function.prototype.name`.\n",
+    "_diff": "_diff is reserved key of observ-struct.\n",
+    "_type": "_type is reserved key of observ-struct.\n",
+    "_version": "_version is reserved key of observ-struct.\n"
+}
+var NO_TRANSACTION = {}
 
 /* ObservStruct := (Object<String, Observ<T>>) => 
     Object<String, Observ<T>> &
@@ -1031,12 +2289,14 @@ function ObservStruct(struct) {
     var keys = Object.keys(struct)
 
     var initialState = {}
+    var currentTransaction = NO_TRANSACTION
+    var nestedTransaction = NO_TRANSACTION
 
     keys.forEach(function (key) {
-        if (key === "name") {
+        if (blackList.indexOf(key) !== -1) {
             throw new Error("cannot create an observ-struct " +
-                "with a key named 'name'. Clashes with " +
-                "`Function.prototype.name`.");
+                "with a key named '" + key + "'.\n" +
+                blackListReasons[key]);
         }
 
         var observ = struct[key]
@@ -1051,25 +2311,63 @@ function ObservStruct(struct) {
 
         if (typeof observ === "function") {
             observ(function (value) {
+                if (nestedTransaction === value) {
+                    return
+                }
+
                 var state = extend(obs())
                 state[key] = value
                 var diff = {}
                 diff[key] = value && value._diff ?
                     value._diff : value
                 state._diff = diff
+                currentTransaction = state
                 obs.set(state)
+                currentTransaction = NO_TRANSACTION
             })
         }
     })
+    var _set = obs.set
+    obs.set = function trackDiff(value) {
+        if (currentTransaction === value) {
+            return _set(value)
+        }
+
+        var newState = extend(value)
+        newState._diff = value
+        _set(newState)
+    }
+
+    obs(function (newState) {
+        if (currentTransaction === newState) {
+            return
+        }
+
+        keys.forEach(function (key) {
+            var observ = struct[key]
+            var newObservValue = newState[key]
+
+            if (typeof observ === "function" &&
+                observ() !== newObservValue
+            ) {
+                nestedTransaction = newObservValue
+                observ.set(newState[key])
+                nestedTransaction = NO_TRANSACTION
+            }
+        })
+    })
+
+    obs._type = "observ-struct"
+    obs._version = "4"
 
     return obs
 }
 
-},{"observ":27,"xtend":76}],27:[function(_dereq_,module,exports){
-module.exports=_dereq_(24)
-},{}],28:[function(_dereq_,module,exports){
+},{"observ":41,"xtend":106}],39:[function(_dereq_,module,exports){
 var Observ = _dereq_('observ')
 var extend = _dereq_('xtend')
+
+var NO_TRANSACTION = {}
 
 ObservVarhash.Tombstone = new Tombstone()
 
@@ -1079,6 +2377,7 @@ function ObservVarhash (hash, createValue) {
   createValue = createValue || function (obj) { return obj }
 
   var initialState = {}
+  var currentTransaction = NO_TRANSACTION
 
   for (var key in hash) {
     var observ = hash[key]
@@ -1098,9 +2397,24 @@ function ObservVarhash (hash, createValue) {
     obs[key] = createValue(hash[key], key)
 
     if (isFunc(obs[key])) {
-      obs._removeListeners[key] = obs[key](watch(obs, key))
+      obs._removeListeners[key] = obs[key](watch(obs, key, currentTransaction))
     }
   }
+
+  obs(function (newState) {
+    if (currentTransaction === newState) {
+      return
+    }
+
+    for (var key in hash) {
+      var observ = hash[key]
+
+      if (isFunc(observ) && observ() !== newState[key]) {
+        observ.set(newState[key])
+      }
+    }
+  })
+
   return obs
 }
 
@@ -1151,12 +2465,14 @@ function methods (createValue) {
   }
 }
 
-function watch (obs, key) {
+function watch (obs, key, currentTransaction) {
   return function (value) {
     var state = extend(obs())
     state[key] = value
     state._diff = diff(key, value)
-    return obs.set(state)
+    currentTransaction = state
+    obs.set(state)
+    currentTransaction = NO_TRANSACTION
   }
 }
 
@@ -1177,14 +2493,14 @@ function checkKey (key) {
 function getKeyError (key) {
   switch (key) {
     case 'name': {
-      return format(key, 'Clashes with `Function.prototype.name`.')
+      return formatError(key, 'Clashes with `Function.prototype.name`.')
     }
     case 'get':
     case 'put':
     case 'delete':
     case '_diff':
     case '_removeListeners': {
-      return format(key, 'Clashes with observ-varhash method')
+      return formatError(key, 'Clashes with observ-varhash method')
     }
     default: {
       return ''
@@ -1211,7 +2527,7 @@ function nameTombstone () {
   return '[object Tombstone]'
 }
 
-},{"observ":30,"xtend":76}],29:[function(_dereq_,module,exports){
+},{"observ":41,"xtend":106}],40:[function(_dereq_,module,exports){
 var Observable = _dereq_("./index.js")
 
 module.exports = computed
@@ -1232,9 +2548,36 @@ function computed(observables, lambda) {
     return result
 }
 
-},{"./index.js":30}],30:[function(_dereq_,module,exports){
-module.exports=_dereq_(24)
-},{}],31:[function(_dereq_,module,exports){
+},{"./index.js":41}],41:[function(_dereq_,module,exports){
+module.exports = Observable
+
+function Observable(value) {
+    var listeners = []
+    value = value === undefined ? null : value
+
+    observable.set = function (v) {
+        value = v
+        listeners.forEach(function (f) {
+            f(v)
+        })
+    }
+
+    return observable
+
+    function observable(listener) {
+        if (!listener) {
+            return value
+        }
+
+        listeners.push(listener)
+
+        return function remove() {
+            listeners.splice(listeners.indexOf(listener), 1)
+        }
+    }
+}
+
+},{}],42:[function(_dereq_,module,exports){
 module.exports = watch
 
 function watch(observable, listener) {
@@ -1243,7 +2586,178 @@ function watch(observable, listener) {
     return remove
 }
 
-},{}],32:[function(_dereq_,module,exports){
+},{}],43:[function(_dereq_,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
+    }
+
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+}
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+
+},{}],44:[function(_dereq_,module,exports){
+var now = _dereq_('performance-now')
+  , global = typeof window === 'undefined' ? {} : window
+  , vendors = ['moz', 'webkit']
+  , suffix = 'AnimationFrame'
+  , raf = global['request' + suffix]
+  , caf = global['cancel' + suffix] || global['cancelRequest' + suffix]
+
+for(var i = 0; i < vendors.length && !raf; i++) {
+  raf = global[vendors[i] + 'Request' + suffix]
+  caf = global[vendors[i] + 'Cancel' + suffix]
+      || global[vendors[i] + 'CancelRequest' + suffix]
+}
+
+// Some versions of FF have rAF but not cAF
+if(!raf || !caf) {
+  var last = 0
+    , id = 0
+    , queue = []
+    , frameDuration = 1000 / 60
+
+  raf = function(callback) {
+    if(queue.length === 0) {
+      var _now = now()
+        , next = Math.max(0, frameDuration - (_now - last))
+      last = next + _now
+      setTimeout(function() {
+        var cp = queue.slice(0)
+        // Clear queue here to prevent
+        // callbacks from appending listeners
+        // to the current frame's queue
+        queue.length = 0
+        for (var i = 0; i < cp.length; i++) {
+          if (!cp[i].cancelled) {
+            cp[i].callback(last)
+          }
+        }
+      }, next)
+    }
+    queue.push({
+      handle: ++id,
+      callback: callback,
+      cancelled: false
+    })
+    return id
+  }
+
+  caf = function(handle) {
+    for(var i = 0; i < queue.length; i++) {
+      if(queue[i].handle === handle) {
+        queue[i].cancelled = true
+      }
+    }
+  }
+}
+
+module.exports = function() {
+  // Wrap in a new function to prevent
+  // `cancel` potentially being assigned
+  // to the native rAF function
+  return raf.apply(global, arguments)
+}
+module.exports.cancel = function() {
+  caf.apply(global, arguments)
+}
+
+},{"performance-now":45}],45:[function(_dereq_,module,exports){
+(function (process){
+// Generated by CoffeeScript 1.6.3
+(function() {
+  var getNanoSeconds, hrtime, loadTime;
+
+  if ((typeof performance !== "undefined" && performance !== null) && performance.now) {
+    module.exports = function() {
+      return performance.now();
+    };
+  } else if ((typeof process !== "undefined" && process !== null) && process.hrtime) {
+    module.exports = function() {
+      return (getNanoSeconds() - loadTime) / 1e6;
+    };
+    hrtime = process.hrtime;
+    getNanoSeconds = function() {
+      var hr;
+      hr = hrtime();
+      return hr[0] * 1e9 + hr[1];
+    };
+    loadTime = getNanoSeconds();
+  } else if (Date.now) {
+    module.exports = function() {
+      return Date.now() - loadTime;
+    };
+    loadTime = Date.now();
+  } else {
+    module.exports = function() {
+      return new Date().getTime() - loadTime;
+    };
+    loadTime = new Date().getTime();
+  }
+
+}).call(this);
+
+/*
+//@ sourceMappingURL=performance-now.map
+*/
+
+}).call(this,_dereq_("g5I+bs"))
+},{"g5I+bs":43}],46:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -1268,7 +2782,8 @@ function handleEvent(ev) {
     var isValid =
         (ev.type === 'change' && target.type === 'checkbox') ||
         (ev.type === 'input' && target.type === 'text') ||
-        (ev.type === 'change' && target.type === 'range')
+        (ev.type === 'change' && target.type === 'range') ||
+        (ev.type === 'change' && target.type === 'file')
 
     if (!isValid) {
         return
@@ -1284,7 +2799,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":36,"xtend":39}],33:[function(_dereq_,module,exports){
+},{"form-data-set/element":50,"xtend":53}],47:[function(_dereq_,module,exports){
 module.exports = SinkEventHandler
 
 function SinkEventHandler(sink, data) {
@@ -1307,7 +2822,7 @@ function handleEvent(ev) {
     }
 }
 
-},{}],34:[function(_dereq_,module,exports){
+},{}],48:[function(_dereq_,module,exports){
 module.exports = KeyEventHandler
 
 function KeyEventHandler(fn, key, data) {
@@ -1328,7 +2843,7 @@ function handleEvent(ev) {
     }
 }
 
-},{}],35:[function(_dereq_,module,exports){
+},{}],49:[function(_dereq_,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -1348,13 +2863,13 @@ function iterativelyWalk(nodes, cb) {
             return ret
         }
 
-        if (node.childNodes.length) {
+        if (node.childNodes && node.childNodes.length) {
             nodes = slice.call(node.childNodes).concat(nodes)
         }
     }
 }
 
-},{}],36:[function(_dereq_,module,exports){
+},{}],50:[function(_dereq_,module,exports){
 var walk = _dereq_('dom-walk')
 
 var FormData = _dereq_('./index.js')
@@ -1380,7 +2895,7 @@ function getFormData(rootElem) {
     return FormData(elements)
 }
 
-},{"./index.js":37,"dom-walk":35}],37:[function(_dereq_,module,exports){
+},{"./index.js":51,"dom-walk":49}],51:[function(_dereq_,module,exports){
 /*jshint maxcomplexity: 10*/
 
 module.exports = FormData
@@ -1457,16 +2972,9 @@ function filterNull(val) {
     return val !== null
 }
 
-},{}],38:[function(_dereq_,module,exports){
-module.exports = hasKeys
-
-function hasKeys(source) {
-    return source !== null &&
-        (typeof source === "object" ||
-        typeof source === "function")
-}
-
-},{}],39:[function(_dereq_,module,exports){
+},{}],52:[function(_dereq_,module,exports){
+module.exports=_dereq_(26)
+},{}],53:[function(_dereq_,module,exports){
 var hasKeys = _dereq_("./has-keys")
 
 module.exports = extend
@@ -1491,7 +2999,7 @@ function extend() {
     return target
 }
 
-},{"./has-keys":38}],40:[function(_dereq_,module,exports){
+},{"./has-keys":52}],54:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -1542,7 +3050,7 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":36,"xtend":39}],41:[function(_dereq_,module,exports){
+},{"form-data-set/element":50,"xtend":53}],55:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -1564,6 +3072,10 @@ function handleEvent(ev) {
     var value = getFormData(ev.currentTarget)
     var data = extend(value, this.data)
 
+    if (ev.type === 'submit') {
+        ev.preventDefault();
+    }
+
     if (typeof this.sink === 'function') {
         this.sink(data)
     } else {
@@ -1571,154 +3083,102 @@ function handleEvent(ev) {
     }
 }
 
-},{"form-data-set/element":36,"xtend":39}],42:[function(_dereq_,module,exports){
-var createElement = _dereq_("virtual-dom/create-element")
-var diff = _dereq_("virtual-dom/diff")
-var patch = _dereq_("virtual-dom/patch")
-
-var MESSAGE = "partial() cannot cache on values. " + 
-    "You must specify object arguments. partial("
-
-function copyOver(list, offset) {
-    var newList = []
-    for (var i = offset; i < list.length; i++) {
-        newList[i - offset] = list[i]
-    }
-    return newList
+},{"form-data-set/element":50,"xtend":53}],56:[function(_dereq_,module,exports){
+function Thunk(fn, args, key, eqArgs) {
+    this.fn = fn;
+    this.args = args;
+    this.key = key;
+    this.eqArgs = eqArgs;
 }
 
-module.exports = partial
-
-function partial(fn) {
-    var args = copyOver(arguments, 1)
-    var firstArg = args[0]
-    var hasObjects = args.length === 0
-    var key
-
-    if (typeof firstArg === "object" && firstArg !== null) {
-        hasObjects = true
-        if ("key" in firstArg) {
-            key = firstArg.key
-        } else if ("id" in firstArg) {
-            key = firstArg.id
-        }
-    }
-
-    for (var i = 1; !hasObjects && i < args.length; i++) {
-        var arg = args[i];
-        if (typeof arg === "object" && arg !== null) {
-            hasObjects = true
-        }
-    }
-
-    if (!hasObjects) {
-        throw new Error(MESSAGE + args + ")")
-    }
-
-    return new Thunk(fn, args, key)
-}
-
-function Thunk(fn, args, key) {
-    this.fn = fn
-    this.args = args
-    this.vnode = null
-    this.key = key
-}
-
-Thunk.prototype.type = "immutable-thunk"
-Thunk.prototype.update = update
-Thunk.prototype.init = init
+Thunk.prototype.type = 'Thunk';
+Thunk.prototype.render = render;
+module.exports = Thunk;
 
 function shouldUpdate(current, previous) {
-    if (current.fn !== previous.fn) {
-        return true
+    if (!current || !previous || current.fn !== previous.fn) {
+        return true;
     }
 
-    var cargs = current.args
-    var pargs = previous.args
+    var cargs = current.args;
+    var pargs = previous.args;
 
-    // fast case for args is zero case.
-    if (cargs.length === 0 && pargs.length === 0) {
-        return false
+    return !current.eqArgs(cargs, pargs);
+}
+
+function render(previous) {
+    if (shouldUpdate(this, previous)) {
+        return this.fn.apply(null, this.args);
+    } else {
+        return previous.vnode;
+    }
+}
+
+},{}],57:[function(_dereq_,module,exports){
+var Partial = _dereq_('./partial');
+
+module.exports = Partial();
+
+},{"./partial":58}],58:[function(_dereq_,module,exports){
+var shallowEq = _dereq_('./shallow-eq');
+var Thunk = _dereq_('./immutable-thunk');
+
+module.exports = createPartial;
+
+function createPartial(eq) {
+    return function partial(fn) {
+        var args = copyOver(arguments, 1);
+        var firstArg = args[0];
+        var key;
+
+        var eqArgs = eq || shallowEq;
+
+        if (typeof firstArg === 'object' && firstArg !== null) {
+            if ('key' in firstArg) {
+                key = firstArg.key;
+            } else if ('id' in firstArg) {
+                key = firstArg.id;
+            }
+        }
+
+        return new Thunk(fn, args, key, eqArgs);
+    };
+}
+
+function copyOver(list, offset) {
+    var newList = [];
+    for (var i = list.length - 1; i >= offset; i--) {
+        newList[i - offset] = list[i];
+    }
+    return newList;
+}
+
+},{"./immutable-thunk":56,"./shallow-eq":59}],59:[function(_dereq_,module,exports){
+module.exports = shallowEq;
+
+function shallowEq(currentArgs, previousArgs) {
+    if (currentArgs.length === 0 && previousArgs.length === 0) {
+        return true;
     }
 
-    if (cargs.length !== pargs.length) {
-        return true
+    if (currentArgs.length !== previousArgs.length) {
+        return false;
     }
 
-    var max = cargs.length > pargs.length ? cargs.length : pargs.length
+    var len = currentArgs.length;
 
-    for (var i = 0; i < max; i++) {
-        if (cargs[i] !== pargs[i]) {
-            return true
+    for (var i = 0; i < len; i++) {
+        if (currentArgs[i] !== previousArgs[i]) {
+            return false;
         }
     }
 
-    return false
+    return true;
 }
 
-function update(previous, domNode) {
-    if (!shouldUpdate(this, previous)) {
-        this.vnode = previous.vnode
-        return
-    }
-
-    if (!this.vnode) {
-        this.vnode = this.fn.apply(null, this.args)
-    }
-
-    var patches = diff(previous.vnode, this.vnode)
-    patch(domNode, patches)
-}
-
-function init() {
-    this.vnode = this.fn.apply(null, this.args)
-    return createElement(this.vnode)
-}
-
-},{"virtual-dom/create-element":43,"virtual-dom/diff":44,"virtual-dom/patch":48}],43:[function(_dereq_,module,exports){
-var createElement = _dereq_("./vdom/create-element")
-
-module.exports = createElement
-
-},{"./vdom/create-element":50}],44:[function(_dereq_,module,exports){
-var diff = _dereq_("./vtree/diff")
-
-module.exports = diff
-
-},{"./vtree/diff":55}],45:[function(_dereq_,module,exports){
-if (typeof document !== "undefined") {
-    module.exports = document;
-} else {
-    module.exports = _dereq_("min-document");
-}
-
-},{"min-document":2}],46:[function(_dereq_,module,exports){
-module.exports = isObject
-
-function isObject(x) {
-    return typeof x === "object" && x !== null
-}
-
-},{}],47:[function(_dereq_,module,exports){
-var nativeIsArray = Array.isArray
-var toString = Object.prototype.toString
-
-module.exports = nativeIsArray || isArray
-
-function isArray(obj) {
-    return toString.call(obj) === "[object Array]"
-}
-
-},{}],48:[function(_dereq_,module,exports){
-var patch = _dereq_("./vdom/patch")
-
-module.exports = patch
-
-},{"./vdom/patch":53}],49:[function(_dereq_,module,exports){
+},{}],60:[function(_dereq_,module,exports){
 var isObject = _dereq_("is-object")
-
-var isHook = _dereq_("../vtree/is-vhook")
+var isHook = _dereq_("vtree/is-vhook")
 
 module.exports = applyProperties
 
@@ -1726,19 +3186,15 @@ function applyProperties(node, props, previous) {
     for (var propName in props) {
         var propValue = props[propName]
 
-        if (isHook(propValue)) {
+        if (propValue === undefined) {
+            removeProperty(node, props, previous, propName);
+        } else if (isHook(propValue)) {
             propValue.hook(node,
                 propName,
                 previous ? previous[propName] : undefined)
         } else {
             if (isObject(propValue)) {
-                if (!isObject(node[propName])) {
-                    node[propName] = {}
-                }
-
-                for (var k in propValue) {
-                    node[propName][k] = propValue[k]
-                }
+                patchObject(node, props, previous, propName, propValue);
             } else if (propValue !== undefined) {
                 node[propName] = propValue
             }
@@ -1746,20 +3202,70 @@ function applyProperties(node, props, previous) {
     }
 }
 
-},{"../vtree/is-vhook":56,"is-object":46}],50:[function(_dereq_,module,exports){
+function removeProperty(node, props, previous, propName) {
+    if (previous) {
+        var previousValue = previous[propName]
+
+        if (!isHook(previousValue)) {
+            if (propName === "style") {
+                for (var i in previousValue) {
+                    node.style[i] = ""
+                }
+            } else if (typeof previousValue === "string") {
+                node[propName] = ""
+            } else {
+                node[propName] = null
+            }
+        }
+    }
+}
+
+function patchObject(node, props, previous, propName, propValue) {
+    if(previous && isObject(previous[propName]) &&
+        getPrototype(previous[propName]) !== getPrototype(propValue)) {
+        node[propName] = previousValue
+        return
+    }
+
+    if (!isObject(node[propName])) {
+        node[propName] = {}
+    }
+
+    var replacer = propName === "style" ? "" : undefined
+
+    for (var k in propValue) {
+        var value = propValue[k]
+        node[propName][k] = (value === undefined) ? replacer : value
+    }
+}
+
+function getPrototype(value) {
+    if (Object.getPrototypeOf) {
+        return Object.getPrototypeOf(value)
+    } else if (value.__proto__) {
+        return value.__proto__
+    } else if (value.constructor) {
+        return value.constructor.prototype
+    }
+}
+
+},{"is-object":63,"vtree/is-vhook":96}],61:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 
 var applyProperties = _dereq_("./apply-properties")
 
-var isVNode = _dereq_("../vtree/is-vnode")
-var isVText = _dereq_("../vtree/is-vtext")
-var isWidget = _dereq_("../vtree/is-widget")
+var isVNode = _dereq_("vtree/is-vnode")
+var isVText = _dereq_("vtree/is-vtext")
+var isWidget = _dereq_("vtree/is-widget")
+var handleThunk = _dereq_("vtree/handle-thunk")
 
 module.exports = createElement
 
 function createElement(vnode, opts) {
     var doc = opts ? opts.document || document : document
     var warn = opts ? opts.warn : null
+
+    vnode = handleThunk(vnode).a
 
     if (isWidget(vnode)) {
         return vnode.init()
@@ -1791,7 +3297,7 @@ function createElement(vnode, opts) {
     return node
 }
 
-},{"../vtree/is-vnode":57,"../vtree/is-vtext":58,"../vtree/is-widget":59,"./apply-properties":49,"global/document":45}],51:[function(_dereq_,module,exports){
+},{"./apply-properties":60,"global/document":18,"vtree/handle-thunk":94,"vtree/is-vnode":97,"vtree/is-vtext":98,"vtree/is-widget":99}],62:[function(_dereq_,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -1878,11 +3384,28 @@ function ascending(a, b) {
     return a > b ? 1 : -1
 }
 
-},{}],52:[function(_dereq_,module,exports){
+},{}],63:[function(_dereq_,module,exports){
+module.exports = isObject
+
+function isObject(x) {
+    return typeof x === "object" && x !== null
+}
+
+},{}],64:[function(_dereq_,module,exports){
+var nativeIsArray = Array.isArray
+var toString = Object.prototype.toString
+
+module.exports = nativeIsArray || isArray
+
+function isArray(obj) {
+    return toString.call(obj) === "[object Array]"
+}
+
+},{}],65:[function(_dereq_,module,exports){
 var applyProperties = _dereq_("./apply-properties")
 
-var isWidget = _dereq_("../vtree/is-widget")
-var VPatch = _dereq_("../vtree/vpatch")
+var isWidget = _dereq_("vtree/is-widget")
+var VPatch = _dereq_("vtree/vpatch")
 
 var render = _dereq_("./create-element")
 var updateWidget = _dereq_("./update-widget")
@@ -1909,8 +3432,11 @@ function applyPatch(vpatch, domNode, renderOptions) {
             reorderChildren(domNode, patch)
             return domNode
         case VPatch.PROPS:
-            applyProperties(domNode, patch, vNode.propeties)
+            applyProperties(domNode, patch, vNode.properties)
             return domNode
+        case VPatch.THUNK:
+            return replaceRoot(domNode,
+                renderOptions.patch(domNode, patch, renderOptions))
         default:
             return domNode
     }
@@ -1999,31 +3525,65 @@ function reorderChildren(domNode, bIndex) {
     var childNodes = domNode.childNodes
     var len = childNodes.length
     var i
+    var reverseIndex = bIndex.reverse
 
     for (i = 0; i < len; i++) {
         children.push(domNode.childNodes[i])
     }
 
+    var insertOffset = 0
+    var move
+    var node
+    var insertNode
     for (i = 0; i < len; i++) {
-        var move = bIndex[i]
-        if (move !== undefined) {
-            var node = children[move]
-            domNode.removeChild(node)
-            domNode.insertBefore(node, childNodes[i])
+        move = bIndex[i]
+        if (move !== undefined && move !== i) {
+            // the element currently at this index will be moved later so increase the insert offset
+            if (reverseIndex[i] > i) {
+                insertOffset++
+            }
+
+            node = children[move]
+            insertNode = childNodes[i + insertOffset]
+            if (node !== insertNode) {
+                domNode.insertBefore(node, insertNode)
+            }
+
+            // the moved element came from the front of the array so reduce the insert offset
+            if (move < i) {
+                insertOffset--
+            }
+        }
+
+        // element at this index is scheduled to be removed so increase insert offset
+        if (i in bIndex.removes) {
+            insertOffset++
         }
     }
 }
 
-},{"../vtree/is-widget":59,"../vtree/vpatch":62,"./apply-properties":49,"./create-element":50,"./update-widget":54}],53:[function(_dereq_,module,exports){
+function replaceRoot(oldRoot, newRoot) {
+    if (oldRoot && newRoot && oldRoot !== newRoot && oldRoot.parentNode) {
+        console.log(oldRoot)
+        oldRoot.parentNode.replaceChild(newRoot, oldRoot)
+    }
+
+    return newRoot;
+}
+
+},{"./apply-properties":60,"./create-element":61,"./update-widget":67,"vtree/is-widget":99,"vtree/vpatch":104}],66:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 var isArray = _dereq_("x-is-array")
 
 var domIndex = _dereq_("./dom-index")
 var patchOp = _dereq_("./patch-op")
-
 module.exports = patch
 
 function patch(rootNode, patches) {
+    return patchRecursive(rootNode, patches)
+}
+
+function patchRecursive(rootNode, patches, renderOptions) {
     var indices = patchIndices(patches)
 
     if (indices.length === 0) {
@@ -2032,11 +3592,11 @@ function patch(rootNode, patches) {
 
     var index = domIndex(rootNode, patches.a, indices)
     var ownerDocument = rootNode.ownerDocument
-    var renderOptions
 
-    if (ownerDocument !== document) {
-        renderOptions = {
-            document: ownerDocument
+    if (!renderOptions) {
+        renderOptions = { patch: patchRecursive }
+        if (ownerDocument !== document) {
+            renderOptions.document = ownerDocument
         }
     }
 
@@ -2089,15 +3649,15 @@ function patchIndices(patches) {
     return indices
 }
 
-},{"./dom-index":51,"./patch-op":52,"global/document":45,"x-is-array":47}],54:[function(_dereq_,module,exports){
-var isWidget = _dereq_("../vtree/is-widget")
+},{"./dom-index":62,"./patch-op":65,"global/document":18,"x-is-array":64}],67:[function(_dereq_,module,exports){
+var isWidget = _dereq_("vtree/is-widget")
 
 module.exports = updateWidget
 
 function updateWidget(a, b) {
     if (isWidget(a) && isWidget(b)) {
-        if ("type" in a && "type" in b) {
-            return a.type === b.type
+        if ("name" in a && "name" in b) {
+            return a.id === b.id
         } else {
             return a.init === b.init
         }
@@ -2106,7 +3666,351 @@ function updateWidget(a, b) {
     return false
 }
 
-},{"../vtree/is-widget":59}],55:[function(_dereq_,module,exports){
+},{"vtree/is-widget":99}],68:[function(_dereq_,module,exports){
+module.exports = AttributeHook;
+
+function AttributeHook(value) {
+    if (!(this instanceof AttributeHook)) {
+        return new AttributeHook(value);
+    }
+
+    this.value = value;
+}
+
+AttributeHook.prototype.hook = function (node, prop, prev) {
+    if (prev && prev.value === this.value) {
+        return;
+    }
+
+    node.setAttributeNS(null, prop, this.value)
+}
+
+},{}],69:[function(_dereq_,module,exports){
+var DataSet = _dereq_("data-set")
+
+module.exports = DataSetHook;
+
+function DataSetHook(value) {
+    if (!(this instanceof DataSetHook)) {
+        return new DataSetHook(value);
+    }
+
+    this.value = value;
+}
+
+DataSetHook.prototype.hook = function (node, propertyName) {
+    var ds = DataSet(node)
+    var propName = propertyName.substr(5)
+
+    ds[propName] = this.value;
+};
+
+},{"data-set":74}],70:[function(_dereq_,module,exports){
+var DataSet = _dereq_("data-set")
+
+module.exports = DataSetHook;
+
+function DataSetHook(value) {
+    if (!(this instanceof DataSetHook)) {
+        return new DataSetHook(value);
+    }
+
+    this.value = value;
+}
+
+DataSetHook.prototype.hook = function (node, propertyName) {
+    var ds = DataSet(node)
+    var propName = propertyName.substr(3)
+
+    ds[propName] = this.value;
+};
+
+},{"data-set":74}],71:[function(_dereq_,module,exports){
+module.exports = SoftSetHook;
+
+function SoftSetHook(value) {
+    if (!(this instanceof SoftSetHook)) {
+        return new SoftSetHook(value);
+    }
+
+    this.value = value;
+}
+
+SoftSetHook.prototype.hook = function (node, propertyName) {
+    if (node[propertyName] !== this.value) {
+        node[propertyName] = this.value;
+    }
+};
+
+},{}],72:[function(_dereq_,module,exports){
+var VNode = _dereq_("vtree/vnode.js")
+var VText = _dereq_("vtree/vtext.js")
+var isVNode = _dereq_("vtree/is-vnode")
+var isVText = _dereq_("vtree/is-vtext")
+var isWidget = _dereq_("vtree/is-widget")
+var isHook = _dereq_("vtree/is-vhook")
+var isVThunk = _dereq_("vtree/is-thunk")
+var TypedError = _dereq_("error/typed")
+
+var parseTag = _dereq_("./parse-tag.js")
+var softSetHook = _dereq_("./hooks/soft-set-hook.js")
+var dataSetHook = _dereq_("./hooks/data-set-hook.js")
+var evHook = _dereq_("./hooks/ev-hook.js")
+
+var UnexpectedVirtualElement = TypedError({
+    type: "virtual-hyperscript.unexpected.virtual-element",
+    message: "Unexpected virtual child passed to h().\n" +
+        "Expected a VNode / Vthunk / VWidget / string but:\n" +
+        "got a {foreignObjectStr}.\n" +
+        "The parent vnode is {parentVnodeStr}.\n" +
+        "Suggested fix: change your `h(..., [ ... ])` callsite.",
+    foreignObjectStr: null,
+    parentVnodeStr: null,
+    foreignObject: null,
+    parentVnode: null
+})
+
+module.exports = h
+
+function h(tagName, properties, children) {
+    var childNodes = []
+    var tag, props, key, namespace
+
+    if (!children && isChildren(properties)) {
+        children = properties
+        props = {}
+    }
+
+    props = props || properties || {}
+    tag = parseTag(tagName, props)
+
+    // support keys
+    if ("key" in props) {
+        key = props.key
+        props.key = undefined
+    }
+
+    // support namespace
+    if ("namespace" in props) {
+        namespace = props.namespace
+        props.namespace = undefined
+    }
+
+    // fix cursor bug
+    if (tag === "input" &&
+        "value" in props &&
+        props.value !== undefined &&
+        !isHook(props.value)
+    ) {
+        props.value = softSetHook(props.value)
+    }
+
+    var keys = Object.keys(props)
+    var propName, value
+    for (var j = 0; j < keys.length; j++) {
+        propName = keys[j]
+        value = props[propName]
+        if (isHook(value)) {
+            continue
+        }
+
+        // add data-foo support
+        if (propName.substr(0, 5) === "data-") {
+            props[propName] = dataSetHook(value)
+        }
+
+        // add ev-foo support
+        if (propName.substr(0, 3) === "ev-") {
+            props[propName] = evHook(value)
+        }
+    }
+
+    if (children !== undefined && children !== null) {
+        addChild(children, childNodes, tag, props)
+    }
+
+
+    var node = new VNode(tag, props, childNodes, key, namespace)
+
+    return node
+}
+
+function addChild(c, childNodes, tag, props) {
+    if (typeof c === "string") {
+        childNodes.push(new VText(c))
+    } else if (isChild(c)) {
+        childNodes.push(c)
+    } else if (Array.isArray(c)) {
+        for (var i = 0; i < c.length; i++) {
+            addChild(c[i], childNodes, tag, props)
+        }
+    } else if (c === null || c === undefined) {
+        return
+    } else {
+        throw UnexpectedVirtualElement({
+            foreignObjectStr: JSON.stringify(c),
+            foreignObject: c,
+            parentVnodeStr: JSON.stringify({
+                tagName: tag,
+                properties: props
+            }),
+            parentVnode: {
+                tagName: tag,
+                properties: props
+            }
+        })
+    }
+}
+
+function isChild(x) {
+    return isVNode(x) || isVText(x) || isWidget(x) || isVThunk(x)
+}
+
+function isChildren(x) {
+    return typeof x === "string" || Array.isArray(x) || isChild(x)
+}
+
+},{"./hooks/data-set-hook.js":69,"./hooks/ev-hook.js":70,"./hooks/soft-set-hook.js":71,"./parse-tag.js":91,"error/typed":90,"vtree/is-thunk":95,"vtree/is-vhook":96,"vtree/is-vnode":97,"vtree/is-vtext":98,"vtree/is-widget":99,"vtree/vnode.js":103,"vtree/vtext.js":105}],73:[function(_dereq_,module,exports){
+module.exports=_dereq_(7)
+},{}],74:[function(_dereq_,module,exports){
+module.exports=_dereq_(8)
+},{"./create-hash.js":73,"individual":75,"weakmap-shim/create-store":76}],75:[function(_dereq_,module,exports){
+module.exports=_dereq_(11)
+},{}],76:[function(_dereq_,module,exports){
+module.exports=_dereq_(9)
+},{"./hidden-store.js":77}],77:[function(_dereq_,module,exports){
+module.exports=_dereq_(10)
+},{}],78:[function(_dereq_,module,exports){
+module.exports=_dereq_(20)
+},{"util/":81}],79:[function(_dereq_,module,exports){
+module.exports=_dereq_(12)
+},{}],80:[function(_dereq_,module,exports){
+module.exports=_dereq_(22)
+},{}],81:[function(_dereq_,module,exports){
+module.exports=_dereq_(23)
+},{"./support/isBuffer":80,"g5I+bs":43,"inherits":79}],82:[function(_dereq_,module,exports){
+module.exports=_dereq_(24)
+},{}],83:[function(_dereq_,module,exports){
+module.exports=_dereq_(25)
+},{}],84:[function(_dereq_,module,exports){
+module.exports=_dereq_(26)
+},{}],85:[function(_dereq_,module,exports){
+module.exports=_dereq_(27)
+},{"./has-keys":84,"object-keys":87}],86:[function(_dereq_,module,exports){
+module.exports=_dereq_(28)
+},{}],87:[function(_dereq_,module,exports){
+module.exports=_dereq_(29)
+},{"./shim":89}],88:[function(_dereq_,module,exports){
+module.exports=_dereq_(30)
+},{}],89:[function(_dereq_,module,exports){
+module.exports=_dereq_(31)
+},{"./foreach":86,"./isArguments":88}],90:[function(_dereq_,module,exports){
+module.exports=_dereq_(32)
+},{"assert/":78,"camelize":82,"string-template":83,"xtend/mutable":85}],91:[function(_dereq_,module,exports){
+var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
+var notClassId = /^\.|#/
+
+module.exports = parseTag
+
+function parseTag(tag, props) {
+    if (!tag) {
+        return "div"
+    }
+
+    var noId = !("id" in props)
+
+    var tagParts = tag.split(classIdSplit)
+    var tagName = null
+
+    if (notClassId.test(tagParts[1])) {
+        tagName = "div"
+    }
+
+    var classes, part, type, i
+    for (i = 0; i < tagParts.length; i++) {
+        part = tagParts[i]
+
+        if (!part) {
+            continue
+        }
+
+        type = part.charAt(0)
+
+        if (!tagName) {
+            tagName = part
+        } else if (type === ".") {
+            classes = classes || []
+            classes.push(part.substring(1, part.length))
+        } else if (type === "#" && noId) {
+            props.id = part.substring(1, part.length)
+        }
+    }
+
+    if (classes) {
+        if (props.className) {
+            classes.push(props.className)
+        }
+
+        props.className = classes.join(" ")
+    }
+
+    return tagName ? tagName.toLowerCase() : "div"
+}
+
+},{}],92:[function(_dereq_,module,exports){
+var attributeHook = _dereq_("./hooks/attribute-hook.js")
+var h = _dereq_("./index.js")
+
+var BLACKLISTED_KEYS = {
+    "style": true,
+    "namespace": true,
+    "key": true
+}
+var SVG_NAMESPACE = "http://www.w3.org/2000/svg"
+
+module.exports = svg
+
+function svg(tagName, properties, children) {
+    if (!children && isChildren(properties)) {
+        children = properties
+        properties = {}
+    }
+
+    properties = properties || {}
+
+    // set namespace for svg
+    properties.namespace = SVG_NAMESPACE
+
+    // for each key, if attribute & string, bool or number then
+    // convert it into a setAttribute hook
+    for (var key in properties) {
+        if (!properties.hasOwnProperty(key)) {
+            continue
+        }
+
+        if (BLACKLISTED_KEYS[key]) {
+            continue
+        }
+
+        var value = properties[key]
+        if (typeof value !== "string" &&
+            typeof value !== "number" &&
+            typeof value !== "boolean"
+        ) {
+            continue
+        }
+
+        properties[key] = attributeHook(value)
+    }
+
+    return h(tagName, properties, children)
+}
+
+function isChildren(x) {
+    return typeof x === "string" || Array.isArray(x)
+}
+
+},{"./hooks/attribute-hook.js":68,"./index.js":72}],93:[function(_dereq_,module,exports){
 var isArray = _dereq_("x-is-array")
 var isObject = _dereq_("is-object")
 
@@ -2114,6 +4018,8 @@ var VPatch = _dereq_("./vpatch")
 var isVNode = _dereq_("./is-vnode")
 var isVText = _dereq_("./is-vtext")
 var isWidget = _dereq_("./is-widget")
+var isThunk = _dereq_("./is-thunk")
+var handleThunk = _dereq_("./handle-thunk")
 
 module.exports = diff
 
@@ -2125,25 +4031,21 @@ function diff(a, b) {
 
 function walk(a, b, patch, index) {
     if (a === b) {
-        hooks(b, patch, index)
+        if (isThunk(a) || isThunk(b)) {
+            thunks(a, b, patch, index)
+        } else {
+            hooks(b, patch, index)
+        }
         return
     }
 
     var apply = patch[index]
 
-    if (isWidget(b)) {
-        apply = appendPatch(apply, new VPatch(VPatch.WIDGET, a, b))
-
-        if (!isWidget(a)) {
-            destroyWidgets(a, patch, index)
-        }
-    } else if (isVText(b)) {
-        if (!isVText(a)) {
-            apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b))
-            destroyWidgets(a, patch, index)
-        } else if (a.text !== b.text) {
-            apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b))
-        }
+    if (b == null) {
+        apply = appendPatch(apply, new VPatch(VPatch.REMOVE, a, b))
+        destroyWidgets(a, patch, index)
+    } else if (isThunk(a) || isThunk(b)) {
+        thunks(a, b, patch, index)
     } else if (isVNode(b)) {
         if (isVNode(a)) {
             if (a.tagName === b.tagName &&
@@ -2164,9 +4066,19 @@ function walk(a, b, patch, index) {
             apply = appendPatch(apply, new VPatch(VPatch.VNODE, a, b))
             destroyWidgets(a, patch, index)
         }
-    } else if (b == null) {
-        apply = appendPatch(apply, new VPatch(VPatch.REMOVE, a, b))
-        destroyWidgets(a, patch, index)
+    } else if (isVText(b)) {
+        if (!isVText(a)) {
+            apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b))
+            destroyWidgets(a, patch, index)
+        } else if (a.text !== b.text) {
+            apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b))
+        }
+    } else if (isWidget(b)) {
+        apply = appendPatch(apply, new VPatch(VPatch.WIDGET, a, b))
+
+        if (!isWidget(a)) {
+            destroyWidgets(a, patch, index)
+        }
     }
 
     if (apply) {
@@ -2179,7 +4091,8 @@ function diffProps(a, b, hooks) {
 
     for (var aKey in a) {
         if (!(aKey in b)) {
-            continue
+            diff = diff || {}
+            diff[aKey] = undefined
         }
 
         var aValue = a[aKey]
@@ -2200,7 +4113,7 @@ function diffProps(a, b, hooks) {
                         diff[aKey] = objectDiff
                     }
                 }
-            } else if (aValue !== bValue && bValue !== undefined) {
+            } else if (aValue !== bValue) {
                 diff = diff || {}
                 diff[aKey] = bValue
             }
@@ -2243,7 +4156,8 @@ function diffChildren(a, b, patch, apply, index) {
         if (!leftNode) {
             if (rightNode) {
                 // Excess nodes in b need to be added
-                apply = appendPatch(apply, new VPatch(VPatch.INSERT, null, rightNode))
+                apply = appendPatch(apply,
+                    new VPatch(VPatch.INSERT, null, rightNode))
             }
         } else if (!rightNode) {
             if (leftNode) {
@@ -2289,6 +4203,25 @@ function destroyWidgets(vNode, patch, index) {
             }
         }
     }
+}
+
+// Create a sub-patch for thunks
+function thunks(a, b, patch, index) {
+    var nodes = handleThunk(a, b);
+    var thunkPatch = diff(nodes.a, nodes.b)
+    if (hasPatches(thunkPatch)) {
+        patch[index] = new VPatch(VPatch.THUNK, null, thunkPatch)
+    }
+}
+
+function hasPatches(patch) {
+    for (var index in patch) {
+        if (index !== "a") {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // Execute hooks when two nodes are identical
@@ -2347,27 +4280,49 @@ function reorder(aChildren, bChildren) {
     var freeIndex = 0
     var i = 0
     var moveIndex = 0
-    var moves = shuffle.moves = {}
+    var moves = {}
+    var removes = moves.removes = {}
+    var reverse = moves.reverse = {}
+    var hasMoves = false
 
     while (freeIndex < len) {
         var move = aMatch[i]
         if (move !== undefined) {
             shuffle[i] = bChildren[move]
-            moves[move] = moveIndex++
+            if (move !== moveIndex) {
+                moves[move] = moveIndex
+                reverse[moveIndex] = move
+                hasMoves = true
+            }
+            moveIndex++
         } else if (i in aMatch) {
             shuffle[i] = undefined
+            removes[i] = moveIndex++
+            hasMoves = true
         } else {
             while (bMatch[freeIndex] !== undefined) {
                 freeIndex++
             }
 
             if (freeIndex < len) {
-                moves[freeIndex] = moveIndex++
-                shuffle[i] = bChildren[freeIndex]
+                var freeChild = bChildren[freeIndex]
+                if (freeChild) {
+                    shuffle[i] = freeChild
+                    if (freeIndex !== moveIndex) {
+                        hasMoves = true
+                        moves[freeIndex] = moveIndex
+                        reverse[moveIndex] = freeIndex
+                    }
+                    moveIndex++
+                }
                 freeIndex++
             }
         }
         i++
+    }
+
+    if (hasMoves) {
+        shuffle.moves = moves
     }
 
     return shuffle
@@ -2402,7 +4357,56 @@ function appendPatch(apply, patch) {
     }
 }
 
-},{"./is-vnode":57,"./is-vtext":58,"./is-widget":59,"./vpatch":62,"is-object":46,"x-is-array":47}],56:[function(_dereq_,module,exports){
+},{"./handle-thunk":94,"./is-thunk":95,"./is-vnode":97,"./is-vtext":98,"./is-widget":99,"./vpatch":104,"is-object":100,"x-is-array":101}],94:[function(_dereq_,module,exports){
+var isVNode = _dereq_("./is-vnode")
+var isVText = _dereq_("./is-vtext")
+var isWidget = _dereq_("./is-widget")
+var isThunk = _dereq_("./is-thunk")
+
+module.exports = handleThunk
+
+function handleThunk(a, b) {
+    var renderedA = a
+    var renderedB = b
+
+    if (isThunk(b)) {
+        renderedB = renderThunk(b, a)
+    }
+
+    if (isThunk(a)) {
+        renderedA = renderThunk(a, null)
+    }
+
+    return {
+        a: renderedA,
+        b: renderedB
+    }
+}
+
+function renderThunk(thunk, previous) {
+    var renderedThunk = thunk.vnode
+
+    if (!renderedThunk) {
+        renderedThunk = thunk.vnode = thunk.render(previous)
+    }
+
+    if (!(isVNode(renderedThunk) ||
+            isVText(renderedThunk) ||
+            isWidget(renderedThunk))) {
+        throw new Error("thunk did not return a valid node");
+    }
+
+    return renderedThunk
+}
+
+},{"./is-thunk":95,"./is-vnode":97,"./is-vtext":98,"./is-widget":99}],95:[function(_dereq_,module,exports){
+module.exports = isThunk
+
+function isThunk(t) {
+    return t && t.type === "Thunk"
+}
+
+},{}],96:[function(_dereq_,module,exports){
 module.exports = isHook
 
 function isHook(hook) {
@@ -2410,43 +4414,39 @@ function isHook(hook) {
         !hook.hasOwnProperty("hook")
 }
 
-},{}],57:[function(_dereq_,module,exports){
+},{}],97:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualNode
 
 function isVirtualNode(x) {
-    if (!x) {
-        return false;
-    }
-
-    return x.type === "VirtualNode" && x.version === version
+    return x && x.type === "VirtualNode" && x.version === version
 }
 
-},{"./version":60}],58:[function(_dereq_,module,exports){
+},{"./version":102}],98:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualText
 
 function isVirtualText(x) {
-    if (!x) {
-        return false;
-    }
-
-    return x.type === "VirtualText" && x.version === version
+    return x && x.type === "VirtualText" && x.version === version
 }
 
-},{"./version":60}],59:[function(_dereq_,module,exports){
+},{"./version":102}],99:[function(_dereq_,module,exports){
 module.exports = isWidget
 
 function isWidget(w) {
-    return w && typeof w.init === "function" && typeof w.update === "function"
+    return w && w.type === "Widget"
 }
 
-},{}],60:[function(_dereq_,module,exports){
+},{}],100:[function(_dereq_,module,exports){
+module.exports=_dereq_(63)
+},{}],101:[function(_dereq_,module,exports){
+module.exports=_dereq_(64)
+},{}],102:[function(_dereq_,module,exports){
 module.exports = "1"
 
-},{}],61:[function(_dereq_,module,exports){
+},{}],103:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 var isVNode = _dereq_("./is-vnode")
 var isWidget = _dereq_("./is-widget")
@@ -2511,7 +4511,7 @@ function VirtualNode(tagName, properties, children, key, namespace) {
 VirtualNode.prototype.version = version
 VirtualNode.prototype.type = "VirtualNode"
 
-},{"./is-vhook":56,"./is-vnode":57,"./is-widget":59,"./version":60}],62:[function(_dereq_,module,exports){
+},{"./is-vhook":96,"./is-vnode":97,"./is-widget":99,"./version":102}],104:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 VirtualPatch.NONE = 0
@@ -2522,6 +4522,7 @@ VirtualPatch.PROPS = 4
 VirtualPatch.ORDER = 5
 VirtualPatch.INSERT = 6
 VirtualPatch.REMOVE = 7
+VirtualPatch.THUNK = 8
 
 module.exports = VirtualPatch
 
@@ -2531,10 +4532,10 @@ function VirtualPatch(type, vNode, patch) {
     this.patch = patch
 }
 
-VirtualPatch.prototype.version = version.split(".")
+VirtualPatch.prototype.version = version
 VirtualPatch.prototype.type = "VirtualPatch"
 
-},{"./version":60}],63:[function(_dereq_,module,exports){
+},{"./version":102}],105:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = VirtualText
@@ -2546,293 +4547,7 @@ function VirtualText(text) {
 VirtualText.prototype.version = version
 VirtualText.prototype.type = "VirtualText"
 
-},{"./version":60}],64:[function(_dereq_,module,exports){
-module.exports = AttributeHook;
-
-function AttributeHook(value) {
-    if (!(this instanceof AttributeHook)) {
-        return new AttributeHook(value);
-    }
-
-    this.value = value;
-}
-
-AttributeHook.prototype.hook = function (node, prop, prev) {
-    if (prev && prev.value === this.value) {
-        return;
-    }
-
-    node.setAttributeNS(null, prop, this.value)
-}
-
-},{}],65:[function(_dereq_,module,exports){
-var DataSet = _dereq_("data-set")
-
-module.exports = DataSetHook;
-
-function DataSetHook(value) {
-    if (!(this instanceof DataSetHook)) {
-        return new DataSetHook(value);
-    }
-
-    this.value = value;
-}
-
-DataSetHook.prototype.hook = function (node, propertyName) {
-    var ds = DataSet(node)
-    var propName = propertyName.substr(5)
-
-    ds[propName] = this.value;
-};
-
-},{"data-set":70}],66:[function(_dereq_,module,exports){
-var DataSet = _dereq_("data-set")
-
-module.exports = DataSetHook;
-
-function DataSetHook(value) {
-    if (!(this instanceof DataSetHook)) {
-        return new DataSetHook(value);
-    }
-
-    this.value = value;
-}
-
-DataSetHook.prototype.hook = function (node, propertyName) {
-    var ds = DataSet(node)
-    var propName = propertyName.substr(3)
-
-    ds[propName] = this.value;
-};
-
-},{"data-set":70}],67:[function(_dereq_,module,exports){
-module.exports = SoftSetHook;
-
-function SoftSetHook(value) {
-    if (!(this instanceof SoftSetHook)) {
-        return new SoftSetHook(value);
-    }
-
-    this.value = value;
-}
-
-SoftSetHook.prototype.hook = function (node, propertyName) {
-    if (node[propertyName] !== this.value) {
-        node[propertyName] = this.value;
-    }
-};
-
-},{}],68:[function(_dereq_,module,exports){
-var VNode = _dereq_("virtual-dom/vtree/vnode.js")
-var VText = _dereq_("virtual-dom/vtree/vtext.js")
-var isVNode = _dereq_("virtual-dom/vtree/is-vnode")
-var isVText = _dereq_("virtual-dom/vtree/is-vtext")
-var isWidget = _dereq_("virtual-dom/vtree/is-widget")
-var isHook = _dereq_("virtual-dom/vtree/is-vhook")
-
-var parseTag = _dereq_("./parse-tag.js")
-var softSetHook = _dereq_("./hooks/soft-set-hook.js")
-var dataSetHook = _dereq_("./hooks/data-set-hook.js")
-var evHook = _dereq_("./hooks/ev-hook.js")
-
-module.exports = h
-
-function h(tagName, properties, children) {
-    var childNodes = []
-    var tag, props, key, namespace
-
-    if (!children && isChildren(properties)) {
-        children = properties
-        props = {}
-    }
-
-    props = props || properties || {}
-    tag = parseTag(tagName, props)
-
-    if (children) {
-        addChild(children, childNodes)
-    }
-
-    // support keys
-    if ("key" in props) {
-        key = props.key
-        props.key = undefined
-    }
-
-    // support namespace
-    if ("namespace" in props) {
-        namespace = props.namespace
-        props.namespace = undefined
-    }
-
-    // fix cursor bug
-    if (tag === "input" &&
-        "value" in props &&
-        props.value !== undefined &&
-        !isHook(props.value)
-    ) {
-        props.value = softSetHook(props.value)
-    }
-
-    var keys = Object.keys(props)
-    var propName, value
-    for (var j = 0; j < keys.length; j++) {
-        propName = keys[j]
-        value = props[propName]
-        if (isHook(value)) {
-            continue
-        }
-
-        // add data-foo support
-        if (propName.substr(0, 5) === "data-") {
-            props[propName] = dataSetHook(value)
-        }
-
-        // add ev-foo support
-        if (propName.substr(0, 3) === "ev-") {
-            props[propName] = evHook(value)
-        }
-    }
-
-
-    return new VNode(tag, props, childNodes, key, namespace)
-}
-
-function addChild(c, childNodes) {
-    if (typeof c === "string") {
-        childNodes.push(new VText(c))
-    } else if (isChild(c)) {
-        childNodes.push(c)
-    } else if (Array.isArray(c)) {
-        for (var i = 0; i < c.length; i++) {
-            addChild(c[i], childNodes)
-        }
-    }
-}
-
-function isChild(x) {
-    return isVNode(x) || isVText(x) || isWidget(x)
-}
-
-function isChildren(x) {
-    return typeof x === "string" || Array.isArray(x) || isChild(x)
-}
-
-},{"./hooks/data-set-hook.js":65,"./hooks/ev-hook.js":66,"./hooks/soft-set-hook.js":67,"./parse-tag.js":74,"virtual-dom/vtree/is-vhook":56,"virtual-dom/vtree/is-vnode":57,"virtual-dom/vtree/is-vtext":58,"virtual-dom/vtree/is-widget":59,"virtual-dom/vtree/vnode.js":61,"virtual-dom/vtree/vtext.js":63}],69:[function(_dereq_,module,exports){
-module.exports=_dereq_(7)
-},{}],70:[function(_dereq_,module,exports){
-module.exports=_dereq_(8)
-},{"./create-hash.js":69,"individual":71,"weakmap-shim/create-store":72}],71:[function(_dereq_,module,exports){
-module.exports=_dereq_(11)
-},{}],72:[function(_dereq_,module,exports){
-module.exports=_dereq_(9)
-},{"./hidden-store.js":73}],73:[function(_dereq_,module,exports){
-module.exports=_dereq_(10)
-},{}],74:[function(_dereq_,module,exports){
-var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
-var notClassId = /^\.|#/
-
-module.exports = parseTag
-
-function parseTag(tag, props) {
-    if (!tag) {
-        return "div"
-    }
-
-    var noId = !("id" in props)
-
-    var tagParts = tag.split(classIdSplit)
-    var tagName = null
-
-    if (notClassId.test(tagParts[1])) {
-        tagName = "div"
-    }
-
-    var classes, part, type, i
-    for (i = 0; i < tagParts.length; i++) {
-        part = tagParts[i]
-
-        if (!part) {
-            continue
-        }
-
-        type = part.charAt(0)
-
-        if (!tagName) {
-            tagName = part
-        } else if (type === ".") {
-            classes = classes || []
-            classes.push(part.substring(1, part.length))
-        } else if (type === "#" && noId) {
-            props.id = part.substring(1, part.length)
-        }
-    }
-
-    if (classes) {
-        if (props.className) {
-            classes.push(props.className)
-        }
-
-        props.className = classes.join(" ")
-    }
-
-    return tagName ? tagName.toLowerCase() : "div"
-}
-
-},{}],75:[function(_dereq_,module,exports){
-var attributeHook = _dereq_("./hooks/attribute-hook.js")
-var h = _dereq_("./index.js")
-
-var BLACKLISTED_KEYS = {
-    "style": true,
-    "namespace": true,
-    "key": true
-}
-var SVG_NAMESPACE = "http://www.w3.org/2000/svg"
-
-module.exports = svg
-
-function svg(tagName, properties, children) {
-    if (!children && isChildren(properties)) {
-        children = properties
-        properties = {}
-    }
-
-    properties = properties || {}
-
-    // set namespace for svg
-    properties.namespace = SVG_NAMESPACE
-
-    // for each key, if attribute & string, bool or number then
-    // convert it into a setAttribute hook
-    for (var key in properties) {
-        if (!properties.hasOwnProperty(key)) {
-            continue
-        }
-
-        if (BLACKLISTED_KEYS[key]) {
-            continue
-        }
-
-        var value = properties[key]
-        if (typeof value !== "string" &&
-            typeof value !== "number" &&
-            typeof value !== "boolean"
-        ) {
-            continue
-        }
-
-        properties[key] = attributeHook(value)
-    }
-
-    return h(tagName, properties, children)
-}
-
-function isChildren(x) {
-    return typeof x === "string" || Array.isArray(x)
-}
-
-},{"./hooks/attribute-hook.js":64,"./index.js":68}],76:[function(_dereq_,module,exports){
+},{"./version":102}],106:[function(_dereq_,module,exports){
 module.exports = extend
 
 function extend() {
