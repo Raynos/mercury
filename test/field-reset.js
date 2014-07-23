@@ -2,6 +2,7 @@ var test = require('tape');
 var document = require('global/document');
 var raf = require('raf');
 var event = require('synthetic-dom-events');
+var setTimeout = require('timers').setTimeout;
 
 if (typeof window === 'undefined') {
     require('./lib/load-hook.js');
@@ -33,12 +34,13 @@ test('resetting field on click', function t(assert) {
     assert.equal(fieldReset.state.isReset(), true);
 
     raf(function afterRender() {
+        setTimeout(function afterTimeout() {
+            assert.equal(input.value, '');
+            assert.equal(fieldReset.state.isReset(), false);
 
-        assert.equal(input.value, '');
-        assert.equal(fieldReset.state.isReset(), false);
+            comp.destroy();
 
-        comp.destroy();
-
-        assert.end();
+            assert.end();
+        }, 0);
     });
 });
