@@ -1,4 +1,4 @@
-// mercury @ 5.2.1 
+// mercury @ 6.0.1 
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.mercury=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var SingleEvent = _dereq_("geval/single")
 var MultipleEvent = _dereq_("geval/multiple")
@@ -2772,6 +2772,15 @@ function ChangeSinkHandler(sink, data) {
     this.data = data
     this.type = 'change'
     this.id = sink.id
+
+    if (this.data && typeof this.data === 'object' &&
+        'preventDefault' in this.data
+    ) {
+        this.preventDefault = this.data.preventDefault;
+        delete this.data.preventDefault;
+    } else {
+        this.preventDefault = true;
+    }
 }
 
 ChangeSinkHandler.prototype.handleEvent = handleEvent
@@ -2797,6 +2806,10 @@ function handleEvent(ev) {
     } else {
         this.sink.write(data)
     }
+
+    if (this.preventDefault && ev.preventDefault) {
+        ev.preventDefault()
+    }
 }
 
 },{"form-data-set/element":50,"xtend":53}],47:[function(_dereq_,module,exports){
@@ -2810,6 +2823,15 @@ function SinkEventHandler(sink, data) {
     this.sink = sink
     this.id = sink.id
     this.data = data
+
+    if (this.data && typeof this.data === 'object' &&
+        'preventDefault' in this.data
+    ) {
+        this.preventDefault = this.data.preventDefault;
+        delete this.data.preventDefault;
+    } else {
+        this.preventDefault = true;
+    }
 }
 
 SinkEventHandler.prototype.handleEvent = handleEvent
@@ -2819,6 +2841,10 @@ function handleEvent(ev) {
         this.sink(this.data)
     } else {
         this.sink.write(this.data)
+    }
+
+    if (this.preventDefault && ev.preventDefault) {
+        ev.preventDefault()
     }
 }
 
@@ -2833,6 +2859,15 @@ function KeyEventHandler(fn, key, data) {
     this.fn = fn
     this.data = data
     this.key = key
+
+    if (this.data && typeof this.data === 'object' &&
+        'preventDefault' in this.data
+    ) {
+        this.preventDefault = this.data.preventDefault;
+        delete this.data.preventDefault;
+    } else {
+        this.preventDefault = true;
+    }
 }
 
 KeyEventHandler.prototype.handleEvent = handleEvent
@@ -2840,6 +2875,10 @@ KeyEventHandler.prototype.handleEvent = handleEvent
 function handleEvent(ev) {
     if (ev.keyCode === this.key) {
         this.fn(this.data)
+    }
+
+    if (this.preventDefault && ev.preventDefault) {
+        ev.preventDefault()
     }
 }
 
@@ -3016,6 +3055,15 @@ function SubmitSinkHandler(sink, data) {
     this.data = data
     this.id = sink.id
     this.type = 'submit'
+
+    if (this.data && typeof this.data === 'object' &&
+        'preventDefault' in this.data
+    ) {
+        this.preventDefault = this.data.preventDefault;
+        delete this.data.preventDefault;
+    } else {
+        this.preventDefault = true;
+    }
 }
 
 SubmitSinkHandler.prototype.handleEvent = handleEvent
@@ -3048,6 +3096,10 @@ function handleEvent(ev) {
     } else {
         this.sink.write(data)
     }
+
+    if (this.preventDefault && ev.preventDefault) {
+        ev.preventDefault()
+    }
 }
 
 },{"form-data-set/element":50,"xtend":53}],55:[function(_dereq_,module,exports){
@@ -3064,6 +3116,15 @@ function ValueEventHandler(sink, data) {
     this.sink = sink
     this.data = data
     this.id = sink.id
+
+    if (this.data && typeof this.data === 'object' &&
+        'preventDefault' in this.data
+    ) {
+        this.preventDefault = this.data.preventDefault;
+        delete this.data.preventDefault;
+    } else {
+        this.preventDefault = true;
+    }
 }
 
 ValueEventHandler.prototype.handleEvent = handleEvent
@@ -3080,6 +3141,10 @@ function handleEvent(ev) {
         this.sink(data)
     } else {
         this.sink.write(data)
+    }
+
+    if (this.preventDefault && ev.preventDefault) {
+        ev.preventDefault()
     }
 }
 
