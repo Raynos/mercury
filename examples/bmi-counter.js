@@ -33,9 +33,26 @@ function calcBmi(height, weight) {
     return weight / (meterz * meterz);
 }
 
+function SafeHook(value) {
+    if (!(this instanceof SafeHook)) {
+        return new SafeHook(value);
+    }
+
+    this.value = value;
+}
+
+SafeHook.prototype.hook = function hook(elem, propName) {
+    try {
+        elem[propName] = this.value;
+    } catch (error) {
+        /* ignore */
+    }
+};
+
 function slider(value, sink, min, max) {
     return h('input.slider', {
-        type: 'range', min: min, max: max, value: String(value),
+        type: SafeHook('range'),
+        min: min, max: max, value: String(value),
         style: { width: '100%' }, name: 'slider',
         'ev-event': mercury.changeEvent(sink)
     });
