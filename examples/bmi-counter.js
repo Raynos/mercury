@@ -2,6 +2,8 @@ var document = require('global/document');
 var mercury = require('../index.js');
 var h = mercury.h;
 
+var SafeHook = require('./lib/safe-hook.js');
+
 var events = mercury.input(['height', 'weight', 'bmi']);
 var bmiData = mercury.struct({
     height: mercury.value(180),
@@ -33,25 +35,9 @@ function calcBmi(height, weight) {
     return weight / (meterz * meterz);
 }
 
-function SafeHook(value) {
-    if (!(this instanceof SafeHook)) {
-        return new SafeHook(value);
-    }
-
-    this.value = value;
-}
-
-SafeHook.prototype.hook = function hook(elem, propName) {
-    try {
-        elem[propName] = this.value;
-    } catch (error) {
-        /* ignore */
-    }
-};
-
 function slider(value, sink, min, max) {
     return h('input.slider', {
-        type: SafeHook('range'),
+        type: SafeHook('range'), // SafeHook for IE9 + type='range'
         min: min, max: max, value: String(value),
         style: { width: '100%' }, name: 'slider',
         'ev-event': mercury.changeEvent(sink)
