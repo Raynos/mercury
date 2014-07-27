@@ -9,6 +9,8 @@ function CanvasWidget(paint, data) {
     this.data = data;
     this.paint = paint;
 }
+
+CanvasWidget.prototype.type = 'Widget';
  
 CanvasWidget.prototype.init = function () {
     var elem = document.createElement('canvas');
