@@ -44,7 +44,7 @@
     "observ-array": "^1.0.3",
     "observ-struct": "^4.1.0",
     "observ-varhash": "^0.2.0",
-    "value-event": "^2.1.0",
+    "value-event": "^2.2.0",
     "vdom": "0.0.16",
     "vdom-thunk": "^3.0.0",
     "virtual-hyperscript": "^4.4.0",
