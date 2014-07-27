@@ -45,7 +45,7 @@ test('update weight', function t(assert) {
     var slider = document.getElementsByClassName('slider')[0];
 
     slider.value = '120';
-    slider.dispatchEvent(event('change'));
+    slider.dispatchEvent(event('input'));
 
     raf(function afterRender() {
         assert.equal(comp.state().weight, 120);
@@ -73,7 +73,7 @@ test('update height', function t(assert) {
     var slider = document.getElementsByClassName('slider')[1];
 
     slider.value = '210';
-    slider.dispatchEvent(event('change'));
+    slider.dispatchEvent(event('input'));
 
     raf(function afterRender() {
         assert.equal(comp.state().height, 210);
@@ -102,7 +102,7 @@ test('update bmi', function t(assert) {
     var slider = document.getElementsByClassName('slider')[2];
 
     slider.value = '27';
-    slider.dispatchEvent(event('change'));
+    slider.dispatchEvent(event('input'));
 
     raf(function afterRender() {
         assert.equal(comp.state().height, 180);
