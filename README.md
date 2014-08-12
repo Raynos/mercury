@@ -38,8 +38,9 @@ function render(clickCount) {
         })
     ])
 }
-
-mercury.app(document.body, clickCount, render)
+window.onload = function(){
+	mercury.app(document.body, clickCount, render)
+}
 ```
 
 ### Basic Examples
