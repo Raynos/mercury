@@ -34,10 +34,12 @@ DragEventHandler.prototype.handleEvent = function (ev) {
     }
 
     function onup(ev) {
+        delegator.unlistenTo("mousemove")
         delegator.removeGlobalEventListener("mousemove", onmove)
         delegator.removeGlobalEventListener("mouseup", onup)
     }
 
+    delegator.listenTo("mousemove")
     delegator.addGlobalEventListener("mousemove", onmove)
     delegator.addGlobalEventListener("mouseup", onup)
 }
