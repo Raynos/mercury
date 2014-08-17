@@ -18,19 +18,26 @@ DragEventHandler.prototype.handleEvent = function (ev) {
     var value = this.value
     var delegator = this.delegator
 
-    var currentX = ev.offsetX || ev.layerX
-    var currentY = ev.offsetY || ev.layerY
+    var current = {
+        x: ev.offsetX || ev.layerX,
+        y: ev.offsetY || ev.layerY
+    }
 
     function onmove(ev) {
+
+        var previous = current
+
+        current = {
+            x: ev.offsetX || ev.layerX,
+            y: ev.offsetY || ev.layerY
+        }
+
         var delta = {
-            x: ev.clientX - currentX,
-            y: ev.clientY - currentY
+            x: current.x - previous.x,
+            y: current.y - previous.y
         }
 
         fn(extend(value, delta))
-
-        currentX = ev.clientX
-        currentY = ev.clientY
     }
 
     function onup(ev) {
