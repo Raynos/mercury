@@ -1,4 +1,4 @@
-Auto generated from dom-delegator at version: 7.3.0.
+Auto generated from dom-delegator at version: 9.0.1.
 
 # dom-delegator
 

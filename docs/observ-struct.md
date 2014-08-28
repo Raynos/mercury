@@ -1,4 +1,4 @@
-Auto generated from observ-struct at version: 3.1.0.
+Auto generated from observ-struct at version: 5.0.1.
 
 # observ-struct
 

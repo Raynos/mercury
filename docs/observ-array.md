@@ -1,4 +1,4 @@
-Auto generated from observ-array at version: 1.1.1.
+Auto generated from observ-array at version: 2.0.0.
 
 # observ-array
 
@@ -54,6 +54,30 @@ state.todos.get(0).title.set("some new title")
 state.todos.push(createTodo("another todo"))
 ```
 
+### Transactions
+
+Batch changes together with transactions.
+
+```js
+var array = ObservArray([ Observ("foo"), Observ("bar") ])
+
+var removeListener = array(handleChange)
+
+array.transaction(function(rawList) {
+  rawList.push(Observ("foobar"))
+  rawList.splice(1, 1, Observ("baz"), Observ("bazbar"))
+  rawList.unshift(Observ("foobaz"))
+  rawList[6] = Observ("foobarbaz")
+})
+
+function handleChange(value) {
+  // this will only be called once
+  // changes are batched into a single diff
+  value._diff //= [ [1,1,"baz","bazbar","foobar", , "foobarbaz"],
+              //    [0,0,"foobaz"] ]
+}
+```
+
 ## Installation
 
 `npm install observ-array`
@@ -61,6 +85,7 @@ state.todos.push(createTodo("another todo"))
 ## Contributors
 
  - Raynos
+ - [Matt McKegg][13]
 
 ## MIT Licenced
 
@@ -76,3 +101,4 @@ state.todos.push(createTodo("another todo"))
   [10]: https://david-dm.org/Raynos/observ-array
   [11]: https://ci.testling.com/Raynos/observ-array.png
   [12]: https://ci.testling.com/Raynos/observ-array
+  [13]: https://github.com/mmckegg

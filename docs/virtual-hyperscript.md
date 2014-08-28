@@ -1,4 +1,4 @@
-Auto generated from virtual-hyperscript at version: 3.0.0.
+Auto generated from virtual-hyperscript at version: 4.4.0.
 
 # virtual-hyperscript
 
@@ -47,6 +47,45 @@ If you pass it an array of `children` it will have child
   
 If you pass it a string it will create an array containing
   a single child node that is a text element.
+
+### Special properties in `h()`
+
+#### `key`
+
+If you call `h` with `h('div', { key: someKey })` it will
+  set a key on the return `VNode`. This `key` is not a normal
+  DOM property but is a virtual-dom optimization hint.
+
+It basically tells virtual-dom to re-order DOM nodes instead of
+  mutating them.
+
+#### `namespace`
+
+If you call `h` with `h('div', { namespace: "http://www.w3.org/2000/svg" })`
+  it will set the namespace on the returned `VNode`. This
+  `namespace` is not a normal DOM property, instead it will
+  cause `vdom` to create a DOM element with a namespace.
+
+#### `data-*`
+
+If you call `h` with `h('div', { data-foo: "bar" })` it will
+  set `data-foo` to be a `VHook` that set's a `DataSet` property
+  named `foo` with the value `"bar"` on the actual dom element.
+
+It will not set a property `data-foo` on the dom element.
+
+This means that somewhere else in your code you can use
+  `DataSet(elem).foo` to read this property.
+
+#### `ev-*`
+
+If you call `h` with `h('div', { ev-click: function (ev) { } })` it
+  will store the event handler on the dom element. It will not
+  set a property `'ev-foo'` on the DOM element.
+
+This means that `dom-delegator` will recognise the event handler
+  on that element and correctly call your handler when an a click
+  event happens.
 
 ## Installation
 

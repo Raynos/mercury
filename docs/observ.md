@@ -1,4 +1,4 @@
-Auto generated from observ at version: 0.1.6.
+Auto generated from observ at version: 0.2.0.
 
 # observ
 
