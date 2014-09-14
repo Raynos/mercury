@@ -4,7 +4,7 @@ A vnode consists mainly of `{ tagName, properties, children }`. When you diff tw
 
 The properties normally consist of keys and values, where the values are strings or nested objects (e.g. style, attributes).
 
-Other then strings and nested objects you can also place hooks on the properties object.
+Other than strings and nested objects you can also place hooks on the properties object.
 
 A hook is a `{ hook: function (domElement, propertyName) {} }` and it's used like:
 
@@ -21,9 +21,9 @@ h('div', {
 
 When you place a hook in a virtual node vtree/diff will create a patch object saying the properties have changed. Because hooks are instances of prototypes they will always be a new instance on every `diff` call so the hook value in the properties object will be different between `prev` and `current`.
 
-The hook only get's executed in `vdom/create-element` and `vdom/patch`. Hooks get executed in key order of the properties object. Hooks also get executed together with property patches being applied. This means you probably want all your hook keys to be at the bottom of your properties object.
+The hook only gets executed in `vdom/create-element` and `vdom/patch`. Hooks get executed in key order of the properties object. Hooks also get executed together with property patches being applied. This means you probably want all your hook keys to be at the bottom of your properties object.
 
-So whenever vdom is patching the properties on a DOM element it will also invoke hooks synchronously. The hook get's called with the DOM element and the property name.
+So whenever vdom is patching the properties on a DOM element it will also invoke hooks synchronously. The hook gets called with the DOM element and the property name.
 
 The use case for hooks is to set properties on DOM nodes that cannot be set through the DOM property interface, for example focus has no property based declarative interface so we have a focus hook that calls the `.focus()` method.
 
