@@ -36,7 +36,7 @@
     "email": "raynos2@gmail.com"
   },
   "dependencies": {
-    "dom-delegator": "^9.2.0",
+    "dom-delegator": "^9.2.2",
     "geval": "^2.1.1",
     "main-loop": "^2.3.0",
     "node-hook": "^0.1.0",
