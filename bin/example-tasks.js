@@ -19,6 +19,7 @@ var examplesTasks = [
         'jsx'
     )),
     browserifyTask('login-form'),
+    browserifyTask('2048'),
     browserifyEditorTask('field-reset'),
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),
@@ -42,7 +43,7 @@ function browserifyTask(folder) {
 
     function createStream() {
         var stream = browserifyBundle(task.src)
-        var result = stream.pipe(indexhtmlify({}))
+        var result = stream.pipe(indexhtmlify({ title: task.name }))
 
         stream.on('error', function (err) {
             result.emit('error', err)
@@ -65,7 +66,7 @@ function browserifyEditorTask(file) {
 
     function createStream() {
         return browserifyEditor(task.src)
-            .pipe(indexhtmlify({}))
+            .pipe(indexhtmlify({ title: task.name }))
     }
 }
 
