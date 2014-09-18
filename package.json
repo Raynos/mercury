@@ -36,18 +36,18 @@
     "email": "raynos2@gmail.com"
   },
   "dependencies": {
-    "dom-delegator": "^9.0.0",
+    "dom-delegator": "^9.2.0",
     "geval": "^2.1.1",
     "main-loop": "^2.3.0",
     "node-hook": "^0.1.0",
     "observ": "^0.2.0",
-    "observ-array": "^1.0.3",
+    "observ-array": "^2.0.0",
     "observ-struct": "^4.1.0",
     "observ-varhash": "^0.2.0",
-    "value-event": "^2.2.0",
+    "value-event": "^2.3.0",
     "vdom": "0.0.16",
     "vdom-thunk": "^3.0.0",
-    "virtual-hyperscript": "^4.4.0",
+    "virtual-hyperscript": "^4.5.0",
     "vtree": "0.0.16"
   },
   "devDependencies": {
