@@ -1,4 +1,4 @@
-// mercury @ 6.0.1 
+// mercury @ 6.1.0 
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.mercury=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var SingleEvent = _dereq_("geval/single")
 var MultipleEvent = _dereq_("geval/multiple")
@@ -241,22 +241,17 @@ DOMDelegator.prototype.transformHandle =
 
 DOMDelegator.prototype.addGlobalEventListener =
     function addGlobalEventListener(eventName, fn) {
-        var listeners = this.globalListeners[eventName]
-        if (!listeners) {
-            listeners = this.globalListeners[eventName] = []
-        }
-
+        var listeners = this.globalListeners[eventName] || [];
         if (listeners.indexOf(fn) === -1) {
             listeners.push(fn)
         }
+
+        this.globalListeners[eventName] = listeners;
     }
 
 DOMDelegator.prototype.removeGlobalEventListener =
     function removeGlobalEventListener(eventName, fn) {
-        var listeners = this.globalListeners[eventName]
-        if (!listeners) {
-            return
-        }
+        var listeners = this.globalListeners[eventName] || [];
 
         var index = listeners.indexOf(fn)
         if (index !== -1) {
@@ -270,7 +265,14 @@ DOMDelegator.prototype.listenTo = function listenTo(eventName) {
     }
 
     this.events[eventName] = true
-    listen(this, eventName)
+
+    var listener = this.rawEventListeners[eventName]
+    if (!listener) {
+        listener = this.rawEventListeners[eventName] =
+            createHandler(eventName, this)
+    }
+
+    this.target.addEventListener(eventName, listener, true)
 }
 
 DOMDelegator.prototype.unlistenTo = function unlistenTo(eventName) {
@@ -279,29 +281,14 @@ DOMDelegator.prototype.unlistenTo = function unlistenTo(eventName) {
     }
 
     this.events[eventName] = false
-    unlisten(this, eventName)
-}
-
-function listen(delegator, eventName) {
-    var listener = delegator.rawEventListeners[eventName]
-
-    if (!listener) {
-        listener = delegator.rawEventListeners[eventName] =
-            createHandler(eventName, delegator)
-    }
-
-    delegator.target.addEventListener(eventName, listener, true)
-}
-
-function unlisten(delegator, eventName) {
-    var listener = delegator.rawEventListeners[eventName]
+    var listener = this.rawEventListeners[eventName]
 
     if (!listener) {
         throw new Error("dom-delegator#unlistenTo: cannot " +
             "unlisten to " + eventName)
     }
 
-    delegator.target.removeEventListener(eventName, listener, true)
+    this.target.removeEventListener(eventName, listener, true)
 }
 
 function createHandler(eventName, delegator) {
@@ -332,7 +319,7 @@ function findAndInvokeListeners(elem, ev, eventName) {
         callListeners(listener.handlers, listenerEvent)
 
         if (listenerEvent._bubbles) {
-            var nextTarget = elem.parentNode
+            var nextTarget = listener.currentTarget.parentNode
             findAndInvokeListeners(nextTarget, ev, eventName)
         }
     }
