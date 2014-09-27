@@ -13,7 +13,9 @@ var Update = require("./update.js")
 module.exports = createApp
 
 var state = createApp()
-window.undo = TimeTravel(state)
+var history = TimeTravel(state)
+window.undo = history.undo
+window.redo = history.redo
 mercury.app(document.body, state, Render)
 
 function createApp() {

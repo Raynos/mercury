@@ -1,23 +1,40 @@
 module.exports = TimeTravel;
 
 function TimeTravel(state) {
-    var states = [state()];
+    var states = [state()]
+    var cursor = 0
+    var transitioning = false
 
-    state(function onState(newState) {
-        if (newState !== states[0]) {
-            states.unshift(newState);
+    state(function (newState) {
+        if(transitioning) {
+            return
         }
-    });
+        states.splice(cursor + 1)
+        states.push(newState)
+        cursor = states.length - 1
+    })
 
-    return undo;
+    return { undo: undo, redo: redo }
 
     function undo() {
-        if (states.length <= 1) {
-            return;
+        if (cursor < 1) {
+            return
         }
+        cursor--
+        transitioning = true
+        state.set(states[cursor])
+        transitioning = false
+        return states[cursor]
+    }
 
-        states.shift();
-        state.set(states[0]);
-        return states[0];
+    function redo() {
+        if(cursor + 1 >= states.length) {
+            return
+        }
+        cursor++
+        transitioning = true
+        state.set(states[cursor])
+        transitioning = false
+        return states[cursor]
     }
 }
