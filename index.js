@@ -1,5 +1,8 @@
 var SingleEvent = require('geval/single');
 var MultipleEvent = require('geval/multiple');
+var Delegator = require('dom-delegator');
+
+var delegator = Delegator();
 
 /*
     Pro tip: Don't require `mercury` itself.
@@ -13,6 +16,7 @@ var mercury = module.exports = {
     // Input
     Delegator: require('dom-delegator'),
     input: input,
+    handles: handles,
     event: require('value-event/event'),
     valueEvent: require('value-event/value'),
     submitEvent: require('value-event/submit'),
@@ -22,7 +26,7 @@ var mercury = module.exports = {
     // State
     array: require('observ-array'),
     struct: require('observ-struct'),
-    // alias struct as hash for back compat
+    // deprecated: alias struct as hash for back compat
     hash: require('observ-struct'),
     varhash: require('observ-varhash'),
     value: require('observ'),
@@ -33,9 +37,11 @@ var mercury = module.exports = {
     partial: require('vdom-thunk'),
     create: require('vdom/create-element'),
     h: require('virtual-hyperscript'),
+    // deprecated: keep for back compat.
     svg: require('virtual-hyperscript/svg'),
 
     // Utilities
+    // deprecated: keep for back compat.
     computed: require('observ/computed'),
     watch: require('observ/watch')
 };
@@ -48,8 +54,19 @@ function input(names) {
     return MultipleEvent(names);
 }
 
+function handles(funcs, context) {
+    return Object.keys(funcs).reduce(createHandle, {});
+
+    function createHandle(acc, name) {
+        var handle = delegator.allocateHandle(
+            funcs[name].bind(null, context));
+
+        acc[name] = handle;
+        return acc;
+    }
+}
+
 function app(elem, observ, render, opts) {
-    mercury.Delegator(opts);
     var loop = mercury.main(observ(), render, opts);
     if (elem) {
         elem.appendChild(loop.target);
