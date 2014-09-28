@@ -15,5 +15,4 @@ test('mercury is a object', function t(assert) {
 require('./synthetic-events.js');
 require('./count.js');
 require('./shared-state.js');
-require('./field-reset.js');
 require('./bmi-counter.js');

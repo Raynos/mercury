@@ -1,6 +1,6 @@
 var Module = require('module');
 
-var appRegex = /mercury\.app\([\w\.]+,\s?([\w]+),\s?([\w]+)\)/;
+var appRegex = /hg\.app\([\w\.]+,\s?([\w\(\)]+),\s?([\w\.]+)\)/;
 
 var _compile = Module.prototype._compile;
 Module.prototype._compile = transformSource;
@@ -16,6 +16,7 @@ function transformSource(source, fileName) {
 }
 
 function replacer(match, state, render) {
+    console.log('replacer');
     return 'module.exports = {\n' +
         '    state: ' + state + ',\n' +
         '    render: ' + render + '\n' +

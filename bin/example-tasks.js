@@ -19,10 +19,8 @@ var examplesTasks = [
         'jsx'
     )),
     browserifyTask('login-form'),
-    browserifyEditorTask('field-reset'),
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),
-    browserifyEditorTask('react-ballmer'),
     browserifyEditorTask('count'),
     browserifyEditorTask('canvas')
 ];

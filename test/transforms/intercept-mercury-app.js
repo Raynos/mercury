@@ -6,7 +6,7 @@ module.exports = callify({
             return;
         }
 
-        if (params.calls[0] === 'mercury' &&
+        if (params.calls[0] === 'hg' &&
             params.calls[1] === 'app'
         ) {
             node.update(replacer(node));

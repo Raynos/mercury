@@ -1,6 +1,6 @@
 var document = require('global/document');
-var mercury = require('../index.js');
-var h = mercury.h;
+var hg = require('../index.js');
+var h = require('../index.js').h;
 
 function CanvasWidget(paint, data) {
     if (!(this instanceof CanvasWidget)) {
@@ -25,25 +25,17 @@ CanvasWidget.prototype.update = function update(prev, elem) {
     this.paint(context, this.data);
 };
 
-var state = mercury.value('red');
-var change = mercury.input();
+function App() {
+    var state = hg.struct({
+        color: hg.value('red'),
+        handles: hg.value(null)
+    });
 
-change(function onChange(data) {
-    state.set(data.color);
-});
+    state.handles.set(hg.handles({
+        changeColor: changeColor
+    }, state));
 
-function renderColor(color) {
-    return h('div', [
-        h('div', [
-            h('span', color + ' '),
-            h('input', {
-                'ev-event': mercury.changeEvent(change),
-                value: color,
-                name: 'color'
-            })
-        ]),
-        CanvasWidget(drawColor, color)
-    ]);
+    return state;
 }
 
 function drawColor(context, color) {
@@ -51,4 +43,24 @@ function drawColor(context, color) {
     context.fillRect(0, 0, 100, 100);
 }
 
-mercury.app(document.body, state, renderColor);
+App.render = function renderColor(state) {
+    var handles = state.handles;
+
+    return h('div', [
+        h('div', [
+            h('span', state.color + ' '),
+            h('input', {
+                'ev-event': hg.changeEvent(handles.changeColor),
+                value: state.color,
+                name: 'color'
+            })
+        ]),
+        CanvasWidget(drawColor, state.color)
+    ]);
+};
+
+function changeColor(state, data) {
+    state.color.set(data.color);
+}
+
+hg.app(document.body, App(), App.render);

@@ -11,7 +11,7 @@ var embedComponent = require('./lib/embed-component.js');
 var shared = require('../examples/shared-state.js');
 
 test('shared state is a string', function t(assert) {
-    assert.equal(typeof shared.state(), 'string');
+    assert.equal(typeof shared.state().text, 'string');
 
     assert.end();
 });
@@ -19,7 +19,7 @@ test('shared state is a string', function t(assert) {
 test('syncing state to DOM', function t(assert) {
     var comp = embedComponent(shared);
 
-    comp.state.set('foobar');
+    comp.state.text.set('foobar');
 
     raf(function afterRender() {
         var content = document.getElementsByClassName('content')[0];
@@ -47,7 +47,7 @@ test('syncing from the DOM', function t(assert) {
         bubbles: true
     }));
 
-    assert.equal(comp.state(), 'foobar');
+    assert.equal(comp.state().text, 'foobar');
 
     raf(function afterRender() {
         var content = document.getElementsByClassName('content')[0];

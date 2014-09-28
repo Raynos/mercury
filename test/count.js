@@ -11,7 +11,7 @@ var embedComponent = require('./lib/embed-component.js');
 var count = require('../examples/count.js');
 
 test('count state is a number', function t(assert) {
-    assert.equal(typeof count.state(), 'number');
+    assert.equal(typeof count.state().value, 'number');
 
     assert.end();
 });
@@ -24,7 +24,7 @@ test('count increments on click', function t(assert) {
     button.dispatchEvent(event('click'));
     button.dispatchEvent(event('click'));
 
-    assert.equal(count.state(), 2);
+    assert.equal(count.state().value, 2);
 
     raf(afterRender);
 

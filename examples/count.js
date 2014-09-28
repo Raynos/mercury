@@ -1,23 +1,33 @@
 var document = require('global/document');
-var mercury = require('../index.js');
-var h = mercury.h;
+var hg = require('../index.js');
+var h = require('../index.js').h;
 
-var clicks = mercury.input();
-var state = mercury.value(0);
+function App() {
+    var state = hg.struct({
+        value: hg.value(0),
+        handles: hg.value(null)
+    });
 
-clicks(function onClick() {
-    state.set(state() + 1);
-});
+    state.handles.set(hg.handles({
+        clicks: incrementCounter
+    }, state));
 
-function render(clickCount) {
-    return h('div.counter', [
-        'The state ', h('code', 'clickCount'),
-        ' has value: ' + clickCount + '.', h('input.button', {
-            type: 'button',
-            value: 'Click me!',
-            'ev-click': mercury.event(clicks)
-        })
-    ]);
+    return state;
 }
 
-mercury.app(document.body, state, render);
+App.render = function render(state) {
+    return h('div.counter', [
+        'The state ', h('code', 'clickCount'),
+        ' has value: ' + state.value + '.', h('input.button', {
+            type: 'button',
+            value: 'Click me!',
+            'ev-click': hg.event(state.handles.clicks)
+        })
+    ]);
+};
+
+function incrementCounter(state) {
+    state.value.set(state.value() + 1);
+}
+
+hg.app(document.body, App(), App.render);

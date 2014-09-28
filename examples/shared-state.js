@@ -1,31 +1,41 @@
 var document = require('global/document');
-var mercury = require('../index.js');
-var h = mercury.h;
+var hg = require('../index.js');
+var h = require('../index.js').h;
 
-var events = mercury.input(['change']);
-var state = mercury.value('');
+function App() {
+    var state = hg.struct({
+        text: hg.value(''),
+        handles: hg.value(null)
+    });
 
-events.change(function onchange(data) {
-    state.set(data.text);
-});
+    state.handles.set(hg.handles({
+        change: setText
+    }, state));
+
+    return state;
+}
 
 function inputBox(value, sink) {
     return h('input.input', {
         value: value,
         name: 'text',
         type: 'text',
-        'ev-event': mercury.changeEvent(sink)
+        'ev-event': hg.changeEvent(sink)
     });
 }
 
-function render(textValue) {
+App.render = function render(state) {
     return h('div', [
-        h('p.content', 'The value is now: ' + textValue),
+        h('p.content', 'The value is now: ' + state.text),
         h('p', [
             'Change it here: ',
-            inputBox(textValue, events.change)
+            inputBox(state.text, state.handles.change)
         ])
     ]);
+};
+
+function setText(state, data) {
+    state.text.set(data.text);
 }
 
-mercury.app(document.body, state, render);
+hg.app(document.body, App(), App.render);
