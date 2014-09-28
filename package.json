@@ -42,7 +42,7 @@
     "node-hook": "^0.1.0",
     "observ": "^0.2.0",
     "observ-array": "^2.0.0",
-    "observ-struct": "^4.1.0",
+    "observ-struct": "^5.0.1",
     "observ-varhash": "^0.2.0",
     "value-event": "^3.1.1",
     "vdom": "0.0.16",
