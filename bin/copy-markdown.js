@@ -13,13 +13,13 @@ function gitrun(cmds, cwd, cb) {
     var buf = [];
 
     // git.stdout.pipe(process.stdout);
-    git.stderr.on('data', function (line) {
+    git.stderr.on('data', function onLine(line) {
         buf.push(line.toString());
     });
 
     git.on('error', cb);
 
-    git.on('close', function (code) {
+    git.on('close', function onClose(code) {
         if (code !== 0) {
             cb(new Error('git ' + cmds.join(' ') +
                 ' returned with code ' + code));
@@ -44,14 +44,14 @@ var projects = [
     'Raynos/main-loop'
 ];
 
-var tasks = projects.map(function (projectUri) {
-    return function (cb) {
-        getProject(projectUri, function (err, data) {
+var tasks = projects.map(function writeFile(projectUri) {
+    return function thunk(cb) {
+        getProject(projectUri, function onProject(err, data) {
             if (err) {
                 return cb(err);
             }
 
-            var readme = 'Auto generated from ' + data.name + 
+            var readme = 'Auto generated from ' + data.name +
                 ' at version: ' + data.package.version + '.\n' +
                 '\n' + data.readme;
 
@@ -61,14 +61,13 @@ var tasks = projects.map(function (projectUri) {
     };
 });
 
-parallel(tasks, function (err) {
+parallel(tasks, function onTasks(err) {
     if (err) {
         throw err;
     }
 
     console.log('done');
 });
-
 
 function getProject(uri, cb) {
     var projectUri = 'git@github.com:' + uri;
@@ -84,7 +83,7 @@ function getProject(uri, cb) {
             package: fs.readFile.bind(null,
                 path.join(folder, 'package.json'), 'utf8')
         })
-    ], function (err, results) {
+    ], function done(err, results) {
         if (err) {
             return cb(err);
         }
@@ -96,7 +95,7 @@ function getProject(uri, cb) {
 
         console.log('got', data.name);
 
-        rimraf(folder, function (err) {
+        rimraf(folder, function fini() {
             cb(err, data);
         });
     });

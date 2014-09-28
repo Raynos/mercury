@@ -1,10 +1,10 @@
-var path = require('path')
-var indexhtmlify = require('indexhtmlify')
-var browserify = require('browserify')
+var path = require('path');
+var indexhtmlify = require('indexhtmlify');
+var browserify = require('browserify');
 
-var browserifyEditor = require('./browserify-editor')
+var browserifyEditor = require('./browserify-editor');
 
-var examplesDir = path.join(__dirname, '..', 'examples')
+var examplesDir = path.join(__dirname, '..', 'examples');
 var examplesTasks = [
     browserifyTask('geometry'),
     browserifyTask('todomvc'),
@@ -25,9 +25,9 @@ var examplesTasks = [
     browserifyEditorTask('react-ballmer'),
     browserifyEditorTask('count'),
     browserifyEditorTask('canvas')
-]
+];
 
-module.exports = examplesTasks
+module.exports = examplesTasks;
 
 function browserifyTask(folder) {
     var task = {
@@ -36,19 +36,19 @@ function browserifyTask(folder) {
         type: 'browserify',
         name: folder,
         createStream: createStream
-    }
+    };
 
-    return task
+    return task;
 
     function createStream() {
-        var stream = browserifyBundle(task.src)
-        var result = stream.pipe(indexhtmlify({}))
+        var stream = browserifyBundle(task.src);
+        var result = stream.pipe(indexhtmlify({}));
 
-        stream.on('error', function (err) {
-            result.emit('error', err)
-        })
+        stream.on('error', function onError(err) {
+            result.emit('error', err);
+        });
 
-        return result
+        return result;
     }
 }
 
@@ -59,18 +59,18 @@ function browserifyEditorTask(file) {
         type: 'browserify-editor',
         name: file,
         createStream: createStream
-    }
+    };
 
-    return task
+    return task;
 
     function createStream() {
         return browserifyEditor(task.src)
-            .pipe(indexhtmlify({}))
+            .pipe(indexhtmlify({}));
     }
 }
 
 function browserifyBundle(source) {
-    var b = browserify()
-    b.add(source)
-    return b.bundle()
+    var b = browserify();
+    b.add(source);
+    return b.bundle();
 }
