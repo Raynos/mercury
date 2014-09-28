@@ -18,28 +18,42 @@ To understand what I mean by truly modular just [read the source](https://github
 ### Hello world
 
 ```js
-var mercury = require("mercury")
-var h = mercury.h
+var document = require('global/document');
+var hg = require('mercury');
+var h = require('mercury').h;
 
-var clicks = mercury.input()
-var clickCount = mercury.value(0)
+function App() {
+    // define application state.
+    var state = hg.struct({
+        value: hg.value(0),
+        handles: hg.value(null)
+    });
 
-clicks(function () {
-    clickCount.set(clickCount() + 1)
-})
+    // define handles that react to events.
+    state.handles.set(hg.handles({
+        clicks: incrementCounter
+    }, state));
 
-function render(clickCount) {
-    return h("div.counter", [
-        "The state ", h("code", "clickCount"),
-        " has value: " + clickCount + ".", h("input.button", {
-            type: "button",
-            value: "Click me!",
-            "ev-click": mercury.event(clicks)
-        })
-    ])
+    return state;
 }
 
-mercury.app(document.body, clickCount, render)
+// declare view rendering.
+App.render = function render(state) {
+    return h('div.counter', [
+        'The state ', h('code', 'clickCount'),
+        ' has value: ' + state.value + '.', h('input.button', {
+            type: 'button',
+            value: 'Click me!',
+            'ev-click': hg.event(state.handles.clicks)
+        })
+    ]);
+};
+
+function incrementCounter(state) {
+    state.value.set(state.value() + 1);
+}
+
+hg.app(document.body, App(), App.render);
 ```
 
 ### Basic Examples
