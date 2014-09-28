@@ -1,5 +1,5 @@
-var SingleEvent = require("geval/single")
-var MultipleEvent = require("geval/multiple")
+var SingleEvent = require('geval/single');
+var MultipleEvent = require('geval/multiple');
 
 /*
     Pro tip: Don't require `mercury` itself.
@@ -7,52 +7,52 @@ var MultipleEvent = require("geval/multiple")
 */
 var mercury = module.exports = {
     // Entry
-    main: require("main-loop"),
+    main: require('main-loop'),
     app: app,
 
     // Input
-    Delegator: require("dom-delegator"),
+    Delegator: require('dom-delegator'),
     input: input,
-    event: require("value-event/event"),
-    valueEvent: require("value-event/value"),
-    submitEvent: require("value-event/submit"),
-    changeEvent: require("value-event/change"),
-    keyEvent: require("value-event/key"),
+    event: require('value-event/event'),
+    valueEvent: require('value-event/value'),
+    submitEvent: require('value-event/submit'),
+    changeEvent: require('value-event/change'),
+    keyEvent: require('value-event/key'),
 
     // State
-    array: require("observ-array"),
-    struct: require("observ-struct"),
+    array: require('observ-array'),
+    struct: require('observ-struct'),
     // alias struct as hash for back compat
-    hash: require("observ-struct"),
-    varhash: require("observ-varhash"),
-    value: require("observ"),
+    hash: require('observ-struct'),
+    varhash: require('observ-varhash'),
+    value: require('observ'),
 
     // Render
-    diff: require("vtree/diff"),
-    patch: require("vdom/patch"),
-    partial: require("vdom-thunk"),
-    create: require("vdom/create-element"),
-    h: require("virtual-hyperscript"),
-    svg: require("virtual-hyperscript/svg"),
+    diff: require('vtree/diff'),
+    patch: require('vdom/patch'),
+    partial: require('vdom-thunk'),
+    create: require('vdom/create-element'),
+    h: require('virtual-hyperscript'),
+    svg: require('virtual-hyperscript/svg'),
 
     // Utilities
-    computed: require("observ/computed"),
-    watch: require("observ/watch")
-}
+    computed: require('observ/computed'),
+    watch: require('observ/watch')
+};
 
 function input(names) {
     if (!names) {
-        return SingleEvent()
+        return SingleEvent();
     }
 
-    return MultipleEvent(names)
+    return MultipleEvent(names);
 }
 
 function app(elem, observ, render, opts) {
     mercury.Delegator(opts);
-    var loop = mercury.main(observ(), render, opts)
+    var loop = mercury.main(observ(), render, opts);
     if (elem) {
-        elem.appendChild(loop.target)
+        elem.appendChild(loop.target);
     }
-    return observ(loop.update)
+    return observ(loop.update);
 }
