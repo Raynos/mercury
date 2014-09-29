@@ -2,6 +2,34 @@
 
 These are frequently asked questions. If you have any questions
   not on this list, then **please** open an issue and ask.
+  
+## What are handles in mercury ?
+
+To handle events in mercury you can can pass a function to your
+rendering logic. You pass this function to `ev-click` and
+`dom-delegator` will call that function when a DOM click event
+happens.
+
+Alternatively, a better way to handle events in mercury is
+to create a handle for a function you want to get called when
+an event happens. You then pass this handle to your rendering
+logic, which passes it to `ev-click` and `dom-delegator` will
+call the function associated with the handle.
+
+the advantage of handles is that it's effectively a reference 
+to a function to call with an event. The nice thing about 
+this reference is that it's immutable.
+
+previously the view (the rendering logic) could "cheat" by 
+calling the function from `mercury.input()` directly with 
+an event object without going through `dom-delegator`.
+Now when you create handles you are GARANTUEED that the 
+associated function only gets called when a REAL USER 
+dom event happens.
+
+This means you can write immutable unidirectional web apps
+with mercury and mercury ensures you don't accidentally cheat
+or shoot yourself in the foot.
 
 ## How do I do custom event handling in mercury
 
