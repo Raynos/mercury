@@ -1,8 +1,5 @@
 var SingleEvent = require('geval/single');
 var MultipleEvent = require('geval/multiple');
-var Delegator = require('dom-delegator');
-
-var delegator = Delegator();
 
 /*
     Pro tip: Don't require `mercury` itself.
@@ -58,7 +55,7 @@ function handles(funcs, context) {
     return Object.keys(funcs).reduce(createHandle, {});
 
     function createHandle(acc, name) {
-        var handle = delegator.allocateHandle(
+        var handle = mercury.Delegator.allocateHandle(
             funcs[name].bind(null, context));
 
         acc[name] = handle;
@@ -67,6 +64,7 @@ function handles(funcs, context) {
 }
 
 function app(elem, observ, render, opts) {
+    mercury.Delegator(opts);
     var loop = mercury.main(observ(), render, opts);
     if (elem) {
         elem.appendChild(loop.target);
