@@ -16,3 +16,4 @@ require('./synthetic-events.js');
 require('./count.js');
 require('./shared-state.js');
 require('./bmi-counter.js');
+require('./time-travel.js');
