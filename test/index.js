@@ -17,3 +17,4 @@ require('./count.js');
 require('./shared-state.js');
 require('./field-reset.js');
 require('./bmi-counter.js');
+require('./time-travel.js');
