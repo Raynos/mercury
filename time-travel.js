@@ -2,9 +2,10 @@ module.exports = TimeTravel;
 
 function TimeTravel(state) {
     var states = [state()];
+    var IN_TRANSACTION = false;
 
     state(function onState(newState) {
-        if (newState !== states[0]) {
+        if (!IN_TRANSACTION) {
             states.unshift(newState);
         }
     });
@@ -17,7 +18,9 @@ function TimeTravel(state) {
         }
 
         states.shift();
+        IN_TRANSACTION = true;
         state.set(states[0]);
+        IN_TRANSACTION = false;
         return states[0];
     }
 }
