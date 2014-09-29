@@ -1,10 +1,7 @@
-// mercury @ 7.0.0 
+// mercury @ 8.0.0 
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.mercury=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var SingleEvent = _dereq_('geval/single');
 var MultipleEvent = _dereq_('geval/multiple');
-var Delegator = _dereq_('dom-delegator');
-
-var delegator = Delegator();
 
 /*
     Pro tip: Don't require `mercury` itself.
@@ -60,7 +57,7 @@ function handles(funcs, context) {
     return Object.keys(funcs).reduce(createHandle, {});
 
     function createHandle(acc, name) {
-        var handle = delegator.allocateHandle(
+        var handle = mercury.Delegator.allocateHandle(
             funcs[name].bind(null, context));
 
         acc[name] = handle;
@@ -69,6 +66,7 @@ function handles(funcs, context) {
 }
 
 function app(elem, observ, render, opts) {
+    mercury.Delegator(opts);
     var loop = mercury.main(observ(), render, opts);
     if (elem) {
         elem.appendChild(loop.target);
@@ -76,7 +74,7 @@ function app(elem, observ, render, opts) {
     return observ(loop.update);
 }
 
-},{"dom-delegator":6,"geval/multiple":25,"geval/single":26,"main-loop":28,"observ":40,"observ-array":31,"observ-struct":37,"observ-varhash":38,"observ/computed":39,"observ/watch":41,"value-event/change":46,"value-event/event":47,"value-event/key":48,"value-event/submit":54,"value-event/value":55,"vdom-thunk":57,"vdom/create-element":61,"vdom/patch":66,"virtual-hyperscript":72,"virtual-hyperscript/svg":79,"vtree/diff":80}],2:[function(_dereq_,module,exports){
+},{"dom-delegator":8,"geval/multiple":22,"geval/single":23,"main-loop":27,"observ":39,"observ-array":30,"observ-struct":36,"observ-varhash":37,"observ/computed":38,"observ/watch":40,"value-event/change":45,"value-event/event":46,"value-event/key":47,"value-event/submit":53,"value-event/value":54,"vdom-thunk":56,"vdom/create-element":60,"vdom/patch":63,"virtual-hyperscript":69,"virtual-hyperscript/svg":71,"vtree/diff":72}],2:[function(_dereq_,module,exports){
 
 },{}],3:[function(_dereq_,module,exports){
 /**
@@ -191,6 +189,50 @@ function app(elem, observ, render, opts) {
 }(this.applitude || this));
 
 },{}],4:[function(_dereq_,module,exports){
+module.exports = createHash
+
+function createHash(elem) {
+    var attributes = elem.attributes
+    var hash = {}
+
+    if (attributes === null || attributes === undefined) {
+        return hash
+    }
+
+    for (var i = 0; i < attributes.length; i++) {
+        var attr = attributes[i]
+
+        if (attr.name.substr(0,5) !== "data-") {
+            continue
+        }
+
+        hash[attr.name.substr(5)] = attr.value
+    }
+
+    return hash
+}
+
+},{}],5:[function(_dereq_,module,exports){
+var createStore = _dereq_("weakmap-shim/create-store")
+var Individual = _dereq_("individual")
+
+var createHash = _dereq_("./create-hash.js")
+
+var hashStore = Individual("__DATA_SET_WEAKMAP@3", createStore())
+
+module.exports = DataSet
+
+function DataSet(elem) {
+    var store = hashStore(elem)
+
+    if (!store.hash) {
+        store.hash = createHash(elem)
+    }
+
+    return store.hash
+}
+
+},{"./create-hash.js":4,"individual":25,"weakmap-shim/create-store":83}],6:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
 
 module.exports = addEvent
@@ -210,7 +252,7 @@ function addEvent(target, type, handler) {
     }
 }
 
-},{"data-set":8}],5:[function(_dereq_,module,exports){
+},{"data-set":5}],7:[function(_dereq_,module,exports){
 var globalDocument = _dereq_("global/document")
 var DataSet = _dereq_("data-set")
 var createStore = _dereq_("weakmap-shim/create-store")
@@ -235,7 +277,7 @@ function DOMDelegator(document) {
 DOMDelegator.prototype.addEventListener = addEvent
 DOMDelegator.prototype.removeEventListener = removeEvent
 
-DOMDelegator.prototype.allocateHandle =
+DOMDelegator.allocateHandle =
     function allocateHandle(func) {
         var handle = new Handle()
 
@@ -244,7 +286,7 @@ DOMDelegator.prototype.allocateHandle =
         return handle
     }
 
-DOMDelegator.prototype.transformHandle =
+DOMDelegator.transformHandle =
     function transformHandle(handle, lambda) {
         var func = HANDLER_STORE(handle).func
 
@@ -385,7 +427,7 @@ function Handle() {
     this.type = "dom-delegator-handle"
 }
 
-},{"./add-event.js":4,"./proxy-event.js":13,"./remove-event.js":14,"data-set":8,"global/document":27,"weakmap-shim/create-store":11}],6:[function(_dereq_,module,exports){
+},{"./add-event.js":6,"./proxy-event.js":10,"./remove-event.js":11,"data-set":5,"global/document":24,"weakmap-shim/create-store":83}],8:[function(_dereq_,module,exports){
 var Individual = _dereq_("individual")
 var cuid = _dereq_("cuid")
 var globalDocument = _dereq_("global/document")
@@ -409,7 +451,7 @@ var commonEvents = [
     Only one DOMDelegator should exist because we do not want
         duplicate event listeners bound to the DOM.
 
-    `Delegator` will also `listenTo()` all events unless 
+    `Delegator` will also `listenTo()` all events unless
         every caller opts out of it
 */
 module.exports = Delegator
@@ -441,75 +483,10 @@ function Delegator(opts) {
     return delegator
 }
 
+Delegator.allocateHandle = DOMDelegator.allocateHandle;
+Delegator.transformHandle = DOMDelegator.transformHandle;
 
-
-},{"./dom-delegator.js":5,"cuid":3,"global/document":27,"individual":9}],7:[function(_dereq_,module,exports){
-module.exports = createHash
-
-function createHash(elem) {
-    var attributes = elem.attributes
-    var hash = {}
-
-    if (attributes === null || attributes === undefined) {
-        return hash
-    }
-
-    for (var i = 0; i < attributes.length; i++) {
-        var attr = attributes[i]
-
-        if (attr.name.substr(0,5) !== "data-") {
-            continue
-        }
-
-        hash[attr.name.substr(5)] = attr.value
-    }
-
-    return hash
-}
-
-},{}],8:[function(_dereq_,module,exports){
-var createStore = _dereq_("weakmap-shim/create-store")
-var Individual = _dereq_("individual")
-
-var createHash = _dereq_("./create-hash.js")
-
-var hashStore = Individual("__DATA_SET_WEAKMAP@3", createStore())
-
-module.exports = DataSet
-
-function DataSet(elem) {
-    var store = hashStore(elem)
-
-    if (!store.hash) {
-        store.hash = createHash(elem)
-    }
-
-    return store.hash
-}
-
-},{"./create-hash.js":7,"individual":9,"weakmap-shim/create-store":11}],9:[function(_dereq_,module,exports){
-(function (global){
-var root = typeof window !== 'undefined' ?
-    window : typeof global !== 'undefined' ?
-    global : {};
-
-module.exports = Individual
-
-function Individual(key, value) {
-    if (root[key]) {
-        return root[key]
-    }
-
-    Object.defineProperty(root, key, {
-        value: value
-        , configurable: true
-    })
-
-    return value
-}
-
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],10:[function(_dereq_,module,exports){
+},{"./dom-delegator.js":7,"cuid":3,"global/document":24,"individual":25}],9:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -534,44 +511,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],11:[function(_dereq_,module,exports){
-var hiddenStore = _dereq_('./hidden-store.js');
-
-module.exports = createStore;
-
-function createStore() {
-    var key = {};
-
-    return function (obj) {
-        if (typeof obj !== 'object' || obj === null) {
-            throw new Error('Weakmap-shim: Key must be object')
-        }
-
-        var store = obj.valueOf(key);
-        return store && store.identity === key ?
-            store : hiddenStore(obj, key);
-    };
-}
-
-},{"./hidden-store.js":12}],12:[function(_dereq_,module,exports){
-module.exports = hiddenStore;
-
-function hiddenStore(obj, key) {
-    var store = { identity: key };
-    var valueOf = obj.valueOf;
-
-    Object.defineProperty(obj, "valueOf", {
-        value: function (value) {
-            return value !== key ?
-                valueOf.apply(this, arguments) : store;
-        },
-        writable: true
-    });
-
-    return store;
-}
-
-},{}],13:[function(_dereq_,module,exports){
+},{}],10:[function(_dereq_,module,exports){
 var inherits = _dereq_("inherits")
 
 var ALL_PROPS = [
@@ -651,7 +591,7 @@ function KeyEvent(ev) {
 
 inherits(KeyEvent, ProxyEvent)
 
-},{"inherits":10}],14:[function(_dereq_,module,exports){
+},{"inherits":9}],11:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
 
 module.exports = removeEvent
@@ -672,7 +612,7 @@ function removeEvent(target, type, handler) {
     }
 }
 
-},{"data-set":8}],15:[function(_dereq_,module,exports){
+},{"data-set":5}],12:[function(_dereq_,module,exports){
 module.exports = function(obj) {
     if (typeof obj === 'string') return camelCase(obj);
     return walk(obj);
@@ -724,7 +664,7 @@ function reduce (xs, f, acc) {
     return acc;
 }
 
-},{}],16:[function(_dereq_,module,exports){
+},{}],13:[function(_dereq_,module,exports){
 var nargs = /\{([0-9a-zA-Z]+)\}/g
 var slice = Array.prototype.slice
 
@@ -759,7 +699,7 @@ function template(string) {
         }
     })
 }
-},{}],17:[function(_dereq_,module,exports){
+},{}],14:[function(_dereq_,module,exports){
 module.exports = hasKeys
 
 function hasKeys(source) {
@@ -768,7 +708,7 @@ function hasKeys(source) {
         typeof source === "function")
 }
 
-},{}],18:[function(_dereq_,module,exports){
+},{}],15:[function(_dereq_,module,exports){
 var Keys = _dereq_("object-keys")
 var hasKeys = _dereq_("./has-keys")
 
@@ -795,7 +735,7 @@ function extend(target) {
     return target
 }
 
-},{"./has-keys":17,"object-keys":20}],19:[function(_dereq_,module,exports){
+},{"./has-keys":14,"object-keys":17}],16:[function(_dereq_,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
 
@@ -837,11 +777,11 @@ module.exports = function forEach(obj, fn) {
 };
 
 
-},{}],20:[function(_dereq_,module,exports){
+},{}],17:[function(_dereq_,module,exports){
 module.exports = Object.keys || _dereq_('./shim');
 
 
-},{"./shim":22}],21:[function(_dereq_,module,exports){
+},{"./shim":19}],18:[function(_dereq_,module,exports){
 var toString = Object.prototype.toString;
 
 module.exports = function isArguments(value) {
@@ -859,7 +799,7 @@ module.exports = function isArguments(value) {
 };
 
 
-},{}],22:[function(_dereq_,module,exports){
+},{}],19:[function(_dereq_,module,exports){
 (function () {
 	"use strict";
 
@@ -923,7 +863,7 @@ module.exports = function isArguments(value) {
 }());
 
 
-},{"./foreach":19,"./isArguments":21}],23:[function(_dereq_,module,exports){
+},{"./foreach":16,"./isArguments":18}],20:[function(_dereq_,module,exports){
 var camelize = _dereq_("camelize")
 var template = _dereq_("string-template")
 var extend = _dereq_("xtend/mutable")
@@ -973,7 +913,7 @@ function TypedError(args) {
 }
 
 
-},{"camelize":15,"string-template":16,"xtend/mutable":18}],24:[function(_dereq_,module,exports){
+},{"camelize":12,"string-template":13,"xtend/mutable":15}],21:[function(_dereq_,module,exports){
 module.exports = Event
 
 function Event() {
@@ -1001,7 +941,7 @@ function Event() {
     }
 }
 
-},{}],25:[function(_dereq_,module,exports){
+},{}],22:[function(_dereq_,module,exports){
 var event = _dereq_("./single.js")
 
 module.exports = multiple
@@ -1013,7 +953,7 @@ function multiple(names) {
     }, {})
 }
 
-},{"./single.js":26}],26:[function(_dereq_,module,exports){
+},{"./single.js":23}],23:[function(_dereq_,module,exports){
 var Event = _dereq_('./event.js')
 
 module.exports = Single
@@ -1030,7 +970,7 @@ function Single() {
     }
 }
 
-},{"./event.js":24}],27:[function(_dereq_,module,exports){
+},{"./event.js":21}],24:[function(_dereq_,module,exports){
 (function (global){
 var topLevel = typeof global !== 'undefined' ? global :
     typeof window !== 'undefined' ? window : {}
@@ -1049,7 +989,36 @@ if (typeof document !== 'undefined') {
 }
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"min-document":2}],28:[function(_dereq_,module,exports){
+},{"min-document":2}],25:[function(_dereq_,module,exports){
+(function (global){
+var root = typeof window !== 'undefined' ?
+    window : typeof global !== 'undefined' ?
+    global : {};
+
+module.exports = Individual
+
+function Individual(key, value) {
+    if (root[key]) {
+        return root[key]
+    }
+
+    Object.defineProperty(root, key, {
+        value: value
+        , configurable: true
+    })
+
+    return value
+}
+
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],26:[function(_dereq_,module,exports){
+module.exports = isObject
+
+function isObject(x) {
+    return typeof x === "object" && x !== null
+}
+
+},{}],27:[function(_dereq_,module,exports){
 var raf = _dereq_("raf")
 var vtreeDiff = _dereq_("vtree/diff")
 var vdomCreate = _dereq_("vdom/create-element")
@@ -1129,7 +1098,7 @@ function main(initialState, view, opts) {
     }
 }
 
-},{"error/typed":23,"raf":43,"vdom/create-element":61,"vdom/patch":66,"vtree/diff":80}],29:[function(_dereq_,module,exports){
+},{"error/typed":20,"raf":42,"vdom/create-element":60,"vdom/patch":63,"vtree/diff":72}],28:[function(_dereq_,module,exports){
 var setNonEnumerable = _dereq_("./lib/set-non-enumerable.js");
 
 module.exports = addListener
@@ -1159,7 +1128,7 @@ function addListener(observArray, observ) {
     })
 }
 
-},{"./lib/set-non-enumerable.js":32}],30:[function(_dereq_,module,exports){
+},{"./lib/set-non-enumerable.js":31}],29:[function(_dereq_,module,exports){
 var ObservArray = _dereq_("./index.js")
 
 var slice = Array.prototype.slice
@@ -1226,7 +1195,7 @@ function notImplemented() {
     throw new Error("Pull request welcome")
 }
 
-},{"./index.js":31}],31:[function(_dereq_,module,exports){
+},{"./index.js":30}],30:[function(_dereq_,module,exports){
 var Observ = _dereq_("observ")
 
 // circular dep between ArrayMethods & this file
@@ -1305,7 +1274,7 @@ function getLength() {
     return this._list.length
 }
 
-},{"./add-listener.js":29,"./array-methods.js":30,"./put.js":34,"./splice.js":35,"./transaction.js":36,"observ":40}],32:[function(_dereq_,module,exports){
+},{"./add-listener.js":28,"./array-methods.js":29,"./put.js":33,"./splice.js":34,"./transaction.js":35,"observ":39}],31:[function(_dereq_,module,exports){
 module.exports = setNonEnumerable;
 
 function setNonEnumerable(object, key, value) {
@@ -1317,7 +1286,7 @@ function setNonEnumerable(object, key, value) {
     });
 }
 
-},{}],33:[function(_dereq_,module,exports){
+},{}],32:[function(_dereq_,module,exports){
 function head (a) {
   return a[0]
 }
@@ -1620,7 +1589,7 @@ var exports = module.exports = function (deps, exports) {
 }
 exports(null, exports)
 
-},{}],34:[function(_dereq_,module,exports){
+},{}],33:[function(_dereq_,module,exports){
 var addListener = _dereq_("./add-listener.js")
 var setNonEnumerable = _dereq_("./lib/set-non-enumerable.js");
 
@@ -1659,7 +1628,7 @@ function put(index, value) {
     obs.set(valueList)
     return value
 }
-},{"./add-listener.js":29,"./lib/set-non-enumerable.js":32}],35:[function(_dereq_,module,exports){
+},{"./add-listener.js":28,"./lib/set-non-enumerable.js":31}],34:[function(_dereq_,module,exports){
 var slice = Array.prototype.slice
 
 var addListener = _dereq_("./add-listener.js")
@@ -1711,7 +1680,7 @@ function splice(index, amount) {
     return removed
 }
 
-},{"./add-listener.js":29,"./lib/set-non-enumerable.js":32}],36:[function(_dereq_,module,exports){
+},{"./add-listener.js":28,"./lib/set-non-enumerable.js":31}],35:[function(_dereq_,module,exports){
 var addListener = _dereq_("./add-listener.js")
 var setNonEnumerable = _dereq_("./lib/set-non-enumerable.js")
 var adiff = _dereq_("adiff")
@@ -1769,7 +1738,7 @@ function unpack(value, index){
     }
     return typeof value === "function" ? value() : value
 }
-},{"./add-listener.js":29,"./lib/set-non-enumerable.js":32,"adiff":33}],37:[function(_dereq_,module,exports){
+},{"./add-listener.js":28,"./lib/set-non-enumerable.js":31,"adiff":32}],36:[function(_dereq_,module,exports){
 var Observ = _dereq_("observ")
 var extend = _dereq_("xtend")
 
@@ -1879,7 +1848,7 @@ function ObservStruct(struct) {
     return obs
 }
 
-},{"observ":40,"xtend":93}],38:[function(_dereq_,module,exports){
+},{"observ":39,"xtend":86}],37:[function(_dereq_,module,exports){
 var Observ = _dereq_('observ')
 var extend = _dereq_('xtend')
 
@@ -2036,7 +2005,7 @@ function nameTombstone () {
   return '[object Tombstone]'
 }
 
-},{"observ":40,"xtend":93}],39:[function(_dereq_,module,exports){
+},{"observ":39,"xtend":86}],38:[function(_dereq_,module,exports){
 var Observable = _dereq_("./index.js")
 
 module.exports = computed
@@ -2057,7 +2026,7 @@ function computed(observables, lambda) {
     return result
 }
 
-},{"./index.js":40}],40:[function(_dereq_,module,exports){
+},{"./index.js":39}],39:[function(_dereq_,module,exports){
 module.exports = Observable
 
 function Observable(value) {
@@ -2086,7 +2055,7 @@ function Observable(value) {
     }
 }
 
-},{}],41:[function(_dereq_,module,exports){
+},{}],40:[function(_dereq_,module,exports){
 module.exports = watch
 
 function watch(observable, listener) {
@@ -2095,7 +2064,7 @@ function watch(observable, listener) {
     return remove
 }
 
-},{}],42:[function(_dereq_,module,exports){
+},{}],41:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2160,7 +2129,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],43:[function(_dereq_,module,exports){
+},{}],42:[function(_dereq_,module,exports){
 var now = _dereq_('performance-now')
   , global = typeof window === 'undefined' ? {} : window
   , vendors = ['moz', 'webkit']
@@ -2242,7 +2211,7 @@ module.exports.cancel = function() {
   caf.apply(global, arguments)
 }
 
-},{"performance-now":44}],44:[function(_dereq_,module,exports){
+},{"performance-now":43}],43:[function(_dereq_,module,exports){
 (function (process){
 // Generated by CoffeeScript 1.6.3
 (function() {
@@ -2282,7 +2251,7 @@ module.exports.cancel = function() {
 */
 
 }).call(this,_dereq_("g5I+bs"))
-},{"g5I+bs":42}],45:[function(_dereq_,module,exports){
+},{"g5I+bs":41}],44:[function(_dereq_,module,exports){
 var Delegator = _dereq_('dom-delegator')
 
 module.exports = BaseEvent
@@ -2299,7 +2268,7 @@ function BaseEvent(lambda) {
         }
 
         if (fn && fn.type === 'dom-delegator-handle') {
-            return Delegator().transformHandle(fn,
+            return Delegator.transformHandle(fn,
                 handleLambda.bind(handler))
         }
 
@@ -2324,7 +2293,7 @@ function BaseEvent(lambda) {
     }
 }
 
-},{"dom-delegator":6}],46:[function(_dereq_,module,exports){
+},{"dom-delegator":8}],45:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -2357,7 +2326,7 @@ function changeLambda(ev) {
     return data
 }
 
-},{"./base-event.js":45,"form-data-set/element":50,"xtend":53}],47:[function(_dereq_,module,exports){
+},{"./base-event.js":44,"form-data-set/element":49,"xtend":52}],46:[function(_dereq_,module,exports){
 var BaseEvent = _dereq_('./base-event.js');
 
 module.exports = BaseEvent(eventLambda);
@@ -2366,7 +2335,7 @@ function eventLambda(ev) {
     return this.data;
 }
 
-},{"./base-event.js":45}],48:[function(_dereq_,module,exports){
+},{"./base-event.js":44}],47:[function(_dereq_,module,exports){
 var BaseEvent = _dereq_('./base-event.js');
 
 module.exports = BaseEvent(keyLambda);
@@ -2379,7 +2348,7 @@ function keyLambda(ev) {
     }
 }
 
-},{"./base-event.js":45}],49:[function(_dereq_,module,exports){
+},{"./base-event.js":44}],48:[function(_dereq_,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -2405,7 +2374,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],50:[function(_dereq_,module,exports){
+},{}],49:[function(_dereq_,module,exports){
 var walk = _dereq_('dom-walk')
 
 var FormData = _dereq_('./index.js')
@@ -2431,7 +2400,7 @@ function getFormData(rootElem) {
     return FormData(elements)
 }
 
-},{"./index.js":51,"dom-walk":49}],51:[function(_dereq_,module,exports){
+},{"./index.js":50,"dom-walk":48}],50:[function(_dereq_,module,exports){
 /*jshint maxcomplexity: 10*/
 
 module.exports = FormData
@@ -2508,9 +2477,9 @@ function filterNull(val) {
     return val !== null
 }
 
+},{}],51:[function(_dereq_,module,exports){
+module.exports=_dereq_(14)
 },{}],52:[function(_dereq_,module,exports){
-module.exports=_dereq_(17)
-},{}],53:[function(_dereq_,module,exports){
 var hasKeys = _dereq_("./has-keys")
 
 module.exports = extend
@@ -2535,7 +2504,7 @@ function extend() {
     return target
 }
 
-},{"./has-keys":52}],54:[function(_dereq_,module,exports){
+},{"./has-keys":51}],53:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -2573,7 +2542,7 @@ function submitLambda(ev) {
     return data;
 }
 
-},{"./base-event.js":45,"form-data-set/element":50,"xtend":53}],55:[function(_dereq_,module,exports){
+},{"./base-event.js":44,"form-data-set/element":49,"xtend":52}],54:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -2588,7 +2557,7 @@ function valueLambda(ev) {
     return data;
 }
 
-},{"./base-event.js":45,"form-data-set/element":50,"xtend":53}],56:[function(_dereq_,module,exports){
+},{"./base-event.js":44,"form-data-set/element":49,"xtend":52}],55:[function(_dereq_,module,exports){
 function Thunk(fn, args, key, eqArgs) {
     this.fn = fn;
     this.args = args;
@@ -2619,12 +2588,12 @@ function render(previous) {
     }
 }
 
-},{}],57:[function(_dereq_,module,exports){
+},{}],56:[function(_dereq_,module,exports){
 var Partial = _dereq_('./partial');
 
 module.exports = Partial();
 
-},{"./partial":58}],58:[function(_dereq_,module,exports){
+},{"./partial":57}],57:[function(_dereq_,module,exports){
 var shallowEq = _dereq_('./shallow-eq');
 var Thunk = _dereq_('./immutable-thunk');
 
@@ -2658,7 +2627,7 @@ function copyOver(list, offset) {
     return newList;
 }
 
-},{"./immutable-thunk":56,"./shallow-eq":59}],59:[function(_dereq_,module,exports){
+},{"./immutable-thunk":55,"./shallow-eq":58}],58:[function(_dereq_,module,exports){
 module.exports = shallowEq;
 
 function shallowEq(currentArgs, previousArgs) {
@@ -2681,7 +2650,7 @@ function shallowEq(currentArgs, previousArgs) {
     return true;
 }
 
-},{}],60:[function(_dereq_,module,exports){
+},{}],59:[function(_dereq_,module,exports){
 var isObject = _dereq_("is-object")
 var isHook = _dereq_("vtree/is-vhook")
 
@@ -2754,7 +2723,7 @@ function getPrototype(value) {
     }
 }
 
-},{"is-object":63,"vtree/is-vhook":83}],61:[function(_dereq_,module,exports){
+},{"is-object":26,"vtree/is-vhook":75}],60:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 
 var applyProperties = _dereq_("./apply-properties")
@@ -2802,7 +2771,7 @@ function createElement(vnode, opts) {
     return node
 }
 
-},{"./apply-properties":60,"global/document":27,"vtree/handle-thunk":81,"vtree/is-vnode":84,"vtree/is-vtext":85,"vtree/is-widget":86}],62:[function(_dereq_,module,exports){
+},{"./apply-properties":59,"global/document":24,"vtree/handle-thunk":73,"vtree/is-vnode":76,"vtree/is-vtext":77,"vtree/is-widget":78}],61:[function(_dereq_,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -2889,24 +2858,7 @@ function ascending(a, b) {
     return a > b ? 1 : -1
 }
 
-},{}],63:[function(_dereq_,module,exports){
-module.exports = isObject
-
-function isObject(x) {
-    return typeof x === "object" && x !== null
-}
-
-},{}],64:[function(_dereq_,module,exports){
-var nativeIsArray = Array.isArray
-var toString = Object.prototype.toString
-
-module.exports = nativeIsArray || isArray
-
-function isArray(obj) {
-    return toString.call(obj) === "[object Array]"
-}
-
-},{}],65:[function(_dereq_,module,exports){
+},{}],62:[function(_dereq_,module,exports){
 var applyProperties = _dereq_("./apply-properties")
 
 var isWidget = _dereq_("vtree/is-widget")
@@ -3076,7 +3028,7 @@ function replaceRoot(oldRoot, newRoot) {
     return newRoot;
 }
 
-},{"./apply-properties":60,"./create-element":61,"./update-widget":67,"vtree/is-widget":86,"vtree/vpatch":91}],66:[function(_dereq_,module,exports){
+},{"./apply-properties":59,"./create-element":60,"./update-widget":64,"vtree/is-widget":78,"vtree/vpatch":81}],63:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 var isArray = _dereq_("x-is-array")
 
@@ -3154,7 +3106,7 @@ function patchIndices(patches) {
     return indices
 }
 
-},{"./dom-index":62,"./patch-op":65,"global/document":27,"x-is-array":64}],67:[function(_dereq_,module,exports){
+},{"./dom-index":61,"./patch-op":62,"global/document":24,"x-is-array":85}],64:[function(_dereq_,module,exports){
 var isWidget = _dereq_("vtree/is-widget")
 
 module.exports = updateWidget
@@ -3171,7 +3123,7 @@ function updateWidget(a, b) {
     return false
 }
 
-},{"vtree/is-widget":86}],68:[function(_dereq_,module,exports){
+},{"vtree/is-widget":78}],65:[function(_dereq_,module,exports){
 module.exports = AttributeHook;
 
 function AttributeHook(value) {
@@ -3190,7 +3142,7 @@ AttributeHook.prototype.hook = function (node, prop, prev) {
     node.setAttributeNS(null, prop, this.value)
 }
 
-},{}],69:[function(_dereq_,module,exports){
+},{}],66:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
 
 module.exports = DataSetHook;
@@ -3210,7 +3162,7 @@ DataSetHook.prototype.hook = function (node, propertyName) {
     ds[propName] = this.value;
 };
 
-},{"data-set":74}],70:[function(_dereq_,module,exports){
+},{"data-set":5}],67:[function(_dereq_,module,exports){
 var DataSet = _dereq_("data-set")
 
 module.exports = DataSetHook;
@@ -3230,7 +3182,7 @@ DataSetHook.prototype.hook = function (node, propertyName) {
     ds[propName] = this.value;
 };
 
-},{"data-set":74}],71:[function(_dereq_,module,exports){
+},{"data-set":5}],68:[function(_dereq_,module,exports){
 module.exports = SoftSetHook;
 
 function SoftSetHook(value) {
@@ -3247,7 +3199,7 @@ SoftSetHook.prototype.hook = function (node, propertyName) {
     }
 };
 
-},{}],72:[function(_dereq_,module,exports){
+},{}],69:[function(_dereq_,module,exports){
 var VNode = _dereq_("vtree/vnode.js")
 var VText = _dereq_("vtree/vtext.js")
 var isVNode = _dereq_("vtree/is-vnode")
@@ -3375,17 +3327,7 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x) || isChild(x)
 }
 
-},{"./hooks/data-set-hook.js":69,"./hooks/ev-hook.js":70,"./hooks/soft-set-hook.js":71,"./parse-tag.js":78,"error/typed":23,"vtree/is-thunk":82,"vtree/is-vhook":83,"vtree/is-vnode":84,"vtree/is-vtext":85,"vtree/is-widget":86,"vtree/vnode.js":90,"vtree/vtext.js":92}],73:[function(_dereq_,module,exports){
-module.exports=_dereq_(7)
-},{}],74:[function(_dereq_,module,exports){
-module.exports=_dereq_(8)
-},{"./create-hash.js":73,"individual":75,"weakmap-shim/create-store":76}],75:[function(_dereq_,module,exports){
-module.exports=_dereq_(9)
-},{}],76:[function(_dereq_,module,exports){
-module.exports=_dereq_(11)
-},{"./hidden-store.js":77}],77:[function(_dereq_,module,exports){
-module.exports=_dereq_(12)
-},{}],78:[function(_dereq_,module,exports){
+},{"./hooks/data-set-hook.js":66,"./hooks/ev-hook.js":67,"./hooks/soft-set-hook.js":68,"./parse-tag.js":70,"error/typed":20,"vtree/is-thunk":74,"vtree/is-vhook":75,"vtree/is-vnode":76,"vtree/is-vtext":77,"vtree/is-widget":78,"vtree/vnode.js":80,"vtree/vtext.js":82}],70:[function(_dereq_,module,exports){
 var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
 var notClassId = /^\.|#/
 
@@ -3436,7 +3378,7 @@ function parseTag(tag, props) {
     return tagName ? tagName.toLowerCase() : "div"
 }
 
-},{}],79:[function(_dereq_,module,exports){
+},{}],71:[function(_dereq_,module,exports){
 var attributeHook = _dereq_("./hooks/attribute-hook.js")
 var h = _dereq_("./index.js")
 
@@ -3489,7 +3431,7 @@ function isChildren(x) {
     return typeof x === "string" || Array.isArray(x)
 }
 
-},{"./hooks/attribute-hook.js":68,"./index.js":72}],80:[function(_dereq_,module,exports){
+},{"./hooks/attribute-hook.js":65,"./index.js":69}],72:[function(_dereq_,module,exports){
 var isArray = _dereq_("x-is-array")
 var isObject = _dereq_("is-object")
 
@@ -3836,7 +3778,7 @@ function appendPatch(apply, patch) {
     }
 }
 
-},{"./handle-thunk":81,"./is-thunk":82,"./is-vnode":84,"./is-vtext":85,"./is-widget":86,"./vpatch":91,"is-object":87,"x-is-array":88}],81:[function(_dereq_,module,exports){
+},{"./handle-thunk":73,"./is-thunk":74,"./is-vnode":76,"./is-vtext":77,"./is-widget":78,"./vpatch":81,"is-object":26,"x-is-array":85}],73:[function(_dereq_,module,exports){
 var isVNode = _dereq_("./is-vnode")
 var isVText = _dereq_("./is-vtext")
 var isWidget = _dereq_("./is-widget")
@@ -3878,14 +3820,14 @@ function renderThunk(thunk, previous) {
     return renderedThunk
 }
 
-},{"./is-thunk":82,"./is-vnode":84,"./is-vtext":85,"./is-widget":86}],82:[function(_dereq_,module,exports){
+},{"./is-thunk":74,"./is-vnode":76,"./is-vtext":77,"./is-widget":78}],74:[function(_dereq_,module,exports){
 module.exports = isThunk
 
 function isThunk(t) {
     return t && t.type === "Thunk"
 }
 
-},{}],83:[function(_dereq_,module,exports){
+},{}],75:[function(_dereq_,module,exports){
 module.exports = isHook
 
 function isHook(hook) {
@@ -3893,7 +3835,7 @@ function isHook(hook) {
         !hook.hasOwnProperty("hook")
 }
 
-},{}],84:[function(_dereq_,module,exports){
+},{}],76:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualNode
@@ -3902,7 +3844,7 @@ function isVirtualNode(x) {
     return x && x.type === "VirtualNode" && x.version === version
 }
 
-},{"./version":89}],85:[function(_dereq_,module,exports){
+},{"./version":79}],77:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualText
@@ -3911,21 +3853,17 @@ function isVirtualText(x) {
     return x && x.type === "VirtualText" && x.version === version
 }
 
-},{"./version":89}],86:[function(_dereq_,module,exports){
+},{"./version":79}],78:[function(_dereq_,module,exports){
 module.exports = isWidget
 
 function isWidget(w) {
     return w && w.type === "Widget"
 }
 
-},{}],87:[function(_dereq_,module,exports){
-module.exports=_dereq_(63)
-},{}],88:[function(_dereq_,module,exports){
-module.exports=_dereq_(64)
-},{}],89:[function(_dereq_,module,exports){
+},{}],79:[function(_dereq_,module,exports){
 module.exports = "1"
 
-},{}],90:[function(_dereq_,module,exports){
+},{}],80:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 var isVNode = _dereq_("./is-vnode")
 var isWidget = _dereq_("./is-widget")
@@ -3990,7 +3928,7 @@ function VirtualNode(tagName, properties, children, key, namespace) {
 VirtualNode.prototype.version = version
 VirtualNode.prototype.type = "VirtualNode"
 
-},{"./is-vhook":83,"./is-vnode":84,"./is-widget":86,"./version":89}],91:[function(_dereq_,module,exports){
+},{"./is-vhook":75,"./is-vnode":76,"./is-widget":78,"./version":79}],81:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 VirtualPatch.NONE = 0
@@ -4014,7 +3952,7 @@ function VirtualPatch(type, vNode, patch) {
 VirtualPatch.prototype.version = version
 VirtualPatch.prototype.type = "VirtualPatch"
 
-},{"./version":89}],92:[function(_dereq_,module,exports){
+},{"./version":79}],82:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = VirtualText
@@ -4026,7 +3964,54 @@ function VirtualText(text) {
 VirtualText.prototype.version = version
 VirtualText.prototype.type = "VirtualText"
 
-},{"./version":89}],93:[function(_dereq_,module,exports){
+},{"./version":79}],83:[function(_dereq_,module,exports){
+var hiddenStore = _dereq_('./hidden-store.js');
+
+module.exports = createStore;
+
+function createStore() {
+    var key = {};
+
+    return function (obj) {
+        if (typeof obj !== 'object' || obj === null) {
+            throw new Error('Weakmap-shim: Key must be object')
+        }
+
+        var store = obj.valueOf(key);
+        return store && store.identity === key ?
+            store : hiddenStore(obj, key);
+    };
+}
+
+},{"./hidden-store.js":84}],84:[function(_dereq_,module,exports){
+module.exports = hiddenStore;
+
+function hiddenStore(obj, key) {
+    var store = { identity: key };
+    var valueOf = obj.valueOf;
+
+    Object.defineProperty(obj, "valueOf", {
+        value: function (value) {
+            return value !== key ?
+                valueOf.apply(this, arguments) : store;
+        },
+        writable: true
+    });
+
+    return store;
+}
+
+},{}],85:[function(_dereq_,module,exports){
+var nativeIsArray = Array.isArray
+var toString = Object.prototype.toString
+
+module.exports = nativeIsArray || isArray
+
+function isArray(obj) {
+    return toString.call(obj) === "[object Array]"
+}
+
+},{}],86:[function(_dereq_,module,exports){
 module.exports = extend
 
 function extend() {
