@@ -1,4 +1,5 @@
 # mercury
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/Raynos/mercury?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![build status][1]][2]
 [![NPM version][3]][4]
