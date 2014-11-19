@@ -70,10 +70,11 @@ See [DragHandler](examples/geometry/drag-handler.js) as an
 If you want to embed a custom piece of rendering machinery in
   the virtual DOM you can use widgets.
 
-A widget is a object with an `init()` and `update()` method.
+A widget is a object with an `init()` and `update()` method and a `type` attribute with the "Widget" value.
 
 ```js
 function GoogleMapWidget(initialPosition) {
+    this.type = 'Widget'
     this.position = initialPosition
 }
 
