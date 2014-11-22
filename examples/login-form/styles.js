@@ -1,4 +1,6 @@
-var RCSS = require('rcss')
+'use strict';
+
+var RCSS = require('rcss');
 
 module.exports = {
     error: RCSS.createClass({
@@ -7,4 +9,4 @@ module.exports = {
     inputError: RCSS.createClass({
         borderColor: 'red'
     })
-}
+};

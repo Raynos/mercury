@@ -1,17 +1,19 @@
-var mercury = require('../../index.js')
-var h = require('../../index.js').h
-var styles = require('./styles.js')
+'use strict';
 
-module.exports = render
+var mercury = require('../../index.js');
+var h = require('../../index.js').h;
+var styles = require('./styles.js');
+
+module.exports = render;
 
 function render(state) {
     return state.registerMode ?
         renderRegister(state) :
-        renderLogin(state)
+        renderLogin(state);
 }
 
 function renderLogin(state) {
-    var events = state.events
+    var events = state.events;
 
     return h('div', {
         'ev-event': mercury.submitEvent(events.login)
@@ -34,11 +36,11 @@ function renderLogin(state) {
                 h('button', 'Login')
             ])
         ])
-    ])
+    ]);
 }
 
 function renderRegister(state) {
-    var events = state.events
+    var events = state.events;
 
     return h('div', {
         'ev-event': mercury.submitEvent(events.register)
@@ -66,12 +68,12 @@ function renderRegister(state) {
                 h('button', 'Register')
             ])
         ])
-    ])
+    ]);
 }
 
 function labeledInput(label, opts) {
     opts.className = opts.error ?
-        styles.inputError.className : ''
+        styles.inputError.className : '';
 
     return h('div', [
         h('label', {
@@ -85,5 +87,5 @@ function labeledInput(label, opts) {
         }, [
             opts.error
         ])
-    ])
+    ]);
 }
