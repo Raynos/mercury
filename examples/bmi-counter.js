@@ -1,3 +1,5 @@
+'use strict';
+
 var document = require('global/document');
 var hg = require('../index.js');
 var h = require('../index.js').h;
