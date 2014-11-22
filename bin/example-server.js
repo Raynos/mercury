@@ -1,7 +1,10 @@
+'use strict';
+
 var http = require('http');
 var Router = require('routes-router');
 var path = require('path');
 var st = require('st');
+var logger = require('console');
 
 var tasks = require('./example-tasks.js');
 var tasksHash = tasks.reduce(function buildHash(acc, task) {
@@ -34,7 +37,7 @@ router.addRoute('/:name', function example(req, res, opts) {
     res.setHeader('Content-Type', 'text/html');
     var stream = task.createStream();
     stream.on('error', function onError(error) {
-        console.log('error', error);
+        logger.log('error', error);
         res.end('(' + function throwError(err) {
             throw new Error(err);
         } + '(' + JSON.stringify(error.message) + '))</script>');
@@ -51,4 +54,4 @@ router.addRoute('*', st({
 var server = http.createServer(router);
 
 server.listen(8080);
-console.log('listening on port 8080');
+logger.log('listening on port 8080');

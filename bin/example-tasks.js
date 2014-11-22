@@ -1,3 +1,5 @@
+'use strict';
+
 var path = require('path');
 var indexhtmlify = require('indexhtmlify');
 var browserify = require('browserify');

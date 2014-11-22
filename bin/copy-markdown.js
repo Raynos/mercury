@@ -1,3 +1,5 @@
+'use strict';
+
 var path = require('path');
 var fs = require('fs');
 var parallel = require('run-parallel');
@@ -5,6 +7,7 @@ var series = require('run-series');
 var rimraf = require('rimraf');
 var spawn = require('child_process').spawn;
 var process = require('process');
+var logger = require('console');
 
 function gitrun(cmds, cwd, cb) {
     var git = spawn('git', cmds, {
@@ -66,7 +69,7 @@ parallel(tasks, function onTasks(err) {
         throw err;
     }
 
-    console.log('done');
+    logger.log('done');
 });
 
 function getProject(uri, cb) {
@@ -93,7 +96,7 @@ function getProject(uri, cb) {
         data.package = JSON.parse(data.package);
         data.name = data.package.name;
 
-        console.log('got', data.name);
+        logger.log('got', data.name);
 
         rimraf(folder, function fini() {
             cb(err, data);

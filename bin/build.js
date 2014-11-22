@@ -1,18 +1,21 @@
+'use strict';
+
 var parallel = require('run-parallel');
 var fs = require('fs');
 var path = require('path');
 var process = require('process');
+var logger = require('console');
 var examplesTasks = require('./example-tasks.js');
 
 function main() {
     var tasks = examplesTasks.map(function writeTask(task) {
         return function thunk(cb) {
-            console.log('reading', task.src);
+            logger.log('reading', task.src);
 
             task.createStream()
                 .pipe(fs.createWriteStream(task.dest))
                 .on('finish', function onFinish() {
-                    console.log('writing', task.dest);
+                    logger.log('writing', task.dest);
                     cb();
                 });
         };
@@ -34,7 +37,7 @@ function main() {
         fs.writeFileSync(
             path.join(process.cwd(), 'index.html'), html);
 
-        console.log('build finished');
+        logger.log('build finished');
     });
 }
 

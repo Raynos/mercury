@@ -1,6 +1,9 @@
+'use strict';
+
 var browserify = require('browserify');
 var fs = require('fs');
 var path = require('path');
+var logger = require('console');
 
 var version = require('../package.json').version;
 
@@ -16,5 +19,5 @@ dest.write('// mercury @ ' + version + ' \n');
 bundle.pipe(dest);
 
 dest.on('finish', function fini() {
-    console.log('OK done');
+    logger.log('OK done');
 });
