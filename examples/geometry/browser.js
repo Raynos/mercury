@@ -1,10 +1,13 @@
-var mercury = require('../../index.js')
-var svg = require('../../index.js').svg
+'use strict';
 
-var shapes = require('./shapes.js')
-var dragEvent = require('./drag-handler.js')
+var document = require('global/document');
+var mercury = require('../../index.js');
+var svg = require('../../index.js').svg;
 
-var events = mercury.input(['movePoint'])
+var shapes = require('./shapes.js');
+var dragEvent = require('./drag-handler.js');
+
+var events = mercury.input(['movePoint']);
 var state = mercury.struct({
     p1: mercury.value([100, 100]),
     p2: mercury.value([200, 200]),
@@ -14,16 +17,16 @@ var state = mercury.struct({
     width: mercury.value(800),
     height: mercury.value(600),
     events: events
-})
+});
 
-events.movePoint(function (data) {
-    var point = state[data.name]()
+events.movePoint(function movePoint(data) {
+    var point = state[data.name]();
 
     state[data.name].set([
         point[0] + data.x,
         point[1] + data.y
-    ])
-})
+    ]);
+});
 
 function rootScene(state) {
     return svg('g', [
@@ -65,7 +68,7 @@ function rootScene(state) {
                 name: 'p3'
             })
         })
-    ])
+    ]);
 }
 
 function render(state) {
@@ -84,7 +87,7 @@ function render(state) {
             'font-size': 20
         }, 'The points are draggable'),
         rootScene(state)
-    ])
+    ]);
 }
 
-mercury.app(document.body, state, render)
+mercury.app(document.body, state, render);
