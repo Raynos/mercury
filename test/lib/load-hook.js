@@ -1,3 +1,5 @@
+'use strict';
+
 var Module = require('module');
 
 var appRegex = /hg\.app\([\w\.]+,\s?([\w\(\)]+),\s?([\w\.]+)\)/;
@@ -16,7 +18,6 @@ function transformSource(source, fileName) {
 }
 
 function replacer(match, state, render) {
-    console.log('replacer');
     return 'module.exports = {\n' +
         '    state: ' + state + ',\n' +
         '    render: ' + render + '\n' +

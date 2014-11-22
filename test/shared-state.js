@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var event = require('synthetic-dom-events');
 var document = require('global/document');

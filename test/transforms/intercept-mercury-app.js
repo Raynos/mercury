@@ -1,3 +1,5 @@
+'use strict';
+
 var callify = require('callify');
 
 module.exports = callify({

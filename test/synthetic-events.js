@@ -1,3 +1,5 @@
+'use strict';
+
 var mercury = require('../index.js');
 var h = mercury.h;
 var event = require('synthetic-dom-events');

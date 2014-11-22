@@ -1,9 +1,12 @@
+'use strict';
+
 var test = require('tape');
 
 var mercury = require('../index');
 
 // FFFfffff--- phantomJS.
 if (!Function.prototype.bind) {
+    /*eslint no-extend-native: 0*/
     Function.prototype.bind = require('function-bind');
 }
 
