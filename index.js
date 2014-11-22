@@ -1,3 +1,5 @@
+'use strict';
+
 var SingleEvent = require('geval/single');
 var MultipleEvent = require('geval/multiple');
 
