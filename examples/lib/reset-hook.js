@@ -1,3 +1,5 @@
+'use strict';
+
 var setTimeout = require('timers').setTimeout;
 
 function ResetHook(value, sink) {

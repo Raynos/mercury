@@ -1,3 +1,5 @@
+'use strict';
+
 function SafeHook(value) {
     if (!(this instanceof SafeHook)) {
         return new SafeHook(value);
