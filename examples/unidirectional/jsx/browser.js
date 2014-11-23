@@ -1,35 +1,38 @@
-var mercury = require("../../../index.js")
-var cuid = require("cuid")
+'use strict';
 
-var Render = require("./render.jsx")
+var document = require('global/document');
+var mercury = require('../../../index.js');
+var cuid = require('cuid');
 
-var events = mercury.input(["add", "changeText", "toggle"])
+var Render = require('./render.jsx');
+
+var events = mercury.input(['add', 'changeText', 'toggle']);
 
 var state = mercury.struct({
-    description: mercury.value(""),
+    description: mercury.value(''),
     list: mercury.array([]),
     events: events
-})
+});
 
-events.add(function (description) {
+events.add(function onAdd(description) {
     state.list.push(mercury.struct({
         id: cuid(),
         description: mercury.value(description),
         done: mercury.value(false)
-    }))
-})
+    }));
+});
 
-events.changeText(function (data) {
-    state.description.set(data.description)
-})
+events.changeText(function onChangeText(data) {
+    state.description.set(data.description);
+});
 
-events.toggle(function (data) {
-    state.list.some(function (item) {
+events.toggle(function onToggle(data) {
+    state.list.some(function toggleItem(item) {
         if (item.id === data.id) {
-            item.done.set(!item.done())
-            return true
+            item.done.set(!item.done());
+            return true;
         }
-    })
-})
+    });
+});
 
-mercury.app(document.body, state, Render)
+mercury.app(document.body, state, Render);

@@ -1,9 +1,10 @@
 /** @jsx h */
+'use strict';
 
-var mercury = require("../../../index.js")
-var h = mercury.h
+var mercury = require("../../../index.js");
+var h = mercury.h;
 
-module.exports = render
+module.exports = render;
 
 function render(state) {
     return <div>

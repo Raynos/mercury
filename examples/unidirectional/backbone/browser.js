@@ -1,8 +1,12 @@
+'use strict';
+
+var document = require('global/document');
+var window = require('global/window');
 var mercury = require('../../../index.js');
 var backbone = require('backbone');
 var h = mercury.h;
 
-var toObserv = require('./observ-backbone.js')
+var toObserv = require('./observ-backbone.js');
 
 var Item = backbone.Model.extend({
     defaults: {
@@ -22,9 +26,9 @@ var AppState = backbone.Model.extend({
         events: {},
         items: []
     }
-})
+});
 
-var events = mercury.input(['add'])
+var events = mercury.input(['add']);
 
 var state = new AppState({
     description: 'app state description',
@@ -33,27 +37,27 @@ var state = new AppState({
         { name: 'one', value: 'first', color: 'red' },
         { name: 'two', value: 'second', color: 'blue' }
     ])
-})
+});
 
-events.add(function (data) {
-    state.get('items').add(data)
-})
+events.add(function add(data) {
+    state.get('items').add(data);
+});
 
 window.state = state;
 
-mercury.app(document.body, toObserv(state), render)
+mercury.app(document.body, toObserv(state), render);
 
 function render(state) {
     return h('div', [
         h('h2', state.description),
-        h('ul', state.items.map(function (item) {
+        h('ul', state.items.map(function toItem(item) {
             return h('li', {
                 key: item.cid,
                 style: { color: item.color }
             }, [
                 h('span', item.name),
                 h('input', { value: item.value })
-            ])
+            ]);
         })),
         h('div', {
             'ev-event': mercury.submitEvent(state.events.add)
@@ -72,5 +76,5 @@ function render(state) {
             }),
             h('button', 'add')
         ])
-    ])
+    ]);
 }
