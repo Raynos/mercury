@@ -1,3 +1,5 @@
+'use strict';
+
 var mercury = require('../../index.js');
 var h = require('../../index.js').h;
 
@@ -8,10 +10,10 @@ function render(state) {
         'ev-event': mercury.submitEvent(state.events.add)
     }, [
         h('span', state.description),
-        h('ul', state.items.map(function (item) {
+        h('ul', state.items.map(function toItem(item) {
             return h('li', [
                 h('span', item.name)
-            ])
+            ]);
         })),
         h('input', {
             name: 'name',

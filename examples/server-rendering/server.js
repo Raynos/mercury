@@ -1,3 +1,5 @@
+'use strict';
+
 var http = require('http');
 var browserify = require('browserify');
 var path = require('path');
@@ -7,13 +9,13 @@ var h = require('../../index.js').h;
 
 var render = require('./render.js');
 
-var server = http.createServer(function (req, res) {
+var server = http.createServer(function onReq(req, res) {
     if (req.url === '/bundle.js') {
-        res.setHeader('Content-Type', 'application/javascript')
+        res.setHeader('Content-Type', 'application/javascript');
         return browserify()
             .add(path.join(__dirname, 'browser.js'))
             .bundle()
-            .pipe(res)
+            .pipe(res);
     }
 
     var state = {
@@ -22,11 +24,11 @@ var server = http.createServer(function (req, res) {
         items: [{
             name: 'server item name'
         }]
-    }
-    var content = render(state)
-    var vtree = layout(content, state)
+    };
+    var content = render(state);
+    var vtree = layout(content, state);
 
-    res.setHeader('Content-Type', 'text/html')
+    res.setHeader('Content-Type', 'text/html');
     res.end('<!DOCTYPE html>' + stringify(vtree));
 });
 
@@ -46,5 +48,5 @@ function layout(content, state) {
                 src: 'bundle.js'
             })
         ])
-    ])
+    ]);
 }
