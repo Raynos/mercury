@@ -1,33 +1,35 @@
-var mercury = require('../../../index')
-var h = mercury.h
-var parseMarkdown = require('marked/lib/marked')
+'use strict';
 
-mdRender.render = mdRenderRender
-mdRender.input = input
+var mercury = require('../../../index');
+var h = mercury.h;
+var parseMarkdown = require('marked/lib/marked');
 
-module.exports = mdRender
+mdRender.render = mdRenderRender;
+mdRender.input = input;
+
+module.exports = mdRender;
 
 function mdRender(options) {
-	var events = input()
-	var state = mercury.struct({
-		events: events,
-		value: mercury.value(options.value || '')
-	})
+    var events = input();
+    var state = mercury.struct({
+        events: events,
+        value: mercury.value(options.value || '')
+    });
 
-	return state
+    return state;
 }
 
 function input() {
-	return mercury.input([ 'click' ])
+    return mercury.input([ 'click' ]);
 }
 
 function mdRenderRender(state) {
-	var events = state.events
+    var events = state.events;
 
-	return h('.markdown', {
-		'ev-click': events.click
-	}, [
-		// using a nested node due to a bug with innerHTML in vtree
-		h('', { innerHTML: parseMarkdown(state.value) })
-	])
+    return h('.markdown', {
+        'ev-click': events.click
+    }, [
+        // using a nested node due to a bug with innerHTML in vtree
+        h('', { innerHTML: parseMarkdown(state.value) })
+    ]);
 }
