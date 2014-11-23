@@ -1,7 +1,9 @@
+'use strict';
+
 var mercury = require('../../index.js');
 var h = mercury.h;
 
-numberInput.Render = function (state) {
+numberInput.Render = function render(state) {
     return h('div', [
         h('input', {
             type: 'text',
@@ -28,19 +30,19 @@ function numberInput() {
         events: mercury.input(['change', 'increase', 'decrease'])
     });
 
-    state.events.change(function (data) {
+    state.events.change(function change(data) {
         state.value.set(parseInt(data.number, 10) || 0);
     });
 
-    state.events.increase(function () {
+    state.events.increase(function increase() {
         state.value.set(state.value() + 1);
     });
 
-    state.events.decrease(function () {
+    state.events.decrease(function decrease() {
         state.value.set(state.value() - 1);
     });
 
     return { state: state };
 }
 
-module.exports = numberInput
+module.exports = numberInput;

@@ -1,7 +1,10 @@
-var mercury = require('../../index.js')
+'use strict';
+
+var mercury = require('../../index.js');
+var document = require('global/document');
 var h = mercury.h;
 
-var numberInput = require('./number-component.js')
+var numberInput = require('./number-component.js');
 
 // main.js
 var state = mercury.struct({
