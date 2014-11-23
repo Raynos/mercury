@@ -9,11 +9,13 @@ function SafeHook(value) {
 }
 
 SafeHook.prototype.hook = function hook(elem, propName) {
+    // jscs:disable
     try {
         elem[propName] = this.value;
     } catch (error) {
         /* ignore */
     }
+    // jscs:enable
 };
 
 module.exports = SafeHook;

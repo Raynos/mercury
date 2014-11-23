@@ -55,4 +55,4 @@ function circle(center, radius) {
         'cy': center[1],
         'r': dist(center, radius)
     }));
-}-
+}
