@@ -3,7 +3,6 @@
 var extend = require('xtend');
 
 var svg = require('../../index.js').svg;
-var dist = require('./point.js').dist;
 
 var pointDefaults = {
     'stroke': 'black',
@@ -55,4 +54,11 @@ function circle(center, radius) {
         'cy': center[1],
         'r': dist(center, radius)
     }));
+}
+
+function dist(p1, p2) {
+    return Math.sqrt(
+        Math.pow(p1[0] - p2[0], 2) +
+        Math.pow(p1[1] - p2[1], 2)
+    );
 }

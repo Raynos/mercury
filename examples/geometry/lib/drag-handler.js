@@ -1,24 +1,13 @@
 'use strict';
 
-var mercury = require('../../index.js');
+var hg = require('../../../index.js');
 var extend = require('xtend');
 
-module.exports = DragEventHandler;
+module.exports = hg.BaseEvent(handleDrag);
 
-function DragEventHandler(fn, value) {
-    if (!(this instanceof DragEventHandler)) {
-        return new DragEventHandler(fn, value);
-    }
-
-    this.fn = fn;
-    this.value = value || {};
-    this.delegator = mercury.Delegator();
-}
-
-DragEventHandler.prototype.handleEvent = function handlEvent(ev) {
-    var fn = this.fn;
-    var value = this.value;
-    var delegator = this.delegator;
+function handleDrag(ev, broadcast) {
+    var data = this.data;
+    var delegator = hg.Delegator();
 
     var current = {
         x: ev.offsetX || ev.layerX,
@@ -38,7 +27,7 @@ DragEventHandler.prototype.handleEvent = function handlEvent(ev) {
             y: current.y - previous.y
         };
 
-        fn(extend(value, delta));
+        broadcast(extend(data, delta));
     }
 
     function onup(ev) {
@@ -50,4 +39,4 @@ DragEventHandler.prototype.handleEvent = function handlEvent(ev) {
     delegator.listenTo('mousemove');
     delegator.addGlobalEventListener('mousemove', onmove);
     delegator.addGlobalEventListener('mouseup', onup);
-};
+}

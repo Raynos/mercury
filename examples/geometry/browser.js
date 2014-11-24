@@ -1,77 +1,37 @@
 'use strict';
 
 var document = require('global/document');
-var mercury = require('../../index.js');
+var hg = require('../../index.js');
 var svg = require('../../index.js').svg;
 
 var shapes = require('./shapes.js');
-var dragEvent = require('./drag-handler.js');
+var dragEvent = require('./lib/drag-handler.js');
 
-var events = mercury.input(['movePoint']);
-var state = mercury.struct({
-    p1: mercury.value([100, 100]),
-    p2: mercury.value([200, 200]),
-    p3: mercury.value([100, 200]),
-    c: mercury.value([250, 250]),
-    p: mercury.value([250, 300]),
-    width: mercury.value(800),
-    height: mercury.value(600),
-    events: events
-});
+function App() {
+    return hg.state({
+        p1: hg.value([100, 100]),
+        p2: hg.value([200, 200]),
+        p3: hg.value([100, 200]),
+        c: hg.value([250, 250]),
+        p: hg.value([250, 300]),
+        width: hg.value(800),
+        height: hg.value(600),
+        handles: {
+            movePoint: movePoint
+        }
+    });
+}
 
-events.movePoint(function movePoint(data) {
+function movePoint(state, data) {
     var point = state[data.name]();
 
     state[data.name].set([
         point[0] + data.x,
         point[1] + data.y
     ]);
-});
-
-function rootScene(state) {
-    return svg('g', [
-        shapes.triangle(state.p1, state.p2, state.p3),
-        shapes.circle(state.p, state.c),
-        shapes.segment(state.p, state.c),
-        shapes.point({
-            cx: state.c[0],
-            cy: state.c[1],
-            'ev-mousedown': dragEvent(state.events.movePoint, {
-                name: 'c'
-            })
-        }),
-        shapes.point({
-            cx: state.p[0],
-            cy: state.p[1],
-            'ev-mousedown': dragEvent(state.events.movePoint, {
-                name: 'p'
-            })
-        }),
-        shapes.point({
-            cx: state.p1[0],
-            cy: state.p1[1],
-            'ev-mousedown': dragEvent(state.events.movePoint, {
-                name: 'p1'
-            })
-        }),
-        shapes.point({
-            cx: state.p2[0],
-            cy: state.p2[1],
-            'ev-mousedown': dragEvent(state.events.movePoint, {
-                name: 'p2'
-            })
-        }),
-        shapes.point({
-            cx: state.p3[0],
-            cy: state.p3[1],
-            'ev-mousedown': dragEvent(state.events.movePoint, {
-                name: 'p3'
-            })
-        })
-    ]);
 }
 
-function render(state) {
+App.render = function render(state) {
     return svg('svg', {
         'width': state.width,
         'height': state.height,
@@ -88,6 +48,49 @@ function render(state) {
         }, 'The points are draggable'),
         rootScene(state)
     ]);
+};
+
+function rootScene(state) {
+    return svg('g', [
+        shapes.triangle(state.p1, state.p2, state.p3),
+        shapes.circle(state.p, state.c),
+        shapes.segment(state.p, state.c),
+        shapes.point({
+            cx: state.c[0],
+            cy: state.c[1],
+            'ev-mousedown': dragEvent(state.handles.movePoint, {
+                name: 'c'
+            })
+        }),
+        shapes.point({
+            cx: state.p[0],
+            cy: state.p[1],
+            'ev-mousedown': dragEvent(state.handles.movePoint, {
+                name: 'p'
+            })
+        }),
+        shapes.point({
+            cx: state.p1[0],
+            cy: state.p1[1],
+            'ev-mousedown': dragEvent(state.handles.movePoint, {
+                name: 'p1'
+            })
+        }),
+        shapes.point({
+            cx: state.p2[0],
+            cy: state.p2[1],
+            'ev-mousedown': dragEvent(state.handles.movePoint, {
+                name: 'p2'
+            })
+        }),
+        shapes.point({
+            cx: state.p3[0],
+            cy: state.p3[1],
+            'ev-mousedown': dragEvent(state.handles.movePoint, {
+                name: 'p3'
+            })
+        })
+    ]);
 }
 
-mercury.app(document.body, state, render);
+hg.app(document.body, App(), App.render);
