@@ -1,75 +1,70 @@
 'use strict';
 
 var validEmail = require('valid-email');
-var mercury = require('../../index.js');
+var hg = require('../../index.js');
+var WeakmapEvent = require('./lib/weakmap-event.js');
 
-loginComponent.render = require('./view.js');
+var onSuccess = WeakmapEvent();
 
-module.exports = loginComponent;
+LoginComponent.render = require('./login-component-render.js');
+LoginComponent.onSuccess = onSuccess.listen;
 
-function loginComponent(options) {
-    var events = {
-        login: mercury.input(),
-        switchMode: mercury.input(),
-        register: mercury.input()
-    };
-    var onSuccess = mercury.input();
-    var state = mercury.struct({
-        events: events,
-        emailError: mercury.value(''),
-        passwordError: mercury.value(''),
-        registerMode: mercury.value(false)
+module.exports = LoginComponent;
+
+function LoginComponent(options) {
+    return hg.state({
+        emailError: hg.value(''),
+        passwordError: hg.value(''),
+        registerMode: hg.value(false),
+        handles: {
+            switchMode: switchMode,
+            login: login,
+            register: register
+        }
     });
+}
 
-    events.switchMode(function switchMode(registerMode) {
-        state.registerMode.set(registerMode);
-    });
+function switchMode(state, registerMode) {
+    state.registerMode.set(registerMode);
+}
 
-    events.login(function login(user) {
-        resetErrors();
-        var email = user.email;
+function login(state, user) {
+    resetErrors(state);
+    var email = user.email;
 
-        if (!validEmail(email)) {
-            return state.emailError.set('Invalid email');
-        }
-
-        onSuccess({
-            type: 'login',
-            user: user
-        });
-    });
-
-    events.register(function register(user) {
-        resetErrors();
-        var email = user.email;
-
-        if (!validEmail(email)) {
-            return state.emailError.set('Invalid email');
-        }
-
-        if (user.password !== user.repeatPassword) {
-            return state.passwordError.set('Password not same');
-        }
-
-        if (user.password.length <= 6) {
-            return state.passwordError.set('Password too small');
-        }
-
-        onSuccess({
-            type: 'register',
-            user: user
-        });
-    });
-
-    return {
-        state: state,
-        events: {
-            onSuccess: onSuccess
-        }
-    };
-
-    function resetErrors() {
-        state.emailError.set('');
-        state.passwordError.set('');
+    if (!validEmail(email)) {
+        return state.emailError.set('Invalid email');
     }
+
+    onSuccess.broadcast(state, {
+        type: 'login',
+        user: user
+    });
+}
+
+function register(state, user) {
+    resetErrors(state);
+    var email = user.email;
+
+    if (!validEmail(email)) {
+        return state.emailError.set('Invalid email');
+    }
+
+    if (user.password !== user.repeatPassword) {
+        return state.passwordError.set('Password not same');
+    }
+
+    if (user.password.length <= 6) {
+        return state.passwordError.set('Password too small');
+    }
+
+    onSuccess.broadcast(state, {
+        type: 'register',
+        user: user
+    });
+}
+
+function resetErrors(state) {
+    state.emailError.set('');
+    state.passwordError.set('');
 }

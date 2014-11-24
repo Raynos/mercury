@@ -1,6 +1,6 @@
 'use strict';
 
-var mercury = require('../../index.js');
+var hg = require('../../index.js');
 var h = require('../../index.js').h;
 var styles = require('./styles.js');
 
@@ -13,10 +13,10 @@ function render(state) {
 }
 
 function renderLogin(state) {
-    var events = state.events;
+    var handles = state.handles;
 
     return h('div', {
-        'ev-event': mercury.submitEvent(events.login)
+        'ev-event': hg.submitEvent(handles.login)
     }, [
         h('fieldset', [
             h('legend', 'Login Form'),
@@ -30,7 +30,7 @@ function renderLogin(state) {
             }),
             h('div', [
                 h('button', {
-                    'ev-click': mercury.event(events.switchMode,
+                    'ev-click': hg.event(handles.switchMode,
                         !state.registerMode)
                 }, 'Register new User'),
                 h('button', 'Login')
@@ -40,10 +40,10 @@ function renderLogin(state) {
 }
 
 function renderRegister(state) {
-    var events = state.events;
+    var handles = state.handles;
 
     return h('div', {
-        'ev-event': mercury.submitEvent(events.register)
+        'ev-event': hg.submitEvent(handles.register)
     }, [
         h('fieldset', [
             h('legend', 'Register Form'),
@@ -62,7 +62,7 @@ function renderRegister(state) {
             }),
             h('div', [
                 h('button', {
-                    'ev-click': mercury.event(events.switchMode,
+                    'ev-click': hg.event(handles.switchMode,
                         !state.registerMode)
                 }, 'Login into existing User'),
                 h('button', 'Register')
