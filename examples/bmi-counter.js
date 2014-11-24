@@ -7,29 +7,36 @@ var h = require('../index.js').h;
 var SafeHook = require('./lib/safe-hook.js');
 
 function App() {
-    var state = hg.struct({
+    return hg.state({
         height: hg.value(180),
         weight: hg.value(80),
         bmi: hg.value(calcBmi(180, 80)),
-        handles: hg.value(null)
+        handles: {
+            heightChange: updateData.bind(null, 'height'),
+            weightChange: updateData.bind(null, 'weight'),
+            bmiChange: updateData.bind(null, 'bmi')
+        }
     });
-
-    state.handles.set(hg.handles({
-        heightChange: updateData.bind(null, 'height'),
-        weightChange: updateData.bind(null, 'weight'),
-        bmiChange: updateData.bind(null, 'bmi')
-    }, state));
-
-    return state;
 }
 
-function slider(value, sink, min, max) {
-    return h('input.slider', {
-        type: SafeHook('range'), // SafeHook for IE9 + type='range'
-        min: min, max: max, value: String(value),
-        style: { width: '100%' }, name: 'slider',
-        'ev-event': hg.changeEvent(sink)
-    });
+function updateData(type, state, data) {
+    state[type].set(Number(data.slider));
+
+    if (type !== 'bmi') {
+        state.bmi.set(calcBmi(state.height(), state.weight()));
+    } else {
+        state.weight.set(calcWeight(state.height(), state.bmi()));
+    }
+}
+
+function calcWeight(height, bmi) {
+    var meterz = height / 100;
+    return meterz * meterz * bmi;
+}
+
+function calcBmi(height, weight) {
+    var meterz = height / 100;
+    return weight / (meterz * meterz);
 }
 
 App.render = function render(state) {
@@ -61,24 +68,13 @@ App.render = function render(state) {
     ]);
 };
 
-function updateData(type, state, data) {
-    state[type].set(Number(data.slider));
-
-    if (type !== 'bmi') {
-        state.bmi.set(calcBmi(state.height(), state.weight()));
-    } else {
-        state.weight.set(calcWeight(state.height(), state.bmi()));
-    }
-}
-
-function calcWeight(height, bmi) {
-    var meterz = height / 100;
-    return meterz * meterz * bmi;
-}
-
-function calcBmi(height, weight) {
-    var meterz = height / 100;
-    return weight / (meterz * meterz);
+function slider(value, sink, min, max) {
+    return h('input.slider', {
+        type: SafeHook('range'), // SafeHook for IE9 + type='range'
+        min: min, max: max, value: String(value),
+        style: { width: '100%' }, name: 'slider',
+        'ev-event': hg.changeEvent(sink)
+    });
 }
 
 hg.app(document.body, App(), App.render);

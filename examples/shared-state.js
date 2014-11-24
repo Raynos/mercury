@@ -5,25 +5,16 @@ var hg = require('../index.js');
 var h = require('../index.js').h;
 
 function App() {
-    var state = hg.struct({
+    return hg.state({
         text: hg.value(''),
-        handles: hg.value(null)
+        handles: {
+            change: setText
+        }
     });
-
-    state.handles.set(hg.handles({
-        change: setText
-    }, state));
-
-    return state;
 }
 
-function inputBox(value, sink) {
-    return h('input.input', {
-        value: value,
-        name: 'text',
-        type: 'text',
-        'ev-event': hg.changeEvent(sink)
-    });
+function setText(state, data) {
+    state.text.set(data.text);
 }
 
 App.render = function render(state) {
@@ -36,8 +27,13 @@ App.render = function render(state) {
     ]);
 };
 
-function setText(state, data) {
-    state.text.set(data.text);
+function inputBox(value, sink) {
+    return h('input.input', {
+        value: value,
+        name: 'text',
+        type: 'text',
+        'ev-event': hg.changeEvent(sink)
+    });
 }
 
 hg.app(document.body, App(), App.render);

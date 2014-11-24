@@ -5,16 +5,16 @@ var hg = require('../index.js');
 var h = require('../index.js').h;
 
 function App() {
-    var state = hg.struct({
+    return hg.state({
         value: hg.value(0),
-        handles: hg.value(null)
+        handles: {
+            clicks: incrementCounter
+        }
     });
+}
 
-    state.handles.set(hg.handles({
-        clicks: incrementCounter
-    }, state));
-
-    return state;
+function incrementCounter(state) {
+    state.value.set(state.value() + 1);
 }
 
 App.render = function render(state) {
@@ -27,9 +27,5 @@ App.render = function render(state) {
         })
     ]);
 };
-
-function incrementCounter(state) {
-    state.value.set(state.value() + 1);
-}
 
 hg.app(document.body, App(), App.render);

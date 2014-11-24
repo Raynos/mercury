@@ -28,21 +28,16 @@ CanvasWidget.prototype.update = function update(prev, elem) {
 };
 
 function App() {
-    var state = hg.struct({
+    return hg.state({
         color: hg.value('red'),
-        handles: hg.value(null)
+        handles: {
+            changeColor: changeColor
+        }
     });
-
-    state.handles.set(hg.handles({
-        changeColor: changeColor
-    }, state));
-
-    return state;
 }
 
-function drawColor(context, color) {
-    context.fillStyle = color;
-    context.fillRect(0, 0, 100, 100);
+function changeColor(state, data) {
+    state.color.set(data.color);
 }
 
 App.render = function renderColor(state) {
@@ -61,8 +56,9 @@ App.render = function renderColor(state) {
     ]);
 };
 
-function changeColor(state, data) {
-    state.color.set(data.color);
+function drawColor(context, color) {
+    context.fillStyle = color;
+    context.fillRect(0, 0, 100, 100);
 }
 
 hg.app(document.body, App(), App.render);
