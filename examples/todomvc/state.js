@@ -24,7 +24,7 @@ module.exports = {
     todoItem: todoItem
 };
 
-function todoApp(events, initialState) {
+function todoApp(initialState) {
     var state = extend(TodoApp, initialState);
 
     return mercury.struct({
@@ -33,7 +33,7 @@ function todoApp(events, initialState) {
         field: mercury.struct({
             text: mercury.value(state.field.text)
         }),
-        events: events
+        handles: mercury.value(null)
     });
 }
 

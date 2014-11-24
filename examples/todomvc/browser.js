@@ -16,7 +16,7 @@ function App() {
     var storedState = localStorage.getItem('todos-mercury');
     var initialState = storedState ? JSON.parse(storedState) : null;
 
-    var state = State(initialState);
+    var state = State.todoApp(initialState);
     state.handles.set(hg.handles(Update, state));
 
     var router = EventRouter();

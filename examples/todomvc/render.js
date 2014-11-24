@@ -18,20 +18,20 @@ function render(state) {
             href: '/mercury/examples/todomvc/style.css'
         }),
         h('section#todoapp.todoapp', [
-            mercury.partial(header, state.field, state.events),
-            mainSection(state.todos, state.route, state.events),
+            mercury.partial(header, state.field, state.handles),
+            mainSection(state.todos, state.route, state.handles),
             mercury.partial(statsSection,
-                state.todos, state.route, state.events)
+                state.todos, state.route, state.handles)
         ]),
         mercury.partial(infoFooter)
     ]);
 }
 
-function header(field, events) {
+function header(field, handles) {
     return h('header#header.header', {
         'ev-event': [
-            mercury.changeEvent(events.setTodoField),
-            mercury.submitEvent(events.add)
+            mercury.changeEvent(handles.setTodoField),
+            mercury.submitEvent(handles.add)
         ]
     }, [
         h('h1', 'Todos'),
@@ -44,7 +44,7 @@ function header(field, events) {
     ]);
 }
 
-function mainSection(todos, route, events) {
+function mainSection(todos, route, handles) {
     var allCompleted = todos.every(function isComplete(todo) {
         return todo.completed;
     });
@@ -59,17 +59,17 @@ function mainSection(todos, route, events) {
             type: 'checkbox',
             name: 'toggle',
             checked: allCompleted,
-            'ev-change': mercury.valueEvent(events.toggleAll)
+            'ev-change': mercury.valueEvent(handles.toggleAll)
         }),
         h('label', { htmlFor: 'toggle-all' }, 'Mark all as complete'),
         h('ul#todo-list.todolist', visibleTodos
             .map(function renderItem(todo) {
-                return todoItem(todo, events);
+                return todoItem(todo, handles);
             }))
     ]);
 }
 
-function todoItem(todo, events) {
+function todoItem(todo, handles) {
     var className = (todo.completed ? 'completed ' : '') +
         (todo.editing ? 'editing' : '');
 
@@ -78,18 +78,18 @@ function todoItem(todo, events) {
             h('input.toggle', {
                 type: 'checkbox',
                 checked: todo.completed,
-                'ev-change': mercury.event(events.toggle, {
+                'ev-change': mercury.event(handles.toggle, {
                     id: todo.id,
                     completed: !todo.completed
                 })
             }),
             h('label', {
-                'ev-dblclick': mercury.event(events.startEdit, {
+                'ev-dblclick': mercury.event(handles.startEdit, {
                     id: todo.id
                 })
             }, todo.title),
             h('button.destroy', {
-                'ev-click': mercury.event(events.destroy, { id: todo.id })
+                'ev-click': mercury.event(handles.destroy, { id: todo.id })
             })
         ]),
         h('input.edit', {
@@ -99,18 +99,18 @@ function todoItem(todo, events) {
             // custom mutable operation into the tree to be
             // invoked at patch time
             'ev-focus': todo.editing ? doMutableFocus() : null,
-            'ev-keydown': mercury.keyEvent(events.cancelEdit, ESCAPE, {
+            'ev-keydown': mercury.keyEvent(handles.cancelEdit, ESCAPE, {
                 id: todo.id
             }),
-            'ev-event': mercury.submitEvent(events.finishEdit, {
+            'ev-event': mercury.submitEvent(handles.finishEdit, {
                 id: todo.id
             }),
-            'ev-blur': mercury.valueEvent(events.finishEdit, { id: todo.id })
+            'ev-blur': mercury.valueEvent(handles.finishEdit, { id: todo.id })
         })
     ]);
 }
 
-function statsSection(todos, route, events) {
+function statsSection(todos, route, handles) {
     var todosLeft = todos.filter(function notComplete(todo) {
         return !todo.completed;
     }).length;
@@ -129,7 +129,7 @@ function statsSection(todos, route, events) {
         ]),
         h('button.clear-completed#clear-completed', {
             hidden: todosCompleted === 0,
-            'ev-click': mercury.event(events.clearCompleted)
+            'ev-click': mercury.event(handles.clearCompleted)
         }, 'Clear completed (' + String(todosCompleted) + ')')
     ]);
 }
