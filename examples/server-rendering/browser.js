@@ -1,31 +1,36 @@
 'use strict';
 
 var document = require('global/document');
-var mercury = require('../../index.js');
+var hg = require('../../index.js');
 var virtualize = require('vdom-virtualize');
 var JSONGlobals = require('json-globals/get');
 
-var render = require('./render.js');
+function App(initialState) {
+    return hg.state({
+        description: hg.value(initialState.description || ''),
+        items: hg.array(initialState.items || []),
+        handles: {
+            add: add
+        }
+    });
+}
 
-var initialState = JSONGlobals('state');
-var state = mercury.struct({
-    description: mercury.value(initialState.description),
-    events: mercury.input(['add']),
-    items: mercury.array(initialState.items)
-});
-
-state.events.add(function add(data) {
+function add(state, data) {
     state.items.push({
         name: data.name
     });
-});
+}
 
+App.render = require('./render.js');
+
+var initialState = JSONGlobals('state');
+var app = App(initialState);
 var targetElem = document.body.firstChild;
 var prevTree = virtualize(targetElem);
 
-mercury.app(null, state, render, {
+hg.app(null, app, App.render, {
     initialTree: prevTree,
     target: targetElem
 });
 
-state.set(state());
+app.set(app());

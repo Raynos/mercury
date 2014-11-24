@@ -6,6 +6,7 @@ var path = require('path');
 var stringify = require('virtual-dom-stringify');
 var JSONGlobals = require('json-globals');
 var h = require('../../index.js').h;
+var logger = require('console');
 
 var render = require('./render.js');
 
@@ -33,6 +34,7 @@ var server = http.createServer(function onReq(req, res) {
 });
 
 server.listen(8000);
+logger.log('listening on port 8000');
 
 function layout(content, state) {
     return h('html', [
