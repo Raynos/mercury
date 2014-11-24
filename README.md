@@ -18,26 +18,25 @@ To understand what I mean by truly modular just [read the source](https://github
 ### Hello world
 
 ```js
+'use strict';
+
 var document = require('global/document');
 var hg = require('mercury');
 var h = require('mercury').h;
 
 function App() {
-    // define application state.
-    var state = hg.struct({
+    return hg.state({
         value: hg.value(0),
-        handles: hg.value(null)
+        handles: {
+            clicks: incrementCounter
+        }
     });
-
-    // define handles that react to events.
-    state.handles.set(hg.handles({
-        clicks: incrementCounter
-    }, state));
-
-    return state;
 }
 
-// declare view rendering.
+function incrementCounter(state) {
+    state.value.set(state.value() + 1);
+}
+
 App.render = function render(state) {
     return h('div.counter', [
         'The state ', h('code', 'clickCount'),
@@ -48,10 +47,6 @@ App.render = function render(state) {
         })
     ]);
 };
-
-function incrementCounter(state) {
-    state.value.set(state.value() + 1);
-}
 
 hg.app(document.body, App(), App.render);
 ```
