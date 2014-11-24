@@ -1,23 +1,24 @@
 'use strict';
 
-var mercury = require('../../index.js');
+var hg = require('../../index.js');
 var document = require('global/document');
-var h = mercury.h;
+var h = hg.h;
 
-var numberInput = require('./number-component.js');
+var NumberInput = require('./number-component.js');
 
-// main.js
-var state = mercury.struct({
-    red: numberInput().state,
-    blue: numberInput().state,
-    green: numberInput().state
-});
+function App() {
+    return hg.state({
+        red: NumberInput(),
+        blue: NumberInput(),
+        green: NumberInput()
+    });
+}
 
-function render(state) {
+App.render = function render(state) {
     function numberspanny(name, state) {
         return h('span', [
             name,
-            numberInput.Render(state)
+            NumberInput.render(state)
         ]);
     }
 
@@ -26,6 +27,6 @@ function render(state) {
         numberspanny('blue', state.blue),
         numberspanny('green', state.green)
     ]);
-}
+};
 
-mercury.app(document.body, state, render);
+hg.app(document.body, App(), App.render);
