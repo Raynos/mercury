@@ -13,6 +13,9 @@ var mercury = module.exports = {
     main: require('main-loop'),
     app: app,
 
+    // Base
+    BaseEvent: require('value-event/base-event'),
+
     // Input
     Delegator: require('dom-delegator'),
     input: input,
@@ -44,6 +47,7 @@ var mercury = module.exports = {
     // Utilities
     // deprecated: keep for back compat.
     computed: require('observ/computed'),
+    // deprecated: keep for back compat.
     watch: require('observ/watch')
 };
 
