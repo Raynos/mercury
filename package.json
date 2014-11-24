@@ -47,7 +47,8 @@
     "vdom": "git://github.com/raynos/vdom#hooks",
     "vdom-thunk": "^3.0.0",
     "virtual-hyperscript": "git://github.com/raynos/virtual-hyperscript#master",
-    "vtree": "git://github.com/raynos/vtree#hooks"
+    "vtree": "git://github.com/raynos/vtree#hooks",
+    "xtend": "^4.0.0"
   },
   "devDependencies": {
     "backbone": "^1.1.2",
