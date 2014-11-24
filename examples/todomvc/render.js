@@ -1,3 +1,5 @@
+'use strict';
+
 var mercury = require('../../index.js');
 var h = require('../../index.js').h;
 

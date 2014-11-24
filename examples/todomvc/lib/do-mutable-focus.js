@@ -1,3 +1,5 @@
+'use strict';
+
 var document = require('global/document');
 var nextTick = require('next-tick');
 

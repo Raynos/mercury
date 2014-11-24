@@ -1,3 +1,5 @@
+'use strict';
+
 var cuid = require('cuid');
 var extend = require('xtend');
 var mercury = require('../../index.js');

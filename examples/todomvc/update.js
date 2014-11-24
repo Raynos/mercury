@@ -1,3 +1,5 @@
+'use strict';
+
 var State = require('./state.js');
 
 module.exports = {
