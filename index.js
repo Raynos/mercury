@@ -2,6 +2,7 @@
 
 var SingleEvent = require('geval/single');
 var MultipleEvent = require('geval/multiple');
+var extend = require('xtend');
 
 /*
     Pro tip: Don't require `mercury` itself.
@@ -29,6 +30,7 @@ var mercury = module.exports = {
     hash: require('observ-struct'),
     varhash: require('observ-varhash'),
     value: require('observ'),
+    state: state,
 
     // Render
     diff: require('vtree/diff'),
@@ -51,6 +53,19 @@ function input(names) {
     }
 
     return MultipleEvent(names);
+}
+
+function state(obj) {
+    var copy = extend(obj);
+    var $handles = copy.handles;
+
+    if (handles) {
+        copy.handles = mercury.value(null);
+    }
+
+    var observ = mercury.struct(copy);
+    observ.handles.set(mercury.handles($handles, observ));
+    return observ;
 }
 
 function handles(funcs, context) {
