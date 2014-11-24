@@ -63,12 +63,14 @@ function state(obj) {
     var copy = extend(obj);
     var $handles = copy.handles;
 
-    if (handles) {
+    if ($handles) {
         copy.handles = mercury.value(null);
     }
 
     var observ = mercury.struct(copy);
-    observ.handles.set(mercury.handles($handles, observ));
+    if ($handles) {
+        observ.handles.set(mercury.handles($handles, observ));
+    }
     return observ;
 }
 
