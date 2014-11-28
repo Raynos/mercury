@@ -29,6 +29,7 @@ var mercury = module.exports = {
     clickEvent: require('value-event/click'),
 
     // State
+    // deprecated: use observ-varhash instead.
     array: require('observ-array'),
     struct: require('observ-struct'),
     // deprecated: alias struct as hash for back compat
