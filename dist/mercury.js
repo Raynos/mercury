@@ -1,4 +1,4 @@
-// mercury @ 10.0.0 
+// mercury @ 10.1.0 
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.mercury=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 'use strict';
 
@@ -20,6 +20,7 @@ var mercury = module.exports = {
 
     // Input
     Delegator: _dereq_('dom-delegator'),
+    // deprecated: keep for back compat.
     input: input,
     handles: handles,
     event: _dereq_('value-event/event'),
@@ -27,6 +28,7 @@ var mercury = module.exports = {
     submitEvent: _dereq_('value-event/submit'),
     changeEvent: _dereq_('value-event/change'),
     keyEvent: _dereq_('value-event/key'),
+    clickEvent: _dereq_('value-event/click'),
 
     // State
     array: _dereq_('observ-array'),
@@ -97,7 +99,7 @@ function app(elem, observ, render, opts) {
     return observ(loop.update);
 }
 
-},{"dom-delegator":8,"geval/multiple":17,"geval/single":18,"main-loop":22,"observ":51,"observ-array":40,"observ-struct":46,"observ-varhash":48,"observ/computed":50,"observ/watch":52,"value-event/base-event":56,"value-event/change":57,"value-event/event":58,"value-event/key":59,"value-event/submit":65,"value-event/value":66,"vdom-thunk":68,"vdom/create-element":72,"vdom/patch":75,"virtual-hyperscript":80,"virtual-hyperscript/svg":90,"vtree/diff":91,"xtend":103}],2:[function(_dereq_,module,exports){
+},{"dom-delegator":8,"geval/multiple":17,"geval/single":18,"main-loop":22,"observ":50,"observ-array":40,"observ-struct":46,"observ-varhash":48,"observ/computed":49,"observ/watch":51,"value-event/base-event":55,"value-event/change":56,"value-event/click":57,"value-event/event":58,"value-event/key":59,"value-event/submit":65,"value-event/value":66,"vdom-thunk":68,"vdom/create-element":72,"vdom/patch":75,"virtual-hyperscript":80,"virtual-hyperscript/svg":90,"vtree/diff":91,"xtend":103}],2:[function(_dereq_,module,exports){
 
 },{}],3:[function(_dereq_,module,exports){
 /**
@@ -316,9 +318,13 @@ DOMDelegator.allocateHandle =
 DOMDelegator.transformHandle =
     function transformHandle(handle, broadcast) {
         var func = HANDLER_STORE(handle).func
+        if (!func) {
+            console.error('wat', handle, handle.constructor);
+            throw new Error('wat');
+        }
 
         return this.allocateHandle(function (ev) {
-            broadcast(ev, func);
+            broadcast(ev, func, handle);
         })
     }
 
@@ -1001,7 +1007,7 @@ function main(initialState, view, opts) {
     }
 }
 
-},{"error/typed":15,"raf":54,"vdom/create-element":24,"vdom/patch":27,"vtree/diff":29}],23:[function(_dereq_,module,exports){
+},{"error/typed":15,"raf":53,"vdom/create-element":24,"vdom/patch":27,"vtree/diff":29}],23:[function(_dereq_,module,exports){
 var isObject = _dereq_("is-object")
 var isHook = _dereq_("vtree/is-vhook")
 
@@ -2100,7 +2106,7 @@ function getLength() {
     return this._list.length
 }
 
-},{"./add-listener.js":38,"./array-methods.js":39,"./put.js":43,"./splice.js":44,"./transaction.js":45,"observ":51}],41:[function(_dereq_,module,exports){
+},{"./add-listener.js":38,"./array-methods.js":39,"./put.js":43,"./splice.js":44,"./transaction.js":45,"observ":50}],41:[function(_dereq_,module,exports){
 module.exports = setNonEnumerable;
 
 function setNonEnumerable(object, key, value) {
@@ -2674,7 +2680,7 @@ function ObservStruct(struct) {
     return obs
 }
 
-},{"observ":51,"xtend":47}],47:[function(_dereq_,module,exports){
+},{"observ":50,"xtend":47}],47:[function(_dereq_,module,exports){
 module.exports = extend
 
 function extend() {
@@ -2699,8 +2705,6 @@ var extend = _dereq_('xtend')
 
 var NO_TRANSACTION = {}
 
-ObservVarhash.Tombstone = new Tombstone()
-
 module.exports = ObservVarhash
 
 function ObservVarhash (hash, createValue) {
@@ -2709,26 +2713,35 @@ function ObservVarhash (hash, createValue) {
   var initialState = {}
   var currentTransaction = NO_TRANSACTION
 
-  for (var key in hash) {
-    var observ = hash[key]
-    checkKey(key)
-    initialState[key] = isFn(observ) ? observ() : observ
-  }
-
-  var obs = Observ(initialState)
-  obs._removeListeners = {}
-
-  obs.get = get.bind(obs)
-  obs.put = put.bind(obs, createValue)
-  obs.delete = del.bind(obs)
+  var obs = Observ()
+  setNonEnumerable(obs, '_removeListeners', {});
+  var key
 
   for (key in hash) {
-    obs[key] = createValue(hash[key], key)
+    obs[key] = typeof hash[key] === 'function' ?
+      hash[key] : createValue(hash[key], key)
 
     if (isFn(obs[key])) {
       obs._removeListeners[key] = obs[key](watch(obs, key, currentTransaction))
     }
   }
+
+  for (key in hash) {
+    var observ = obs[key]
+    checkKey(key)
+    initialState[key] = isFn(observ) ? observ() : observ
+  }
+
+  currentTransaction = initialState
+  obs.set(initialState)
+  currentTransaction = NO_TRANSACTION
+
+
+  setNonEnumerable(obs, 'set', obs.set)
+  setNonEnumerable(obs, 'get', get.bind(obs))
+  setNonEnumerable(obs, 'put', put.bind(obs, createValue))
+  setNonEnumerable(obs, 'delete', del.bind(obs))
+
 
   obs(function (newState) {
     if (currentTransaction === newState) {
@@ -2754,8 +2767,13 @@ function get (key) {
 
 function put (createValue, key, val) {
   checkKey(key)
+  
+  if (val === undefined) {
+    throw new Error('cannot varhash.put(key, undefined).')
+  }
 
-  var observ = createValue(val, key)
+  var observ = typeof observ === 'function' ?
+    createValue(val, key) : val
   var state = extend(this())
 
   state[key] = isFn(observ) ? observ() : observ
@@ -2769,8 +2787,8 @@ function put (createValue, key, val) {
 
   setNonEnumerable(state, '_diff', diff(key, state[key]))
 
-  this.set(state)
   this[key] = observ
+  this.set(state)
 
   return this
 }
@@ -2783,8 +2801,9 @@ function del (key) {
 
   delete this._removeListeners[key]
   delete state[key]
+  delete this[key]
 
-  setNonEnumerable(state, '_diff', diff(key, ObservVarhash.Tombstone))
+  setNonEnumerable(state, '_diff', diff(key, undefined))
   this.set(state)
 
   return this
@@ -2839,20 +2858,7 @@ function checkKey (key) {
   )
 }
 
-// identify deletes
-function Tombstone () {}
-
-Tombstone.prototype.toJSON = nameTombstone
-Tombstone.prototype.inspect = nameTombstone
-Tombstone.prototype.toString = nameTombstone
-
-function nameTombstone () {
-  return '[object Tombstone]'
-}
-
-},{"observ":51,"xtend":49}],49:[function(_dereq_,module,exports){
-module.exports=_dereq_(47)
-},{}],50:[function(_dereq_,module,exports){
+},{"observ":50,"xtend":103}],49:[function(_dereq_,module,exports){
 var Observable = _dereq_("./index.js")
 
 module.exports = computed
@@ -2873,7 +2879,7 @@ function computed(observables, lambda) {
     return result
 }
 
-},{"./index.js":51}],51:[function(_dereq_,module,exports){
+},{"./index.js":50}],50:[function(_dereq_,module,exports){
 module.exports = Observable
 
 function Observable(value) {
@@ -2902,7 +2908,7 @@ function Observable(value) {
     }
 }
 
-},{}],52:[function(_dereq_,module,exports){
+},{}],51:[function(_dereq_,module,exports){
 module.exports = watch
 
 function watch(observable, listener) {
@@ -2911,7 +2917,7 @@ function watch(observable, listener) {
     return remove
 }
 
-},{}],53:[function(_dereq_,module,exports){
+},{}],52:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2976,7 +2982,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],54:[function(_dereq_,module,exports){
+},{}],53:[function(_dereq_,module,exports){
 var now = _dereq_('performance-now')
   , global = typeof window === 'undefined' ? {} : window
   , vendors = ['moz', 'webkit']
@@ -3058,7 +3064,7 @@ module.exports.cancel = function() {
   caf.apply(global, arguments)
 }
 
-},{"performance-now":55}],55:[function(_dereq_,module,exports){
+},{"performance-now":54}],54:[function(_dereq_,module,exports){
 (function (process){
 // Generated by CoffeeScript 1.6.3
 (function() {
@@ -3098,7 +3104,7 @@ module.exports.cancel = function() {
 */
 
 }).call(this,_dereq_("g5I+bs"))
-},{"g5I+bs":53}],56:[function(_dereq_,module,exports){
+},{"g5I+bs":52}],55:[function(_dereq_,module,exports){
 var Delegator = _dereq_('dom-delegator')
 
 module.exports = BaseEvent
@@ -3140,7 +3146,7 @@ function BaseEvent(lambda) {
     }
 }
 
-},{"dom-delegator":8}],57:[function(_dereq_,module,exports){
+},{"dom-delegator":8}],56:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -3173,7 +3179,34 @@ function changeLambda(ev, broadcast) {
     broadcast(data)
 }
 
-},{"./base-event.js":56,"form-data-set/element":61,"xtend":64}],58:[function(_dereq_,module,exports){
+},{"./base-event.js":55,"form-data-set/element":61,"xtend":64}],57:[function(_dereq_,module,exports){
+var BaseEvent = _dereq_('./base-event.js');
+
+module.exports = BaseEvent(clickLambda);
+
+function clickLambda(ev, broadcast) {
+    var opts = this.opts;
+
+    if (!opts.ctrl && ev.ctrlKey) {
+        return;
+    }
+
+    if (!opts.meta && ev.metaKey) {
+        return;
+    }
+
+    if (!opts.rightClick && ev.which === 2) {
+        return;
+    }
+
+    if (this.opts.preventDefault && ev.preventDefault) {
+        ev.preventDefault();
+    }
+
+    broadcast(this.data);
+}
+
+},{"./base-event.js":55}],58:[function(_dereq_,module,exports){
 var BaseEvent = _dereq_('./base-event.js');
 
 module.exports = BaseEvent(eventLambda);
@@ -3182,7 +3215,7 @@ function eventLambda(ev, broadcast) {
     broadcast(this.data);
 }
 
-},{"./base-event.js":56}],59:[function(_dereq_,module,exports){
+},{"./base-event.js":55}],59:[function(_dereq_,module,exports){
 var BaseEvent = _dereq_('./base-event.js');
 
 module.exports = BaseEvent(keyLambda);
@@ -3195,7 +3228,7 @@ function keyLambda(ev, broadcast) {
     }
 }
 
-},{"./base-event.js":56}],60:[function(_dereq_,module,exports){
+},{"./base-event.js":55}],60:[function(_dereq_,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -3396,7 +3429,7 @@ function submitLambda(ev, broadcast) {
     broadcast(data);
 }
 
-},{"./base-event.js":56,"form-data-set/element":61,"xtend":64}],66:[function(_dereq_,module,exports){
+},{"./base-event.js":55,"form-data-set/element":61,"xtend":64}],66:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -3411,7 +3444,7 @@ function valueLambda(ev, broadcast) {
     broadcast(data);
 }
 
-},{"./base-event.js":56,"form-data-set/element":61,"xtend":64}],67:[function(_dereq_,module,exports){
+},{"./base-event.js":55,"form-data-set/element":61,"xtend":64}],67:[function(_dereq_,module,exports){
 function Thunk(fn, args, key, eqArgs) {
     this.fn = fn;
     this.args = args;
