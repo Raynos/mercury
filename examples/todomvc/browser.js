@@ -7,24 +7,24 @@ var window = require('global/window');
 var rafListen = require('./lib/raf-listen.js');
 var localStorage = window.localStorage;
 
-var State = require('./state.js');
+var TodoApp = require('./todo-app.js');
 
 function App() {
     // load from localStorage
-    var storedState = localStorage.getItem('todos-mercury');
+    var storedState = localStorage.getItem('todos-mercury@11');
     var initialState = storedState ? JSON.parse(storedState) : null;
 
-    var state = State(initialState);
+    var todoApp = TodoApp(initialState);
 
-    rafListen(state, function onChange(value) {
-        localStorage.setItem('todos-mercury',
+    rafListen(todoApp, function onChange(value) {
+        localStorage.setItem('todos-mercury@11',
             JSON.stringify(value));
     });
 
-    return state;
+    return todoApp;
 }
 
-App.render = require('./render.js');
+App.render = TodoApp.render;
 
 var app = App();
 var history = TimeTravel(app);

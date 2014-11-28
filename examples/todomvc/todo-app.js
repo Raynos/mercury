@@ -1,20 +1,78 @@
 'use strict';
 
-var mercury = require('../../index.js');
+var hg = require('../../index.js');
 var h = require('../../index.js').h;
-var document = require('global/document');
 var Router = require('../lib/router/');
+var document = require('global/document');
 
-var FocusHook = require('../lib/focus-hook.js');
+var TodoItem = require('./todo-item.js');
 
 var ROOT_URI = String(document.location.pathname);
 var COMPLETED_URI = ROOT_URI + '/completed';
 var ACTIVE_URI = ROOT_URI + '/active';
-var ESCAPE = 27;
 
-module.exports = render;
+module.exports = TodoApp;
 
-function render(state) {
+function TodoApp(opts) {
+    opts = opts || {};
+
+    var state = hg.state({
+        todos: hg.varhash(opts.todos || {}, TodoItem),
+        route: Router(),
+        field: hg.struct({
+            text: hg.value(opts.field && opts.field.text || '')
+        }),
+        handles: {
+            setTodoField: setTodoField,
+            add: add,
+            clearCompleted: clearCompleted,
+            toggleAll: toggleAll,
+            destroy: destroy
+        }
+    });
+
+    TodoItem.onDestroy.asHash(state.todos, function onDestroy(ev) {
+        destroy(state, ev);
+    });
+
+    return state;
+}
+
+function setTodoField(state, data) {
+    state.field.text.set(data.newTodo);
+}
+
+function add(state, data) {
+    if (data.newTodo.trim() === '') {
+        return;
+    }
+
+    var todo = TodoItem({
+        title: data.newTodo.trim()
+    });
+    state.todos.put(todo.id(), todo);
+    state.field.text.set('');
+}
+
+function clearCompleted(state) {
+    Object.keys(state.todos).forEach(function clear(key) {
+        if (state.todos[key].completed()) {
+            destroy(state, { id: state.todos[key].id() });
+        }
+    });
+}
+
+function toggleAll(state, value) {
+    Object.keys(state.todos).forEach(function toggle(key) {
+        state.todos[key].completed.set(value.toggle);
+    });
+}
+
+function destroy(state, opts) {
+    state.todos.delete(opts.id);
+}
+
+TodoApp.render = function render(state) {
     return h('.todomvc-wrapper', {
         style: { visibility: 'hidden' }
     }, [
@@ -23,20 +81,21 @@ function render(state) {
             href: '/mercury/examples/todomvc/style.css'
         }),
         h('section#todoapp.todoapp', [
-            mercury.partial(header, state.field, state.handles),
-            mainSection(state.todos, state.route, state.handles),
-            mercury.partial(statsSection,
+            hg.partial(header, state.field, state.handles),
+            hg.partial(mainSection,
+                state.todos, state.route, state.handles),
+            hg.partial(statsSection,
                 state.todos, state.route, state.handles)
         ]),
-        mercury.partial(infoFooter)
+        hg.partial(infoFooter)
     ]);
-}
+};
 
 function header(field, handles) {
     return h('header#header.header', {
         'ev-event': [
-            mercury.changeEvent(handles.setTodoField),
-            mercury.submitEvent(handles.add)
+            hg.changeEvent(handles.setTodoField),
+            hg.submitEvent(handles.add)
         ]
     }, [
         h('h1', 'Todos'),
@@ -50,78 +109,42 @@ function header(field, handles) {
 }
 
 function mainSection(todos, route, handles) {
-    var allCompleted = todos.every(function isComplete(todo) {
+    var todosList = objectToArray(todos);
+
+    var allCompleted = todosList.every(function isComplete(todo) {
         return todo.completed;
     });
-    var visibleTodos = todos.filter(function isVisible(todo) {
+    var visibleTodos = todosList.filter(function isVisible(todo) {
         return route === COMPLETED_URI && todo.completed ||
             route === ACTIVE_URI && !todo.completed ||
             route === ROOT_URI;
     });
 
-    return h('section#main.main', { hidden: !todos.length }, [
+    return h('section#main.main', { hidden: !todosList.length }, [
         h('input#toggle-all.toggle-all', {
             type: 'checkbox',
             name: 'toggle',
             checked: allCompleted,
-            'ev-change': mercury.valueEvent(handles.toggleAll)
+            'ev-change': hg.valueEvent(handles.toggleAll)
         }),
         h('label', { htmlFor: 'toggle-all' }, 'Mark all as complete'),
         h('ul#todo-list.todolist', visibleTodos
             .map(function renderItem(todo) {
-                return todoItem(todo, handles);
+                return TodoItem.render(todo, handles);
             }))
     ]);
 }
 
-function todoItem(todo, handles) {
-    var className = (todo.completed ? 'completed ' : '') +
-        (todo.editing ? 'editing' : '');
-
-    return h('li', { className: className, key: todo.id }, [
-        h('.view', [
-            h('input.toggle', {
-                type: 'checkbox',
-                checked: todo.completed,
-                'ev-change': mercury.event(handles.toggle, {
-                    id: todo.id,
-                    completed: !todo.completed
-                })
-            }),
-            h('label', {
-                'ev-dblclick': mercury.event(handles.startEdit, {
-                    id: todo.id
-                })
-            }, todo.title),
-            h('button.destroy', {
-                'ev-click': mercury.event(handles.destroy, { id: todo.id })
-            })
-        ]),
-        h('input.edit', {
-            value: todo.title,
-            name: 'title',
-            // when we need an RPC invocation we add a
-            // custom mutable operation into the tree to be
-            // invoked at patch time
-            'ev-focus': todo.editing ? FocusHook() : null,
-            'ev-keydown': mercury.keyEvent(handles.cancelEdit, ESCAPE, {
-                id: todo.id
-            }),
-            'ev-event': mercury.submitEvent(handles.finishEdit, {
-                id: todo.id
-            }),
-            'ev-blur': mercury.valueEvent(handles.finishEdit, { id: todo.id })
-        })
-    ]);
-}
-
 function statsSection(todos, route, handles) {
-    var todosLeft = todos.filter(function notComplete(todo) {
+    var todosList = objectToArray(todos);
+    var todosLeft = todosList.filter(function notComplete(todo) {
         return !todo.completed;
     }).length;
-    var todosCompleted = todos.length - todosLeft;
+    var todosCompleted = todosList.length - todosLeft;
 
-    return h('footer#footer.footer', { hidden: !todos.length }, [
+    return h('footer#footer.footer', {
+        hidden: !todosList.length
+    }, [
         h('span#todo-count.todo-count', [
             h('strong', String(todosLeft)),
             todosLeft === 1 ? ' item' : ' items',
@@ -135,7 +158,7 @@ function statsSection(todos, route, handles) {
         ]),
         h('button.clear-completed#clear-completed', {
             hidden: todosCompleted === 0,
-            'ev-click': mercury.event(handles.clearCompleted)
+            'ev-click': hg.event(handles.clearCompleted)
         }, 'Clear completed (' + String(todosCompleted) + ')')
     ]);
 }
@@ -161,4 +184,10 @@ function infoFooter() {
             h('a', { href: 'http://todomvc.com' }, 'TodoMVC')
         ])
     ]);
+}
+
+function objectToArray(obj) {
+    return Object.keys(obj).map(function toItem(k) {
+        return obj[k];
+    });
 }

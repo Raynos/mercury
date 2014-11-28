@@ -18,6 +18,7 @@ var mercury = module.exports = {
 
     // Input
     Delegator: require('dom-delegator'),
+    // deprecated: keep for back compat.
     input: input,
     handles: handles,
     event: require('value-event/event'),
@@ -25,6 +26,7 @@ var mercury = module.exports = {
     submitEvent: require('value-event/submit'),
     changeEvent: require('value-event/change'),
     keyEvent: require('value-event/key'),
+    clickEvent: require('value-event/click'),
 
     // State
     array: require('observ-array'),
