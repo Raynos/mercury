@@ -1,4 +1,4 @@
-Auto generated from virtual-dom at version: 0.0.20.
+Auto generated from virtual-dom at version: 0.0.22.
 
 # virtual-dom
 
@@ -8,7 +8,7 @@ A JavaScript [DOM model](#dom-model) supporting [element creation](#element-crea
 [![NPM version][3]][4]
 [![Coverage Status][5]][6]
 [![Davis Dependency status][7]][8]
-
+[![experimental](http://hughsk.github.io/stability-badges/dist/experimental.svg)](http://github.com/hughsk/stability-badges)
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/mattesch.svg)](https://saucelabs.com/u/mattesch)
 
@@ -61,6 +61,19 @@ setInterval(function () {
 ```
 [View on RequireBin](http://requirebin.com/?gist=5492847b9a9025e64bab)
 
+## Documentation
+
+You can find the documentation for the seperate components
+  in their READMEs
+
+ - For `create-element.js` see the [vdom README](vdom/README.md)
+ - For `diff.js` see the [vtree README](vtree/README.md)
+ - For `h.js` see the [virtual-hyperscript README](virtual-hyperscript/README.md)
+ - For `patch.js` see the [vdom README](vdom/README.md)
+
+For information about the type signatures of these modules feel
+  free to read the [javascript signature definition](docs.jsig)
+
 ## DOM model
 
 `virtual-dom` exposes a set of objects designed for representing DOM nodes. A "Document Object Model Model" might seem like a strange term, but it is exactly that. It's a native JavaScript tree structure that represents a native DOM node tree. We call this a **VTree**
@@ -70,8 +83,8 @@ We can create a VTree using the objects directly in a verbose manner, or we can 
 ### Example - creating a VTree using the objects directly
 
 ```javascript
-var VNode = require('vtree/vnode');
-var VText = require('vtree/vtext');
+var VNode = require('virtual-dom/vtree/vnode');
+var VText = require('virtual-dom/vtree/vtext')
 
 function render(data) {
     return new VNode('div', {
@@ -83,6 +96,7 @@ function render(data) {
 
 module.exports = render;
 ```
+
 ### Example - creating a VTree using virtual-hyperscript
 
 ```javascript
@@ -103,7 +117,7 @@ A `VTree` is designed to be equivalent to an immutable data structure. While it'
 
 ## Element creation
 
-```ocaml
+```haskell
 createElement(tree:VTree) -> DOMNode
 ```
 
@@ -111,7 +125,7 @@ Given that we have created a `VTree`, we need some way to translate this into a 
 
 ## Diff computation
 
-```ocaml
+```haskell
 diff(previous:VTree, current:VTree) -> PatchObject
 ```
 
@@ -119,7 +133,7 @@ The primary motivation behind virtual-dom is to allow us to write code indepente
 
 ## Patch operations
 
-```ocaml
+```haskell
 patch(rootNode:DOMNode, patches:PatchObject) -> DOMNode newRootNode
 ```
 

@@ -1,4 +1,4 @@
-Auto generated from vdom at version: 0.0.20.
+Auto generated from vdom at version: 0.0.22.
 
 # vdom
 

@@ -72,13 +72,19 @@ assert.equal(together(), 7)
 ## Docs
 
 ```ocaml
-type Observable<A> := {
-    () => A &
-    (Function<A>) => void,
+type Observable<A> :
+  (() => A) & 
+  ((Function<A>) => void) & {
     set: (A) => void
-}
+  }
+  
 
-observ := (A) => Observable<A>
+observ : (A) => Observable<A>
+
+observ/computed : (
+  sources: Array<Observ<T>>,
+  lambda: (...args: T) => S
+) => Observ<S>
 ```
 
 

@@ -1,4 +1,4 @@
-Auto generated from virtual-hyperscript at version: 4.4.0.
+Auto generated from virtual-hyperscript at version: 4.6.0.
 
 # virtual-hyperscript
 

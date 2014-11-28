@@ -94,7 +94,7 @@ The default implementation of this comparison function is
   shallow comparison of the arrays and checking that the values
   at each index are the exact same reference to an object.
 
-### `var thunk = new ImmutableThunk(fn, args, key, eqFn)
+### `var thunk = new ImmutableThunk(fn, args, key, eqFn)`
 
 ```ocaml
 vdom-thunk/immutable-thunk : (
@@ -110,7 +110,7 @@ vdom-thunk/immutable-thunk : (
   you can use directly if you want slightly more performance
   or customizability.
 
-It takes a function that will be evaluated to a virtaul element
+It takes a function that will be evaluated to a virtual element
   for `vtree` and a set of args that it will call the function
   with.
 

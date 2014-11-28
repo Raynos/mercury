@@ -1,4 +1,4 @@
-Auto generated from observ-array at version: 2.0.0.
+Auto generated from observ-array at version: 3.1.0.
 
 # observ-array
 

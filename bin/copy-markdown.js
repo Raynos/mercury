@@ -6,8 +6,8 @@ var parallel = require('run-parallel');
 var series = require('run-series');
 var rimraf = require('rimraf');
 var spawn = require('child_process').spawn;
-var process = require('process');
 var logger = require('console');
+var os = require('os');
 
 function gitrun(cmds, cwd, cb) {
     var git = spawn('git', cmds, {
@@ -31,23 +31,24 @@ function gitrun(cmds, cwd, cb) {
     });
 }
 
-var docs = path.join(__dirname, '..', 'docs');
-var projects = [
-    'Raynos/geval',
-    'Raynos/dom-delegator',
-    'Raynos/value-event',
-    'Raynos/observ-array',
-    'Raynos/observ-struct',
-    'Raynos/observ',
-    'Matt-Esch/virtual-dom',
-    'Matt-Esch/vtree',
-    'Matt-Esch/vdom',
-    'Raynos/vdom-thunk',
-    'Raynos/virtual-hyperscript',
-    'Raynos/main-loop'
-];
+var docs = path.join(__dirname, '..', 'docs', 'modules');
+var projects = {
+    'Raynos/geval': 'README.md',
+    'Raynos/dom-delegator': 'README.md',
+    'Raynos/value-event': 'README.md',
+    'Raynos/observ-array': 'README.md',
+    'nrw/observ-varhash': 'Readme.md',
+    'Raynos/observ-struct': 'README.md',
+    'Raynos/observ': 'README.md',
+    'Matt-Esch/virtual-dom': 'README.md',
+    'Matt-Esch/vtree': 'README.md',
+    'Matt-Esch/vdom': 'README.md',
+    'Raynos/vdom-thunk': 'README.md',
+    'Raynos/virtual-hyperscript': 'README.md',
+    'Raynos/main-loop': 'README.md'
+};
 
-var tasks = projects.map(function writeFile(projectUri) {
+var tasks = Object.keys(projects).map(function writeFile(projectUri) {
     return function thunk(cb) {
         getProject(projectUri, function onProject(err, data) {
             if (err) {
@@ -76,13 +77,14 @@ function getProject(uri, cb) {
     var projectUri = 'git@github.com:' + uri;
     var parts = uri.split('/');
     var folderName = parts[parts.length - 1];
-    var folder = path.join(process.cwd(), folderName);
+    var dir = os.tmpDir();
+    var folder = path.join(dir, folderName);
 
     series([
-        gitrun.bind(null, ['clone', projectUri], process.cwd()),
+        gitrun.bind(null, ['clone', projectUri], dir),
         parallel.bind(null, {
             readme: fs.readFile.bind(null,
-                path.join(folder, 'README.md'), 'utf8'),
+                path.join(folder, projects[uri]), 'utf8'),
             package: fs.readFile.bind(null,
                 path.join(folder, 'package.json'), 'utf8')
         })
