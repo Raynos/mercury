@@ -1,7 +1,7 @@
 A component in mercury is two things
 
  - a "constructor" that takes some initialization arguments and
-    returns { state, events }
+    returns state
  - a rendering function.
 
 The `state` that is returned from a component is a
@@ -12,7 +12,7 @@ For example:
 
 ```js
 var appState = mercury.struct({
-    loginState: LoginComponent(...).state
+    loginState: LoginComponent(...)
 })
 ```
 
@@ -33,11 +33,11 @@ function appRender(state) {
 }
 ```
 
-A component also returns events, this is similar to how you 
+A component also has events, this is similar to how you 
 pass channels into a component in om except it's slightly
 less coupled.
 
-The events a component returns might be something like 
+The events a component jas might be something like 
 "login button pressed", i.e. a component is saying 
 "I have a login button but have no idea how to handle login, 
 please listen to my event and mutate the correct state somewhere".
@@ -48,10 +48,10 @@ For example:
 var loginComp = LoginComponent(...)
 
 var appState = mercury.struct({
-    loginState: loginComp.state
+    loginState: loginComp
 })
 
-loginComp.events.login(function (user) {
+LoginComponent.onLogin(loginComp, function (user) {
     /* do something with user. probably ajax, maybe redirect */
 })
 ```
@@ -64,16 +64,16 @@ exactly like how evan has demonstrated.
 For example:
 
 ```js
-LoginComponent.renderLogOutForm(loginComp.state)
+LoginComponent.renderLogOutForm(loginComp)
 ```
 
 The advantage of this technique is that you need to know nothing
 about how a component updates itself nor do you need to know
-anything about any `geval` events a component might have.
+anything about any events a component might have.
 
-Instead the component interally stores a geval events as a 
-property on it's own state and interally calls `updateState`,
-since the state it returns is a lens it will "mutate" the top
+Instead the component will internally broadcast any events
+or do the correct mutation of it's own state.
+Since the state it returns is a lens it will "mutate" the top
 level state that the caller of the component has embedded the
 component into thus triggering a redraw.
 

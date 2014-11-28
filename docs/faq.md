@@ -62,7 +62,7 @@ h('div', {
 You can also write your own custom higher order event handlers
   instead of writing inline functions.
 
-See [DragHandler](examples/geometry/drag-handler.js) as an
+See [DragHandler](examples/geometry/lib/drag-handler.js) as an
   example of a custom higher order event handler.
 
 ## How do I do custom rendering
@@ -272,7 +272,7 @@ The same idea also works for `mercury.array()` except that
 
 This section is a WIP
 
-show Component() -> { state: state } and Component.render()
+show Component() -> state { state: state } and Component.render()
 
 ### How do I interact with components
 
@@ -389,7 +389,7 @@ function EventComponent() {
     state.isOpen.set(data.value)
   })
 
-  return { state: state }
+  return state
 }
 
 EventComponent.render = function (state) {
@@ -421,7 +421,7 @@ var state = mercury.struct({
     days: mercury.array([
       mercury.struct({
         events: mercury.array([
-          EventComponent(...).state
+          EventComponent(...)
         ])
       })
     ])
