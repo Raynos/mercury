@@ -7,7 +7,6 @@ var mercury = require('../../../index.js');
 var source = require('geval/source');
 var window = require('global/window');
 var document = require('global/document');
-var routeMap = require('route-map');
 
 var cachedRouter = Router();
 

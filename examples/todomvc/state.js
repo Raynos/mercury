@@ -1,49 +1,36 @@
 'use strict';
 
+// circular dependency.
+module.exports = State;
+
 var cuid = require('cuid');
-var extend = require('xtend');
-var mercury = require('../../index.js');
+var hg = require('../../index.js');
 
-var TodoApp = {
-    todos: [],
-    route: 'all',
-    field: {
-        text: ''
-    }
-};
+var Router = require('../lib/router/');
+var Update = require('./update.js');
 
-var TodoItem = {
-    id: null,
-    title: '',
-    editing: false,
-    completed: false
-};
+State.TodoItem = TodoItem;
 
-module.exports = {
-    todoApp: todoApp,
-    todoItem: todoItem
-};
+function State(state) {
+    state = state || {};
 
-function todoApp(initialState) {
-    var state = extend(TodoApp, initialState);
-
-    return mercury.struct({
-        todos: mercury.array(state.todos.map(todoItem)),
-        route: mercury.value(state.route),
-        field: mercury.struct({
-            text: mercury.value(state.field.text)
+    return hg.state({
+        todos: hg.array((state.todos || []).map(TodoItem)),
+        route: Router(),
+        field: hg.struct({
+            text: hg.value(state.field.text || '')
         }),
-        handles: mercury.value(null)
+        handles: Update
     });
 }
 
-function todoItem(item) {
-    var state = extend(TodoItem, item);
+function TodoItem(item) {
+    item = item || {};
 
-    return mercury.struct({
+    return hg.struct({
         id: cuid(),
-        title: mercury.value(state.title),
-        editing: mercury.value(state.editing),
-        completed: mercury.value(state.completed)
+        title: hg.value(item.title || ''),
+        editing: hg.value(item.editing || false),
+        completed: hg.value(item.completed || false)
     });
 }

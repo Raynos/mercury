@@ -3,7 +3,6 @@
 var State = require('./state.js');
 
 module.exports = {
-    setRoute: setRoute,
     toggleAll: toggleAll,
     add: add,
     setTodoField: setTodoField,
@@ -14,10 +13,6 @@ module.exports = {
     cancelEdit: cancelEdit,
     clearCompleted: clearCompleted
 };
-
-function setRoute(state, route) {
-    state.route.set(route.substr(2) || 'all');
-}
 
 function toggleAll(state, value) {
     state.todos.forEach(function toggle(todo) {
@@ -30,7 +25,7 @@ function add(state, data) {
         return;
     }
 
-    state.todos.push(State.todoItem({
+    state.todos.push(State.TodoItem({
         title: data.newTodo.trim()
     }));
     state.field.text.set('');

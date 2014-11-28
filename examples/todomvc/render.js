@@ -2,9 +2,14 @@
 
 var mercury = require('../../index.js');
 var h = require('../../index.js').h;
+var document = require('global/document');
+var Router = require('../lib/router/');
 
-var doMutableFocus = require('./lib/do-mutable-focus.js');
+var FocusHook = require('../lib/focus-hook.js');
 
+var ROOT_URI = String(document.location.pathname);
+var COMPLETED_URI = ROOT_URI + '/completed';
+var ACTIVE_URI = ROOT_URI + '/active';
 var ESCAPE = 27;
 
 module.exports = render;
@@ -49,9 +54,9 @@ function mainSection(todos, route, handles) {
         return todo.completed;
     });
     var visibleTodos = todos.filter(function isVisible(todo) {
-        return route === 'completed' && todo.completed ||
-            route === 'active' && !todo.completed ||
-            route === 'all';
+        return route === COMPLETED_URI && todo.completed ||
+            route === ACTIVE_URI && !todo.completed ||
+            route === ROOT_URI;
     });
 
     return h('section#main.main', { hidden: !todos.length }, [
@@ -98,7 +103,7 @@ function todoItem(todo, handles) {
             // when we need an RPC invocation we add a
             // custom mutable operation into the tree to be
             // invoked at patch time
-            'ev-focus': todo.editing ? doMutableFocus() : null,
+            'ev-focus': todo.editing ? FocusHook() : null,
             'ev-keydown': mercury.keyEvent(handles.cancelEdit, ESCAPE, {
                 id: todo.id
             }),
@@ -123,9 +128,10 @@ function statsSection(todos, route, handles) {
             ' left'
         ]),
         h('ul#filters.filters', [
-            link('#/', 'All', route === 'all'),
-            link('#/active', 'Active', route === 'active'),
-            link('#/completed', 'Completed', route === 'completed')
+            link(ROOT_URI, 'All', route === ROOT_URI),
+            link(ACTIVE_URI, 'Active', route === ACTIVE_URI),
+            link(COMPLETED_URI, 'Completed',
+                route === COMPLETED_URI)
         ]),
         h('button.clear-completed#clear-completed', {
             hidden: todosCompleted === 0,
@@ -136,7 +142,7 @@ function statsSection(todos, route, handles) {
 
 function link(uri, text, isSelected) {
     return h('li', [
-        h('a', {
+        Router.anchor({
             className: isSelected ? 'selected' : '',
             href: uri
         }, text)
