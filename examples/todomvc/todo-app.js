@@ -57,7 +57,7 @@ function add(state, data) {
 function clearCompleted(state) {
     Object.keys(state.todos).forEach(function clear(key) {
         if (state.todos[key].completed()) {
-            destroy(state, { id: state.todos[key].id() });
+            destroy(state, state.todos[key]());
         }
     });
 }
