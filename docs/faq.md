@@ -62,7 +62,7 @@ h('div', {
 You can also write your own custom higher order event handlers
   instead of writing inline functions.
 
-See [DragHandler](examples/geometry/lib/drag-handler.js) as an
+See [DragHandler](https://github.com/Raynos/mercury/blob/master/examples/geometry/lib/drag-handler.js) as an
   example of a custom higher order event handler.
 
 ## How do I do custom rendering
