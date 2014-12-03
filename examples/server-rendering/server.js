@@ -21,7 +21,7 @@ var server = http.createServer(function onReq(req, res) {
 
     var state = {
         description: 'server description',
-        events: { add: {} },
+        handles: { add: {} },
         items: [{
             name: 'server item name'
         }]
