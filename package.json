@@ -40,7 +40,7 @@
     "geval": "^2.1.1",
     "main-loop": "git://github.com/raynos/main-loop#master",
     "observ": "^0.2.0",
-    "observ-array": "^2.0.0",
+    "observ-array": "^3.1.0",
     "observ-struct": "^5.0.1",
     "observ-varhash": "git://github.com/Raynos/observ-varhash#raynos",
     "value-event": "^4.1.0",
@@ -90,7 +90,6 @@
     "virtual-dom-stringify": "^0.2.0",
     "vtree-select": "^1.0.1",
     "weakmap-shim": "^1.1.0",
-    "xtend": "^3.0.0",
     "zuul": "^1.9.0"
   },
   "licenses": [
