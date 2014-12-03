@@ -89,6 +89,7 @@
     "vdom-virtualize": "0.0.5",
     "virtual-dom-stringify": "^0.2.0",
     "vtree-select": "^1.0.1",
+    "weakmap-shim": "^1.1.0",
     "xtend": "^3.0.0",
     "zuul": "^1.9.0"
   },
