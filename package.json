@@ -43,7 +43,7 @@
     "observ-array": "^2.0.0",
     "observ-struct": "^5.0.1",
     "observ-varhash": "git://github.com/Raynos/observ-varhash#raynos",
-    "value-event": "^4.0.0",
+    "value-event": "^4.1.0",
     "vdom": "git://github.com/raynos/vdom#hooks",
     "vdom-thunk": "^3.0.0",
     "virtual-hyperscript": "git://github.com/raynos/virtual-hyperscript#master",
