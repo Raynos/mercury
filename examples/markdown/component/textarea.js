@@ -2,7 +2,7 @@
 
 var mercury = require('../../../index');
 var h = mercury.h;
-var doMutableFocus = require('../../todomvc/lib/do-mutable-focus');
+var doMutableFocus = require('../../lib/focus-hook.js');
 var update = {
     // this needs to be input rather than change so that the pre expands as text
     // is entered into the textarea
