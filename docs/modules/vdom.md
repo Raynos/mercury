@@ -18,11 +18,11 @@ depend on `vdom` instead.
 ## Example
 
 ```js
-var VNode = require("vtree/vnode")
-var diff = require("vtree/diff")
+var VNode = require("virtual-dom/vnode/vnode")
+var diff = require("virtual-dom/vtree/diff")
 
-var createElement = require("vdom/create-element")
-var patch = require("vdom/patch")
+var createElement = require("virtual-dom/vdom/create-element")
+var patch = require("virtual-dom/vdom/patch")
 
 var leftNode = new VNode("div")
 var rightNode = new VNode("text")

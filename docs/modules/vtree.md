@@ -13,8 +13,8 @@ the active DOM node structure in the browser.
 ## Example
 
 ```js
-var VNode = require("vtree/vnode")
-var diff = require("vtree/diff")
+var VNode = require("virtual-dom/vnode/vnode")
+var diff = require("virtual-dom/vtree/diff")
 
 var leftNode = new VNode("div")
 var rightNode = new VNode("text")
