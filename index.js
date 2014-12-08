@@ -91,7 +91,11 @@ function handles(funcs, context) {
 
 function app(elem, observ, render, opts) {
     mercury.Delegator(opts);
-    var loop = mercury.main(observ(), render, opts);
+    var loop = mercury.main(observ(), render, extend({
+        diff: mercury.diff,
+        create: mercury.create,
+        patch: mercury.patch
+    }, opts));
     if (elem) {
         elem.appendChild(loop.target);
     }
