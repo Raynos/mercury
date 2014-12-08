@@ -42,7 +42,7 @@
     "observ": "^0.2.0",
     "observ-array": "^3.1.0",
     "observ-struct": "^5.0.1",
-    "observ-varhash": "git://github.com/Raynos/observ-varhash#raynos",
+    "observ-varhash": "^1.0.0",
     "value-event": "^4.1.0",
     "vdom-thunk": "^3.0.0",
     "virtual-dom": "0.0.23",
