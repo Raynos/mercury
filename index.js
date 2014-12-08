@@ -39,13 +39,13 @@ var mercury = module.exports = {
     state: state,
 
     // Render
-    diff: require('vtree/diff'),
-    patch: require('vdom/patch'),
+    diff: require('virtual-dom/vtree/diff'),
+    patch: require('virtual-dom/vdom/patch'),
     partial: require('vdom-thunk'),
-    create: require('vdom/create-element'),
-    h: require('virtual-hyperscript'),
+    create: require('virtual-dom/vdom/create-element'),
+    h: require('virtual-dom/virtual-hyperscript'),
     // deprecated: keep for back compat.
-    svg: require('virtual-hyperscript/svg'),
+    svg: require('virtual-dom/virtual-hyperscript/svg'),
 
     // Utilities
     // deprecated: keep for back compat.

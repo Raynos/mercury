@@ -44,10 +44,8 @@
     "observ-struct": "^5.0.1",
     "observ-varhash": "git://github.com/Raynos/observ-varhash#raynos",
     "value-event": "^4.1.0",
-    "vdom": "git://github.com/raynos/vdom#hooks",
     "vdom-thunk": "^3.0.0",
-    "virtual-hyperscript": "git://github.com/raynos/virtual-hyperscript#master",
-    "vtree": "git://github.com/raynos/vtree#hooks",
+    "virtual-dom": "0.0.23",
     "xtend": "^4.0.0"
   },
   "devDependencies": {
