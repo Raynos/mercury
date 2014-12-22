@@ -42,10 +42,10 @@
     "observ": "^0.2.0",
     "observ-array": "^3.1.0",
     "observ-struct": "^5.0.1",
-    "observ-varhash": "^1.0.0",
+    "observ-varhash": "^1.0.2",
     "value-event": "^4.1.0",
     "vdom-thunk": "^3.0.0",
-    "virtual-dom": "0.0.23",
+    "virtual-dom": "0.0.24",
     "xtend": "^4.0.0"
   },
   "devDependencies": {
