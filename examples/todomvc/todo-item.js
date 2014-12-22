@@ -11,6 +11,12 @@ var DestroyEvent = WeakmapEvent();
 var ESCAPE = 27;
 
 TodoItem.onDestroy = DestroyEvent.listen;
+TodoItem.setCompleted = function setCompleted(s, x) {
+    s.completed.set(x);
+};
+TodoItem.isCompleted = function isCompleted(s) {
+    return s.completed();
+};
 
 module.exports = TodoItem;
 

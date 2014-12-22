@@ -26,7 +26,7 @@ function App() {
 
 App.render = TodoApp.render;
 
-var app = App();
+var app = window.app = App();
 var history = TimeTravel(app);
 window.undo = history.undo;
 window.redo = history.redo;

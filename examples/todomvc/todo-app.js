@@ -56,7 +56,7 @@ function add(state, data) {
 
 function clearCompleted(state) {
     Object.keys(state.todos).forEach(function clear(key) {
-        if (state.todos[key].completed()) {
+        if (TodoItem.isCompleted(state.todos[key])) {
             destroy(state, state.todos[key]());
         }
     });
@@ -64,7 +64,7 @@ function clearCompleted(state) {
 
 function toggleAll(state, value) {
     Object.keys(state.todos).forEach(function toggle(key) {
-        state.todos[key].completed.set(value.toggle);
+        TodoItem.setCompleted(state.todos[key], value.toggle);
     });
 }
 
