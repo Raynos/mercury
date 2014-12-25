@@ -28,7 +28,7 @@ function TodoItem(item) {
         title: hg.value(item.title || ''),
         editing: hg.value(item.editing || false),
         completed: hg.value(item.completed || false),
-        handles: {
+        channels: {
             toggle: toggle,
             startEdit: startEdit,
             cancelEdit: cancelEdit,
@@ -77,15 +77,15 @@ TodoItem.render = function render(todo, parentHandles) {
             h('input.toggle', {
                 type: 'checkbox',
                 checked: todo.completed,
-                'ev-change': hg.event(todo.handles.toggle, {
+                'ev-change': hg.send(todo.channels.toggle, {
                     completed: !todo.completed
                 })
             }),
             h('label', {
-                'ev-dblclick': hg.event(todo.handles.startEdit)
+                'ev-dblclick': hg.send(todo.channels.startEdit)
             }, todo.title),
             h('button.destroy', {
-                'ev-click': hg.event(parentHandles.destroy, {
+                'ev-click': hg.send(parentHandles.destroy, {
                     id: todo.id
                 })
             })
@@ -97,10 +97,10 @@ TodoItem.render = function render(todo, parentHandles) {
             // custom mutable operation into the tree to be
             // invoked at patch time
             'ev-focus': todo.editing ? FocusHook() : null,
-            'ev-keydown': hg.keyEvent(
-                todo.handles.cancelEdit, ESCAPE),
-            'ev-event': hg.submitEvent(todo.handles.finishEdit),
-            'ev-blur': hg.valueEvent(todo.handles.finishEdit)
+            'ev-keydown': hg.sendKey(
+                todo.channels.cancelEdit, ESCAPE),
+            'ev-event': hg.sendSubmit(todo.channels.finishEdit),
+            'ev-blur': hg.sendValue(todo.channels.finishEdit)
         })
     ]);
 

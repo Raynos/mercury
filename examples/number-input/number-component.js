@@ -6,7 +6,7 @@ var h = hg.h;
 function NumberInput() {
     return hg.state({
         value: hg.value(0),
-        handles: {
+        channels: {
             change: change,
             increase: increase,
             decrease: decrease
@@ -32,17 +32,17 @@ NumberInput.render = function render(state) {
             type: 'text',
             name: 'number',
             value: String(state.value),
-            'ev-event': hg.changeEvent(state.handles.change)
+            'ev-event': hg.sendChange(state.channels.change)
         }),
         h('input', {
             type: 'button',
             value: 'increase',
-            'ev-click': hg.event(state.handles.increase)
+            'ev-click': hg.send(state.channels.increase)
         }, 'increase'),
         h('input', {
             type: 'button',
             value: 'decrease',
-            'ev-click': hg.event(state.handles.decrease)
+            'ev-click': hg.send(state.channels.decrease)
         }, 'decrease')
     ]);
 };

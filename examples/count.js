@@ -7,7 +7,7 @@ var h = require('../index.js').h;
 function App() {
     return hg.state({
         value: hg.value(0),
-        handles: {
+        channels: {
             clicks: incrementCounter
         }
     });
@@ -23,7 +23,7 @@ App.render = function render(state) {
         ' has value: ' + state.value + '.', h('input.button', {
             type: 'button',
             value: 'Click me!',
-            'ev-click': hg.event(state.handles.clicks)
+            'ev-click': hg.send(state.channels.clicks)
         })
     ]);
 };

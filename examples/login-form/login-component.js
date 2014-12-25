@@ -16,7 +16,7 @@ function LoginComponent(options) {
         emailError: hg.value(''),
         passwordError: hg.value(''),
         registerMode: hg.value(false),
-        handles: {
+        channels: {
             switchMode: switchMode,
             login: login,
             register: register

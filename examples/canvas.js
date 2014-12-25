@@ -30,7 +30,7 @@ CanvasWidget.prototype.update = function update(prev, elem) {
 function App() {
     return hg.state({
         color: hg.value('red'),
-        handles: {
+        channels: {
             changeColor: changeColor
         }
     });
@@ -41,13 +41,13 @@ function changeColor(state, data) {
 }
 
 App.render = function renderColor(state) {
-    var handles = state.handles;
+    var channels = state.channels;
 
     return h('div', [
         h('div', [
             h('span', state.color + ' '),
             h('input', {
-                'ev-event': hg.changeEvent(handles.changeColor),
+                'ev-event': hg.sendChange(channels.changeColor),
                 value: state.color,
                 name: 'color'
             })

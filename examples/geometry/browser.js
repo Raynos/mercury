@@ -16,7 +16,7 @@ function App() {
         p: hg.value([250, 300]),
         width: hg.value(800),
         height: hg.value(600),
-        handles: {
+        channels: {
             movePoint: movePoint
         }
     });
@@ -58,35 +58,35 @@ function rootScene(state) {
         shapes.point({
             cx: state.c[0],
             cy: state.c[1],
-            'ev-mousedown': dragEvent(state.handles.movePoint, {
+            'ev-mousedown': dragEvent(state.channels.movePoint, {
                 name: 'c'
             })
         }),
         shapes.point({
             cx: state.p[0],
             cy: state.p[1],
-            'ev-mousedown': dragEvent(state.handles.movePoint, {
+            'ev-mousedown': dragEvent(state.channels.movePoint, {
                 name: 'p'
             })
         }),
         shapes.point({
             cx: state.p1[0],
             cy: state.p1[1],
-            'ev-mousedown': dragEvent(state.handles.movePoint, {
+            'ev-mousedown': dragEvent(state.channels.movePoint, {
                 name: 'p1'
             })
         }),
         shapes.point({
             cx: state.p2[0],
             cy: state.p2[1],
-            'ev-mousedown': dragEvent(state.handles.movePoint, {
+            'ev-mousedown': dragEvent(state.channels.movePoint, {
                 name: 'p2'
             })
         }),
         shapes.point({
             cx: state.p3[0],
             cy: state.p3[1],
-            'ev-mousedown': dragEvent(state.handles.movePoint, {
+            'ev-mousedown': dragEvent(state.channels.movePoint, {
                 name: 'p3'
             })
         })

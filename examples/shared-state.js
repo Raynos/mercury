@@ -7,7 +7,7 @@ var h = require('../index.js').h;
 function App() {
     return hg.state({
         text: hg.value(''),
-        handles: {
+        channels: {
             change: setText
         }
     });
@@ -22,7 +22,7 @@ App.render = function render(state) {
         h('p.content', 'The value is now: ' + state.text),
         h('p', [
             'Change it here: ',
-            inputBox(state.text, state.handles.change)
+            inputBox(state.text, state.channels.change)
         ])
     ]);
 };
@@ -32,7 +32,7 @@ function inputBox(value, sink) {
         value: value,
         name: 'text',
         type: 'text',
-        'ev-event': hg.changeEvent(sink)
+        'ev-event': hg.sendChange(sink)
     });
 }
 

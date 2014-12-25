@@ -22,7 +22,7 @@ function TodoApp(opts) {
         field: hg.struct({
             text: hg.value(opts.field && opts.field.text || '')
         }),
-        handles: {
+        channels: {
             setTodoField: setTodoField,
             add: add,
             clearCompleted: clearCompleted,
@@ -81,21 +81,21 @@ TodoApp.render = function render(state) {
             href: '/mercury/examples/todomvc/style.css'
         }),
         h('section#todoapp.todoapp', [
-            hg.partial(header, state.field, state.handles),
+            hg.partial(header, state.field, state.channels),
             hg.partial(mainSection,
-                state.todos, state.route, state.handles),
+                state.todos, state.route, state.channels),
             hg.partial(statsSection,
-                state.todos, state.route, state.handles)
+                state.todos, state.route, state.channels)
         ]),
         hg.partial(infoFooter)
     ]);
 };
 
-function header(field, handles) {
+function header(field, channels) {
     return h('header#header.header', {
         'ev-event': [
-            hg.changeEvent(handles.setTodoField),
-            hg.submitEvent(handles.add)
+            hg.sendChange(channels.setTodoField),
+            hg.sendSubmit(channels.add)
         ]
     }, [
         h('h1', 'Todos'),
@@ -108,7 +108,7 @@ function header(field, handles) {
     ]);
 }
 
-function mainSection(todos, route, handles) {
+function mainSection(todos, route, channels) {
     var todosList = objectToArray(todos);
 
     var allCompleted = todosList.every(function isComplete(todo) {
@@ -125,17 +125,17 @@ function mainSection(todos, route, handles) {
             type: 'checkbox',
             name: 'toggle',
             checked: allCompleted,
-            'ev-change': hg.valueEvent(handles.toggleAll)
+            'ev-change': hg.sendValue(channels.toggleAll)
         }),
         h('label', { htmlFor: 'toggle-all' }, 'Mark all as complete'),
         h('ul#todo-list.todolist', visibleTodos
             .map(function renderItem(todo) {
-                return TodoItem.render(todo, handles);
+                return TodoItem.render(todo, channels);
             }))
     ]);
 }
 
-function statsSection(todos, route, handles) {
+function statsSection(todos, route, channels) {
     var todosList = objectToArray(todos);
     var todosLeft = todosList.filter(function notComplete(todo) {
         return !todo.completed;
@@ -158,7 +158,7 @@ function statsSection(todos, route, handles) {
         ]),
         h('button.clear-completed#clear-completed', {
             hidden: todosCompleted === 0,
-            'ev-click': hg.event(handles.clearCompleted)
+            'ev-click': hg.send(channels.clearCompleted)
         }, 'Clear completed (' + String(todosCompleted) + ')')
     ]);
 }

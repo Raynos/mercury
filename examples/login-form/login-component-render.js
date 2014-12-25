@@ -13,10 +13,10 @@ function render(state) {
 }
 
 function renderLogin(state) {
-    var handles = state.handles;
+    var channels = state.channels;
 
     return h('div', {
-        'ev-event': hg.submitEvent(handles.login)
+        'ev-event': hg.sendSubmit(channels.login)
     }, [
         h('fieldset', [
             h('legend', 'Login Form'),
@@ -30,7 +30,7 @@ function renderLogin(state) {
             }),
             h('div', [
                 h('button', {
-                    'ev-click': hg.event(handles.switchMode,
+                    'ev-click': hg.send(channels.switchMode,
                         !state.registerMode)
                 }, 'Register new User'),
                 h('button', 'Login')
@@ -40,10 +40,10 @@ function renderLogin(state) {
 }
 
 function renderRegister(state) {
-    var handles = state.handles;
+    var channels = state.channels;
 
     return h('div', {
-        'ev-event': hg.submitEvent(handles.register)
+        'ev-event': hg.sendSubmit(channels.register)
     }, [
         h('fieldset', [
             h('legend', 'Register Form'),
@@ -62,7 +62,7 @@ function renderRegister(state) {
             }),
             h('div', [
                 h('button', {
-                    'ev-click': hg.event(handles.switchMode,
+                    'ev-click': hg.send(channels.switchMode,
                         !state.registerMode)
                 }, 'Login into existing User'),
                 h('button', 'Register')

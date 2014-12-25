@@ -18,21 +18,35 @@ var mercury = module.exports = {
 
     // Input
     Delegator: require('dom-delegator'),
-    // deprecated: keep for back compat.
+    // deprecated: use hg.handles instead.
     input: input,
-    handles: handles,
+    // deprecated: use hg.channels instead.
+    handles: channels,
+    channels: channels,
+    // deprecated: use hg.send instead.
     event: require('value-event/event'),
+    send: require('value-event/event'),
+    // deprecated: use hg.sendValue instead.
     valueEvent: require('value-event/value'),
+    sendValue: require('value-event/value'),
+    // deprecated: use hg.sendSubmit instead.
     submitEvent: require('value-event/submit'),
+    sendSubmit: require('value-event/submit'),
+    // deprecated: use hg.sendChange instead.
     changeEvent: require('value-event/change'),
+    sendChange: require('value-event/change'),
+    // deprecated: use hg.sendKey instead.
     keyEvent: require('value-event/key'),
+    sendKey: require('value-event/key'),
+    // deprecated use hg.sendClick instead.
     clickEvent: require('value-event/click'),
+    sendClick: require('value-event/click'),
 
     // State
-    // deprecated: use observ-varhash instead.
+    // deprecated: use hg.varhash instead.
     array: require('observ-array'),
     struct: require('observ-struct'),
-    // deprecated: alias struct as hash for back compat
+    // deprecated: use hg.struct instead.
     hash: require('observ-struct'),
     varhash: require('observ-varhash'),
     value: require('observ'),
@@ -44,13 +58,13 @@ var mercury = module.exports = {
     partial: require('vdom-thunk'),
     create: require('virtual-dom/vdom/create-element'),
     h: require('virtual-dom/virtual-hyperscript'),
-    // deprecated: keep for back compat.
+    // deprecated: require svg directly instead
     svg: require('virtual-dom/virtual-hyperscript/svg'),
 
     // Utilities
-    // deprecated: keep for back compat.
+    // deprecated: require computed directly instead.
     computed: require('observ/computed'),
-    // deprecated: keep for back compat.
+    // deprecated: require watch directly instead.
     watch: require('observ/watch')
 };
 
@@ -64,20 +78,25 @@ function input(names) {
 
 function state(obj) {
     var copy = extend(obj);
+    var $channels = copy.channels;
     var $handles = copy.handles;
 
-    if ($handles) {
+    if ($channels) {
+        copy.channels = mercury.value(null);
+    } else if ($handles) {
         copy.handles = mercury.value(null);
     }
 
     var observ = mercury.struct(copy);
-    if ($handles) {
-        observ.handles.set(mercury.handles($handles, observ));
+    if ($channels) {
+        observ.channels.set(mercury.channels($channels, observ));
+    } else if ($handles) {
+        observ.handles.set(mercury.channels($handles, observ));
     }
     return observ;
 }
 
-function handles(funcs, context) {
+function channels(funcs, context) {
     return Object.keys(funcs).reduce(createHandle, {});
 
     function createHandle(acc, name) {

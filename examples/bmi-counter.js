@@ -11,7 +11,7 @@ function App() {
         height: hg.value(180),
         weight: hg.value(80),
         bmi: hg.value(calcBmi(180, 80)),
-        handles: {
+        channels: {
             heightChange: updateData.bind(null, 'height'),
             weightChange: updateData.bind(null, 'weight'),
             bmiChange: updateData.bind(null, 'bmi')
@@ -40,7 +40,7 @@ function calcBmi(height, weight) {
 }
 
 App.render = function render(state) {
-    var handles = state.handles;
+    var channels = state.channels;
     var color = state.bmi < 18.5 ? 'orange' :
         state.bmi < 25 ? 'inherit' :
         state.bmi < 30 ? 'orange' : 'red';
@@ -52,28 +52,28 @@ App.render = function render(state) {
         h('h3', 'BMI calculator'),
         h('div.weight', [
             'Weight: ' + ~~state.weight + 'kg',
-            slider(state.weight, handles.weightChange, 30, 150)
+            slider(state.weight, channels.weightChange, 30, 150)
         ]),
         h('div.height', [
             'Height: ' + ~~state.height + 'cm',
-            slider(state.height, handles.heightChange, 100, 220)
+            slider(state.height, channels.heightChange, 100, 220)
         ]),
         h('div.bmi', [
             'BMI: ' + ~~state.bmi + ' ',
             h('span.diagnose', {
                 style: { color: color }
             }, diagnose),
-            slider(state.bmi, handles.bmiChange, 10, 50)
+            slider(state.bmi, channels.bmiChange, 10, 50)
         ])
     ]);
 };
 
-function slider(value, sink, min, max) {
+function slider(value, channel, min, max) {
     return h('input.slider', {
         type: SafeHook('range'), // SafeHook for IE9 + type='range'
         min: min, max: max, value: String(value),
         style: { width: '100%' }, name: 'slider',
-        'ev-event': hg.changeEvent(sink)
+        'ev-event': hg.sendChange(channel)
     });
 }
 

@@ -9,7 +9,7 @@ function App(initialState) {
     return hg.state({
         description: hg.value(initialState.description || ''),
         items: hg.array(initialState.items || []),
-        handles: {
+        channels: {
             add: add
         }
     });

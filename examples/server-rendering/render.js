@@ -7,7 +7,7 @@ module.exports = render;
 
 function render(state) {
     return h('div', {
-        'ev-event': mercury.submitEvent(state.handles.add)
+        'ev-event': mercury.sendSubmit(state.channels.add)
     }, [
         h('span', state.description),
         h('ul', state.items.map(function toItem(item) {
