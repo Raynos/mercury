@@ -6,6 +6,7 @@ Mercury is very component oriented at the root of it. Generally you write applic
 
 For example your simple.js ( https://github.com/staltz/cycle/blob/master/examples/simple/simple.js ) example is implemented as
 
+```
 var hg = require('mercury');
 var h = require('mercury').h;
 
@@ -57,20 +58,24 @@ function main() {
         bars: [{ id: 2, bar: 135 }]
     }), Foo.render);
 }
+```
+
 Some of the core ideas are:
 
-your entire view is a single complex vtree
-your entire view state is a single complex immutable object.
-your rendering function is pure, it takes just the view state.
-you declare all user input as channels up front in your view state.
-the view state supports cursors, you can nest components in components.
+ - your entire view is a single complex vtree
+ - your entire view state is a single complex immutable object.
+ - your rendering function is pure, it takes just the view state.
+ - you declare all user input as channels up front in your view state.
+ - the view state supports cursors, you can nest components in components.
+
 Mercury is unidirectional because:
 
-A DOM event triggers a value to be send to a channel
-The listener for the channel updates the view state
-An update to the view state triggers a re-render
-A new vtree is created
-diff() and patch() update the DOM.
+ - A DOM event triggers a value to be send to a channel
+ - The listener for the channel updates the view state
+ - An update to the view state triggers a re-render
+ - A new vtree is created
+ - diff() and patch() update the DOM.
+
 See more about life cycles here ( https://github.com/Raynos/mercury/blob/master/docs/life-cycles.md ).
 
 Mercury is also a hybrid of functional and imperative, the rendering logic is functional but the updating logic has an imperative updating interface (backed by a stream of immutable objects under the hood).
