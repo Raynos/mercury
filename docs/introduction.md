@@ -6,7 +6,7 @@ Mercury is very component oriented at the root of it. Generally you write applic
 
 For example your simple.js ( https://github.com/staltz/cycle/blob/master/examples/simple/simple.js ) example is implemented as
 
-```
+```js
 var hg = require('mercury');
 var h = require('mercury').h;
 
