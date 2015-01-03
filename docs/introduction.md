@@ -1,6 +1,6 @@
 ## What is mercury.
 
-> Below is a comment stolen from a mercury vs cycle ( https://github.com/staltz/cycle ) comparison.
+> Below is a comment stolen from a mercury vs cycle ( https://github.com/staltz/cycle/issues/49#issuecomment-68612757 ) comparison.
 
 Mercury is very component oriented at the root of it. Generally you write applications like
 
