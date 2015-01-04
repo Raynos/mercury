@@ -64,7 +64,7 @@ Some of the core ideas are:
 
  - your entire view is a single complex vtree
  - your entire view state is a single complex immutable object.
- - your rendering function is pure, it takes just the view state.
+ - your rendering function is pure, it takes just the view state (disclaimer: hooks & widgets are not pure).
  - you declare all user input as channels up front in your view state.
  - the view state supports cursors, you can nest components in components.
 
