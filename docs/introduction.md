@@ -12,7 +12,7 @@ var h = require('mercury').h;
 
 function Foo(initialState) {
     return hg.state({
-        bars: hg.array(initialState.bars, createBar],
+        bars: hg.array([initialState.bars], createBar),
         channels: {
             addBar: Foo.addBar
         }
@@ -58,6 +58,8 @@ function main() {
         bars: [{ id: 2, bar: 135 }]
     }), Foo.render);
 }
+
+main();
 ```
 
 Some of the core ideas are:
