@@ -58,6 +58,8 @@ function main() {
         bars: [{ id: 2, bar: 135 }]
     }), Foo.render);
 }
+
+main();
 ```
 
 Some of the core ideas are:
