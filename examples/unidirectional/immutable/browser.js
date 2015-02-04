@@ -28,18 +28,18 @@ events.add(function add(data) {
 
 function render(state) {
     return h('div', [
-        h('h2', state.description),
-        h('ul', state.items.map(function toItem(item) {
+        h('h2', state.get('description')),
+        h('ul', state.get('items').map(function toitem(item) {
             return h('li', {
                 key: item.cid,
-                style: { color: item.color }
+                style: { color: item.get('color') }
             }, [
-                h('span', item.name),
-                h('input', { value: item.value })
+                h('span', item.get('name')),
+                h('input', { value: item.get('value') })
             ]);
-        })),
+        }).toArray()),
         h('div', {
-            'ev-event': mercury.submitEvent(state.events.add)
+            'ev-event': mercury.submitEvent(state.getIn(['events', 'add']))
         }, [
             h('input', {
                 name: 'name',
@@ -61,12 +61,12 @@ function render(state) {
 function toObserv(cursor) {
     return function observ(listener) {
         if (!listener) {
-            return cursor.deref().toJS();
+            return cursor.deref();
         }
 
         cursor._onChange = function onChange(data) {
             cursor._rootData = data;
-            listener(data.toJS());
+            listener(data);
         };
     };
 }
