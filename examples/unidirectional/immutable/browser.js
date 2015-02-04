@@ -2,7 +2,6 @@
 
 var document = require('global/document');
 var mercury = require('../../../index.js');
-var cuid = require('cuid');
 var h = mercury.h;
 
 var Immutable = require('immutable');
@@ -73,4 +72,3 @@ function toObserv(cursor) {
 }
 
 mercury.app(document.body, toObserv(state), render);
-
