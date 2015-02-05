@@ -2,9 +2,13 @@
 
 > Below is a comment stolen from a mercury vs cycle ( https://github.com/staltz/cycle/issues/49#issuecomment-68612757 ) comparison.
 
-Mercury is very component oriented at the root of it. Generally you write applications like
+Mercury is very component oriented at the root of it. Generally you write applications as a series of components that
+return a state (the component data at any given point) and provides a render function. The render function knows how the
+component should be rendered including the dom structure, attributes/values and events/event handlers (known as channels in Mercury).
 
-For example your simple.js ( https://github.com/staltz/cycle/blob/master/examples/simple/simple.js ) example is implemented as
+The following is a quick example that makes a div that can be clicked which will create a new one exactly the same except it
+has a different `data-foo-id` attribute value. It is created in the image of a Cycle.js example you can see here ( https://github.com/staltz/cycle/blob/master/examples/simple/simple.js ).
+
 
 ```js
 var hg = require('mercury');
