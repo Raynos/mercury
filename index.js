@@ -18,7 +18,7 @@ var mercury = module.exports = {
 
     // Input
     Delegator: require('dom-delegator'),
-    // deprecated: use hg.handles instead.
+    // deprecated: use hg.channels instead.
     input: input,
     // deprecated: use hg.channels instead.
     handles: channels,
@@ -43,7 +43,7 @@ var mercury = module.exports = {
     sendClick: require('value-event/click'),
 
     // State
-    // deprecated: use hg.varhash instead.
+    // remove from core: favor hg.varhash instead.
     array: require('observ-array'),
     struct: require('observ-struct'),
     // deprecated: use hg.struct instead.
@@ -62,9 +62,9 @@ var mercury = module.exports = {
     svg: require('virtual-dom/virtual-hyperscript/svg'),
 
     // Utilities
-    // deprecated: require computed directly instead.
+    // remove from core: require computed directly instead.
     computed: require('observ/computed'),
-    // deprecated: require watch directly instead.
+    // remove from core: require watch directly instead.
     watch: require('observ/watch')
 };
 
