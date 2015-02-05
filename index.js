@@ -58,8 +58,6 @@ var mercury = module.exports = {
     partial: require('vdom-thunk'),
     create: require('virtual-dom/vdom/create-element'),
     h: require('virtual-dom/virtual-hyperscript'),
-    // deprecated: require svg directly instead
-    svg: require('virtual-dom/virtual-hyperscript/svg'),
 
     // Utilities
     // remove from core: require computed directly instead.
