@@ -1,4 +1,4 @@
-// mercury @ 11.0.0 
+// mercury @ 13.0.0 
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.mercury=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 'use strict';
 
@@ -20,21 +20,35 @@ var mercury = module.exports = {
 
     // Input
     Delegator: _dereq_('dom-delegator'),
-    // deprecated: keep for back compat.
+    // deprecated: use hg.handles instead.
     input: input,
-    handles: handles,
+    // deprecated: use hg.channels instead.
+    handles: channels,
+    channels: channels,
+    // deprecated: use hg.send instead.
     event: _dereq_('value-event/event'),
+    send: _dereq_('value-event/event'),
+    // deprecated: use hg.sendValue instead.
     valueEvent: _dereq_('value-event/value'),
+    sendValue: _dereq_('value-event/value'),
+    // deprecated: use hg.sendSubmit instead.
     submitEvent: _dereq_('value-event/submit'),
+    sendSubmit: _dereq_('value-event/submit'),
+    // deprecated: use hg.sendChange instead.
     changeEvent: _dereq_('value-event/change'),
+    sendChange: _dereq_('value-event/change'),
+    // deprecated: use hg.sendKey instead.
     keyEvent: _dereq_('value-event/key'),
+    sendKey: _dereq_('value-event/key'),
+    // deprecated use hg.sendClick instead.
     clickEvent: _dereq_('value-event/click'),
+    sendClick: _dereq_('value-event/click'),
 
     // State
-    // deprecated: use observ-varhash instead.
+    // deprecated: use hg.varhash instead.
     array: _dereq_('observ-array'),
     struct: _dereq_('observ-struct'),
-    // deprecated: alias struct as hash for back compat
+    // deprecated: use hg.struct instead.
     hash: _dereq_('observ-struct'),
     varhash: _dereq_('observ-varhash'),
     value: _dereq_('observ'),
@@ -46,13 +60,13 @@ var mercury = module.exports = {
     partial: _dereq_('vdom-thunk'),
     create: _dereq_('virtual-dom/vdom/create-element'),
     h: _dereq_('virtual-dom/virtual-hyperscript'),
-    // deprecated: keep for back compat.
+    // deprecated: require svg directly instead
     svg: _dereq_('virtual-dom/virtual-hyperscript/svg'),
 
     // Utilities
-    // deprecated: keep for back compat.
+    // deprecated: require computed directly instead.
     computed: _dereq_('observ/computed'),
-    // deprecated: keep for back compat.
+    // deprecated: require watch directly instead.
     watch: _dereq_('observ/watch')
 };
 
@@ -66,20 +80,25 @@ function input(names) {
 
 function state(obj) {
     var copy = extend(obj);
+    var $channels = copy.channels;
     var $handles = copy.handles;
 
-    if ($handles) {
+    if ($channels) {
+        copy.channels = mercury.value(null);
+    } else if ($handles) {
         copy.handles = mercury.value(null);
     }
 
     var observ = mercury.struct(copy);
-    if ($handles) {
-        observ.handles.set(mercury.handles($handles, observ));
+    if ($channels) {
+        observ.channels.set(mercury.channels($channels, observ));
+    } else if ($handles) {
+        observ.handles.set(mercury.channels($handles, observ));
     }
     return observ;
 }
 
-function handles(funcs, context) {
+function channels(funcs, context) {
     return Object.keys(funcs).reduce(createHandle, {});
 
     function createHandle(acc, name) {
@@ -104,7 +123,7 @@ function app(elem, observ, render, opts) {
     return observ(loop.update);
 }
 
-},{"dom-delegator":6,"geval/multiple":16,"geval/single":17,"main-loop":19,"observ":37,"observ-array":25,"observ-struct":32,"observ-varhash":34,"observ/computed":36,"observ/watch":38,"value-event/base-event":42,"value-event/change":43,"value-event/click":44,"value-event/event":45,"value-event/key":46,"value-event/submit":52,"value-event/value":53,"vdom-thunk":55,"virtual-dom/vdom/create-element":69,"virtual-dom/vdom/patch":72,"virtual-dom/virtual-hyperscript":77,"virtual-dom/virtual-hyperscript/svg":79,"virtual-dom/vtree/diff":90,"xtend":93}],2:[function(_dereq_,module,exports){
+},{"dom-delegator":6,"geval/multiple":15,"geval/single":16,"main-loop":18,"observ":36,"observ-array":24,"observ-struct":31,"observ-varhash":33,"observ/computed":35,"observ/watch":37,"value-event/base-event":41,"value-event/change":42,"value-event/click":43,"value-event/event":44,"value-event/key":45,"value-event/submit":51,"value-event/value":52,"vdom-thunk":54,"virtual-dom/vdom/create-element":64,"virtual-dom/vdom/patch":67,"virtual-dom/virtual-hyperscript":72,"virtual-dom/virtual-hyperscript/svg":75,"virtual-dom/vtree/diff":87,"xtend":90}],2:[function(_dereq_,module,exports){
 
 },{}],3:[function(_dereq_,module,exports){
 /**
@@ -219,28 +238,28 @@ function app(elem, observ, render, opts) {
 }(this.applitude || this));
 
 },{}],4:[function(_dereq_,module,exports){
-var DataSet = _dereq_("data-set")
+var EvStore = _dereq_("ev-store")
 
 module.exports = addEvent
 
 function addEvent(target, type, handler) {
-    var ds = DataSet(target)
-    var events = ds[type]
+    var events = EvStore(target)
+    var event = events[type]
 
-    if (!events) {
-        ds[type] = handler
-    } else if (Array.isArray(events)) {
-        if (events.indexOf(handler) === -1) {
-            events.push(handler)
+    if (!event) {
+        events[type] = handler
+    } else if (Array.isArray(event)) {
+        if (event.indexOf(handler) === -1) {
+            event.push(handler)
         }
-    } else if (events !== handler) {
-        ds[type] = [events, handler]
+    } else if (event !== handler) {
+        events[type] = [event, handler]
     }
 }
 
-},{"data-set":8}],5:[function(_dereq_,module,exports){
+},{"ev-store":7}],5:[function(_dereq_,module,exports){
 var globalDocument = _dereq_("global/document")
-var DataSet = _dereq_("data-set")
+var EvStore = _dereq_("ev-store")
 var createStore = _dereq_("weakmap-shim/create-store")
 
 var addEvent = _dereq_("./add-event.js")
@@ -390,10 +409,10 @@ function getListener(target, type) {
         return null
     }
 
-    var ds = DataSet(target)
+    var events = EvStore(target)
     // fetch list of handler fns for this event
-    var handler = ds[type]
-    var allHandler = ds.event
+    var handler = events[type]
+    var allHandler = events.event
 
     if (!handler && !allHandler) {
         return getListener(target.parentNode, type)
@@ -427,14 +446,14 @@ function Handle() {
     this.type = "dom-delegator-handle"
 }
 
-},{"./add-event.js":4,"./proxy-event.js":13,"./remove-event.js":14,"data-set":8,"global/document":18,"weakmap-shim/create-store":91}],6:[function(_dereq_,module,exports){
+},{"./add-event.js":4,"./proxy-event.js":12,"./remove-event.js":13,"ev-store":7,"global/document":17,"weakmap-shim/create-store":88}],6:[function(_dereq_,module,exports){
 var Individual = _dereq_("individual")
 var cuid = _dereq_("cuid")
 var globalDocument = _dereq_("global/document")
 
 var DOMDelegator = _dereq_("./dom-delegator.js")
 
-var versionKey = "12"
+var versionKey = "13"
 var cacheKey = "__DOM_DELEGATOR_CACHE@" + versionKey
 var cacheTokenKey = "__DOM_DELEGATOR_CACHE_TOKEN@" + versionKey
 var delegatorCache = Individual(cacheKey, {
@@ -489,88 +508,76 @@ function Delegator(opts) {
 Delegator.allocateHandle = DOMDelegator.allocateHandle;
 Delegator.transformHandle = DOMDelegator.transformHandle;
 
-},{"./dom-delegator.js":5,"cuid":3,"global/document":18,"individual":11}],7:[function(_dereq_,module,exports){
-module.exports = createHash
+},{"./dom-delegator.js":5,"cuid":3,"global/document":17,"individual":10}],7:[function(_dereq_,module,exports){
+'use strict';
 
-function createHash(elem) {
-    var attributes = elem.attributes
-    var hash = {}
+var OneVersionConstraint = _dereq_('individual/one-version');
 
-    if (attributes === null || attributes === undefined) {
-        return hash
+var MY_VERSION = '7';
+OneVersionConstraint('ev-store', MY_VERSION);
+
+var hashKey = '__EV_STORE_KEY@' + MY_VERSION;
+
+module.exports = EvStore;
+
+function EvStore(elem) {
+    var hash = elem[hashKey];
+
+    if (!hash) {
+        hash = elem[hashKey] = {};
     }
 
-    for (var i = 0; i < attributes.length; i++) {
-        var attr = attributes[i]
+    return hash;
+}
 
-        if (attr.name.substr(0,5) !== "data-") {
-            continue
-        }
+},{"individual/one-version":9}],8:[function(_dereq_,module,exports){
+(function (global){
+'use strict';
 
-        hash[attr.name.substr(5)] = attr.value
+/*global window, global*/
+
+var root = typeof window !== 'undefined' ?
+    window : typeof global !== 'undefined' ?
+    global : {};
+
+module.exports = Individual;
+
+function Individual(key, value) {
+    if (key in root) {
+        return root[key];
     }
 
-    return hash
+    root[key] = value;
+
+    return value;
 }
 
-},{}],8:[function(_dereq_,module,exports){
-var createStore = _dereq_("weakmap-shim/create-store")
-var Individual = _dereq_("individual")
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],9:[function(_dereq_,module,exports){
+'use strict';
 
-var createHash = _dereq_("./create-hash.js")
+var Individual = _dereq_('./index.js');
 
-var hashStore = Individual("__DATA_SET_WEAKMAP@3", createStore())
+module.exports = OneVersion;
 
-module.exports = DataSet
+function OneVersion(moduleName, version, defaultValue) {
+    var key = '__INDIVIDUAL_ONE_VERSION_' + moduleName;
+    var enforceKey = key + '_ENFORCE_SINGLETON';
 
-function DataSet(elem) {
-    var store = hashStore(elem)
+    var versionValue = Individual(enforceKey, version);
 
-    if (!store.hash) {
-        store.hash = createHash(elem)
+    if (versionValue !== version) {
+        throw new Error('Can only have one copy of ' +
+            moduleName + '.\n' +
+            'You already have version ' + versionValue +
+            ' installed.\n' +
+            'This means you cannot install version ' + version);
     }
 
-    return store.hash
+    return Individual(key, defaultValue);
 }
 
-},{"./create-hash.js":7,"individual":11,"weakmap-shim/create-store":9}],9:[function(_dereq_,module,exports){
-var hiddenStore = _dereq_('./hidden-store.js');
-
-module.exports = createStore;
-
-function createStore() {
-    var key = {};
-
-    return function (obj) {
-        if (typeof obj !== 'object' || obj === null) {
-            throw new Error('Weakmap-shim: Key must be object')
-        }
-
-        var store = obj.valueOf(key);
-        return store && store.identity === key ?
-            store : hiddenStore(obj, key);
-    };
-}
-
-},{"./hidden-store.js":10}],10:[function(_dereq_,module,exports){
-module.exports = hiddenStore;
-
-function hiddenStore(obj, key) {
-    var store = { identity: key };
-    var valueOf = obj.valueOf;
-
-    Object.defineProperty(obj, "valueOf", {
-        value: function (value) {
-            return value !== key ?
-                valueOf.apply(this, arguments) : store;
-        },
-        writable: true
-    });
-
-    return store;
-}
-
-},{}],11:[function(_dereq_,module,exports){
+},{"./index.js":8}],10:[function(_dereq_,module,exports){
 (function (global){
 var root = typeof window !== 'undefined' ?
     window : typeof global !== 'undefined' ?
@@ -592,7 +599,7 @@ function Individual(key, value) {
 }
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],12:[function(_dereq_,module,exports){
+},{}],11:[function(_dereq_,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -617,7 +624,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],13:[function(_dereq_,module,exports){
+},{}],12:[function(_dereq_,module,exports){
 var inherits = _dereq_("inherits")
 
 var ALL_PROPS = [
@@ -697,28 +704,28 @@ function KeyEvent(ev) {
 
 inherits(KeyEvent, ProxyEvent)
 
-},{"inherits":12}],14:[function(_dereq_,module,exports){
-var DataSet = _dereq_("data-set")
+},{"inherits":11}],13:[function(_dereq_,module,exports){
+var EvStore = _dereq_("ev-store")
 
 module.exports = removeEvent
 
 function removeEvent(target, type, handler) {
-    var ds = DataSet(target)
-    var events = ds[type]
+    var events = EvStore(target)
+    var event = events[type]
 
-    if (!events) {
+    if (!event) {
         return
-    } else if (Array.isArray(events)) {
-        var index = events.indexOf(handler)
+    } else if (Array.isArray(event)) {
+        var index = event.indexOf(handler)
         if (index !== -1) {
-            events.splice(index, 1)
+            event.splice(index, 1)
         }
-    } else if (events === handler) {
-        ds[type] = null
+    } else if (event === handler) {
+        events[type] = null
     }
 }
 
-},{"data-set":8}],15:[function(_dereq_,module,exports){
+},{"ev-store":7}],14:[function(_dereq_,module,exports){
 module.exports = Event
 
 function Event() {
@@ -746,7 +753,7 @@ function Event() {
     }
 }
 
-},{}],16:[function(_dereq_,module,exports){
+},{}],15:[function(_dereq_,module,exports){
 var event = _dereq_("./single.js")
 
 module.exports = multiple
@@ -758,7 +765,7 @@ function multiple(names) {
     }, {})
 }
 
-},{"./single.js":17}],17:[function(_dereq_,module,exports){
+},{"./single.js":16}],16:[function(_dereq_,module,exports){
 var Event = _dereq_('./event.js')
 
 module.exports = Single
@@ -775,7 +782,7 @@ function Single() {
     }
 }
 
-},{"./event.js":15}],18:[function(_dereq_,module,exports){
+},{"./event.js":14}],17:[function(_dereq_,module,exports){
 (function (global){
 var topLevel = typeof global !== 'undefined' ? global :
     typeof window !== 'undefined' ? window : {}
@@ -794,7 +801,7 @@ if (typeof document !== 'undefined') {
 }
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"min-document":2}],19:[function(_dereq_,module,exports){
+},{"min-document":2}],18:[function(_dereq_,module,exports){
 var raf = _dereq_("raf")
 var TypedError = _dereq_("error/typed")
 
@@ -871,7 +878,7 @@ function main(initialState, view, opts) {
     }
 }
 
-},{"error/typed":22,"raf":40}],20:[function(_dereq_,module,exports){
+},{"error/typed":21,"raf":39}],19:[function(_dereq_,module,exports){
 module.exports = function(obj) {
     if (typeof obj === 'string') return camelCase(obj);
     return walk(obj);
@@ -932,7 +939,7 @@ function reduce (xs, f, acc) {
     return acc;
 }
 
-},{}],21:[function(_dereq_,module,exports){
+},{}],20:[function(_dereq_,module,exports){
 var nargs = /\{([0-9a-zA-Z]+)\}/g
 var slice = Array.prototype.slice
 
@@ -968,7 +975,7 @@ function template(string) {
     })
 }
 
-},{}],22:[function(_dereq_,module,exports){
+},{}],21:[function(_dereq_,module,exports){
 var camelize = _dereq_("camelize")
 var template = _dereq_("string-template")
 var extend = _dereq_("xtend/mutable")
@@ -1018,7 +1025,7 @@ function TypedError(args) {
 }
 
 
-},{"camelize":20,"string-template":21,"xtend/mutable":94}],23:[function(_dereq_,module,exports){
+},{"camelize":19,"string-template":20,"xtend/mutable":91}],22:[function(_dereq_,module,exports){
 var setNonEnumerable = _dereq_("./lib/set-non-enumerable.js");
 
 module.exports = addListener
@@ -1048,7 +1055,7 @@ function addListener(observArray, observ) {
     })
 }
 
-},{"./lib/set-non-enumerable.js":26}],24:[function(_dereq_,module,exports){
+},{"./lib/set-non-enumerable.js":25}],23:[function(_dereq_,module,exports){
 var ObservArray = _dereq_("./index.js")
 
 var slice = Array.prototype.slice
@@ -1115,7 +1122,7 @@ function notImplemented() {
     throw new Error("Pull request welcome")
 }
 
-},{"./index.js":25}],25:[function(_dereq_,module,exports){
+},{"./index.js":24}],24:[function(_dereq_,module,exports){
 var Observ = _dereq_("observ")
 
 // circular dep between ArrayMethods & this file
@@ -1202,7 +1209,7 @@ function getLength() {
     return this._list.length
 }
 
-},{"./add-listener.js":23,"./array-methods.js":24,"./put.js":28,"./set.js":29,"./splice.js":30,"./transaction.js":31,"observ":37}],26:[function(_dereq_,module,exports){
+},{"./add-listener.js":22,"./array-methods.js":23,"./put.js":27,"./set.js":28,"./splice.js":29,"./transaction.js":30,"observ":36}],25:[function(_dereq_,module,exports){
 module.exports = setNonEnumerable;
 
 function setNonEnumerable(object, key, value) {
@@ -1214,7 +1221,7 @@ function setNonEnumerable(object, key, value) {
     });
 }
 
-},{}],27:[function(_dereq_,module,exports){
+},{}],26:[function(_dereq_,module,exports){
 function head (a) {
   return a[0]
 }
@@ -1517,7 +1524,7 @@ var exports = module.exports = function (deps, exports) {
 }
 exports(null, exports)
 
-},{}],28:[function(_dereq_,module,exports){
+},{}],27:[function(_dereq_,module,exports){
 var addListener = _dereq_("./add-listener.js")
 var setNonEnumerable = _dereq_("./lib/set-non-enumerable.js");
 
@@ -1556,7 +1563,7 @@ function put(index, value) {
     obs._observSet(valueList)
     return value
 }
-},{"./add-listener.js":23,"./lib/set-non-enumerable.js":26}],29:[function(_dereq_,module,exports){
+},{"./add-listener.js":22,"./lib/set-non-enumerable.js":25}],28:[function(_dereq_,module,exports){
 var addListener = _dereq_("./add-listener.js")
 var setNonEnumerable = _dereq_("./lib/set-non-enumerable.js")
 var adiff = _dereq_("adiff")
@@ -1610,7 +1617,7 @@ function unpack(value, index){
     }
     return typeof value === "function" ? value() : value
 }
-},{"./add-listener.js":23,"./lib/set-non-enumerable.js":26,"adiff":27}],30:[function(_dereq_,module,exports){
+},{"./add-listener.js":22,"./lib/set-non-enumerable.js":25,"adiff":26}],29:[function(_dereq_,module,exports){
 var slice = Array.prototype.slice
 
 var addListener = _dereq_("./add-listener.js")
@@ -1662,7 +1669,7 @@ function splice(index, amount) {
     return removed
 }
 
-},{"./add-listener.js":23,"./lib/set-non-enumerable.js":26}],31:[function(_dereq_,module,exports){
+},{"./add-listener.js":22,"./lib/set-non-enumerable.js":25}],30:[function(_dereq_,module,exports){
 module.exports = transaction
 
 function transaction (func) {
@@ -1674,7 +1681,7 @@ function transaction (func) {
     }
 
 }
-},{}],32:[function(_dereq_,module,exports){
+},{}],31:[function(_dereq_,module,exports){
 var Observ = _dereq_("observ")
 var extend = _dereq_("xtend")
 
@@ -1784,7 +1791,7 @@ function ObservStruct(struct) {
     return obs
 }
 
-},{"observ":37,"xtend":33}],33:[function(_dereq_,module,exports){
+},{"observ":36,"xtend":32}],32:[function(_dereq_,module,exports){
 module.exports = extend
 
 function extend() {
@@ -1803,7 +1810,7 @@ function extend() {
     return target
 }
 
-},{}],34:[function(_dereq_,module,exports){
+},{}],33:[function(_dereq_,module,exports){
 var Observ = _dereq_('observ')
 var extend = _dereq_('xtend')
 
@@ -1817,11 +1824,11 @@ function ObservVarhash (hash, createValue) {
   var initialState = {}
   var currentTransaction = NO_TRANSACTION
 
-  for (var key in hash) {
-    var observ = hash[key]
-    checkKey(key)
-    initialState[key] = isFn(observ) ? observ() : observ
-  }
+  // for (var key in hash) {
+  //   var observ = hash[key]
+  //   checkKey(key)
+  //   initialState[key] = isFn(observ) ? observ() : observ
+  // }
 
   var obs = Observ(initialState)
   setNonEnumerable(obs, '_removeListeners', {})
@@ -1839,6 +1846,14 @@ function ObservVarhash (hash, createValue) {
       obs._removeListeners[key] = obs[key](watch(obs, key, currentTransaction))
     }
   }
+
+  var newState = {}
+  for (key in hash) {
+    var observ = obs[key]
+    checkKey(key)
+    newState[key] = observ()
+  }
+  obs.set(newState)
 
   obs(function (newState) {
     if (currentTransaction === newState) {
@@ -1869,8 +1884,8 @@ function put (createValue, key, val) {
     throw new Error('cannot varhash.put(key, undefined).')
   }
 
-  var observ = typeof observ === 'function' ?
-    createValue(val, key) : val
+  var observ = typeof val === 'function' ?
+    val : createValue(val, key)
   var state = extend(this())
 
   state[key] = isFn(observ) ? observ() : observ
@@ -1955,9 +1970,9 @@ function checkKey (key) {
   )
 }
 
-},{"observ":37,"xtend":35}],35:[function(_dereq_,module,exports){
-module.exports=_dereq_(33)
-},{}],36:[function(_dereq_,module,exports){
+},{"observ":36,"xtend":34}],34:[function(_dereq_,module,exports){
+module.exports=_dereq_(32)
+},{}],35:[function(_dereq_,module,exports){
 var Observable = _dereq_("./index.js")
 
 module.exports = computed
@@ -1978,7 +1993,7 @@ function computed(observables, lambda) {
     return result
 }
 
-},{"./index.js":37}],37:[function(_dereq_,module,exports){
+},{"./index.js":36}],36:[function(_dereq_,module,exports){
 module.exports = Observable
 
 function Observable(value) {
@@ -2007,7 +2022,7 @@ function Observable(value) {
     }
 }
 
-},{}],38:[function(_dereq_,module,exports){
+},{}],37:[function(_dereq_,module,exports){
 module.exports = watch
 
 function watch(observable, listener) {
@@ -2016,7 +2031,7 @@ function watch(observable, listener) {
     return remove
 }
 
-},{}],39:[function(_dereq_,module,exports){
+},{}],38:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2081,7 +2096,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],40:[function(_dereq_,module,exports){
+},{}],39:[function(_dereq_,module,exports){
 var now = _dereq_('performance-now')
   , global = typeof window === 'undefined' ? {} : window
   , vendors = ['moz', 'webkit']
@@ -2163,7 +2178,7 @@ module.exports.cancel = function() {
   caf.apply(global, arguments)
 }
 
-},{"performance-now":41}],41:[function(_dereq_,module,exports){
+},{"performance-now":40}],40:[function(_dereq_,module,exports){
 (function (process){
 // Generated by CoffeeScript 1.6.3
 (function() {
@@ -2203,7 +2218,7 @@ module.exports.cancel = function() {
 */
 
 }).call(this,_dereq_("g5I+bs"))
-},{"g5I+bs":39}],42:[function(_dereq_,module,exports){
+},{"g5I+bs":38}],41:[function(_dereq_,module,exports){
 var Delegator = _dereq_('dom-delegator')
 
 module.exports = BaseEvent
@@ -2254,13 +2269,13 @@ function BaseEvent(lambda) {
     }
 }
 
-},{"dom-delegator":6}],43:[function(_dereq_,module,exports){
+},{"dom-delegator":6}],42:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
 var BaseEvent = _dereq_('./base-event.js')
 
-var VALID_CHANGE = ['checkbox', 'file'];
+var VALID_CHANGE = ['checkbox', 'file', 'select-multiple', 'select-one'];
 var VALID_INPUT = ['color', 'date', 'datetime', 'datetime-local', 'email',
     'month', 'number', 'password', 'range', 'search', 'tel', 'text', 'time',
     'url', 'week'];
@@ -2287,7 +2302,7 @@ function changeLambda(ev, broadcast) {
     broadcast(data)
 }
 
-},{"./base-event.js":42,"form-data-set/element":48,"xtend":51}],44:[function(_dereq_,module,exports){
+},{"./base-event.js":41,"form-data-set/element":47,"xtend":50}],43:[function(_dereq_,module,exports){
 var BaseEvent = _dereq_('./base-event.js');
 
 module.exports = BaseEvent(clickLambda);
@@ -2314,7 +2329,7 @@ function clickLambda(ev, broadcast) {
     broadcast(this.data);
 }
 
-},{"./base-event.js":42}],45:[function(_dereq_,module,exports){
+},{"./base-event.js":41}],44:[function(_dereq_,module,exports){
 var BaseEvent = _dereq_('./base-event.js');
 
 module.exports = BaseEvent(eventLambda);
@@ -2323,7 +2338,7 @@ function eventLambda(ev, broadcast) {
     broadcast(this.data);
 }
 
-},{"./base-event.js":42}],46:[function(_dereq_,module,exports){
+},{"./base-event.js":41}],45:[function(_dereq_,module,exports){
 var BaseEvent = _dereq_('./base-event.js');
 
 module.exports = BaseEvent(keyLambda);
@@ -2336,7 +2351,7 @@ function keyLambda(ev, broadcast) {
     }
 }
 
-},{"./base-event.js":42}],47:[function(_dereq_,module,exports){
+},{"./base-event.js":41}],46:[function(_dereq_,module,exports){
 var slice = Array.prototype.slice
 
 module.exports = iterativelyWalk
@@ -2362,7 +2377,7 @@ function iterativelyWalk(nodes, cb) {
     }
 }
 
-},{}],48:[function(_dereq_,module,exports){
+},{}],47:[function(_dereq_,module,exports){
 var walk = _dereq_('dom-walk')
 
 var FormData = _dereq_('./index.js')
@@ -2371,6 +2386,9 @@ module.exports = getFormData
 
 function buildElems(rootElem) {
     var hash = {}
+    if (rootElem.name) {
+    	hash[rootElem.name] = rootElem
+    }
 
     walk(rootElem, function (child) {
         if (child.name) {
@@ -2388,7 +2406,7 @@ function getFormData(rootElem) {
     return FormData(elements)
 }
 
-},{"./index.js":49,"dom-walk":47}],49:[function(_dereq_,module,exports){
+},{"./index.js":48,"dom-walk":46}],48:[function(_dereq_,module,exports){
 /*jshint maxcomplexity: 10*/
 
 module.exports = FormData
@@ -2465,7 +2483,7 @@ function filterNull(val) {
     return val !== null
 }
 
-},{}],50:[function(_dereq_,module,exports){
+},{}],49:[function(_dereq_,module,exports){
 module.exports = hasKeys
 
 function hasKeys(source) {
@@ -2474,7 +2492,7 @@ function hasKeys(source) {
         typeof source === "function")
 }
 
-},{}],51:[function(_dereq_,module,exports){
+},{}],50:[function(_dereq_,module,exports){
 var hasKeys = _dereq_("./has-keys")
 
 module.exports = extend
@@ -2499,7 +2517,7 @@ function extend() {
     return target
 }
 
-},{"./has-keys":50}],52:[function(_dereq_,module,exports){
+},{"./has-keys":49}],51:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -2513,6 +2531,7 @@ function submitLambda(ev, broadcast) {
     var target = ev.target
 
     var isValid =
+        (ev.type === 'submit' && target.tagName === 'FORM') ||
         (ev.type === 'click' && target.tagName === 'BUTTON') ||
         (ev.type === 'click' && target.type === 'submit') ||
         (
@@ -2537,7 +2556,7 @@ function submitLambda(ev, broadcast) {
     broadcast(data);
 }
 
-},{"./base-event.js":42,"form-data-set/element":48,"xtend":51}],53:[function(_dereq_,module,exports){
+},{"./base-event.js":41,"form-data-set/element":47,"xtend":50}],52:[function(_dereq_,module,exports){
 var extend = _dereq_('xtend')
 var getFormData = _dereq_('form-data-set/element')
 
@@ -2552,7 +2571,7 @@ function valueLambda(ev, broadcast) {
     broadcast(data);
 }
 
-},{"./base-event.js":42,"form-data-set/element":48,"xtend":51}],54:[function(_dereq_,module,exports){
+},{"./base-event.js":41,"form-data-set/element":47,"xtend":50}],53:[function(_dereq_,module,exports){
 function Thunk(fn, args, key, eqArgs) {
     this.fn = fn;
     this.args = args;
@@ -2583,12 +2602,12 @@ function render(previous) {
     }
 }
 
-},{}],55:[function(_dereq_,module,exports){
+},{}],54:[function(_dereq_,module,exports){
 var Partial = _dereq_('./partial');
 
 module.exports = Partial();
 
-},{"./partial":56}],56:[function(_dereq_,module,exports){
+},{"./partial":55}],55:[function(_dereq_,module,exports){
 var shallowEq = _dereq_('./shallow-eq');
 var Thunk = _dereq_('./immutable-thunk');
 
@@ -2622,7 +2641,7 @@ function copyOver(list, offset) {
     return newList;
 }
 
-},{"./immutable-thunk":54,"./shallow-eq":57}],57:[function(_dereq_,module,exports){
+},{"./immutable-thunk":53,"./shallow-eq":56}],56:[function(_dereq_,module,exports){
 module.exports = shallowEq;
 
 function shallowEq(currentArgs, previousArgs) {
@@ -2645,30 +2664,128 @@ function shallowEq(currentArgs, previousArgs) {
     return true;
 }
 
+},{}],57:[function(_dereq_,module,exports){
+/*!
+ * Cross-Browser Split 1.1.1
+ * Copyright 2007-2012 Steven Levithan <stevenlevithan.com>
+ * Available under the MIT License
+ * ECMAScript compliant, uniform cross-browser split method
+ */
+
+/**
+ * Splits a string into an array of strings using a regex or string separator. Matches of the
+ * separator are not included in the result array. However, if `separator` is a regex that contains
+ * capturing groups, backreferences are spliced into the result each time `separator` is matched.
+ * Fixes browser bugs compared to the native `String.prototype.split` and can be used reliably
+ * cross-browser.
+ * @param {String} str String to split.
+ * @param {RegExp|String} separator Regex or string to use for separating the string.
+ * @param {Number} [limit] Maximum number of items to include in the result array.
+ * @returns {Array} Array of substrings.
+ * @example
+ *
+ * // Basic use
+ * split('a b c d', ' ');
+ * // -> ['a', 'b', 'c', 'd']
+ *
+ * // With limit
+ * split('a b c d', ' ', 2);
+ * // -> ['a', 'b']
+ *
+ * // Backreferences in result array
+ * split('..word1 word2..', /([a-z]+)(\d+)/i);
+ * // -> ['..', 'word', '1', ' ', 'word', '2', '..']
+ */
+module.exports = (function split(undef) {
+
+  var nativeSplit = String.prototype.split,
+    compliantExecNpcg = /()??/.exec("")[1] === undef,
+    // NPCG: nonparticipating capturing group
+    self;
+
+  self = function(str, separator, limit) {
+    // If `separator` is not a regex, use `nativeSplit`
+    if (Object.prototype.toString.call(separator) !== "[object RegExp]") {
+      return nativeSplit.call(str, separator, limit);
+    }
+    var output = [],
+      flags = (separator.ignoreCase ? "i" : "") + (separator.multiline ? "m" : "") + (separator.extended ? "x" : "") + // Proposed for ES6
+      (separator.sticky ? "y" : ""),
+      // Firefox 3+
+      lastLastIndex = 0,
+      // Make `global` and avoid `lastIndex` issues by working with a copy
+      separator = new RegExp(separator.source, flags + "g"),
+      separator2, match, lastIndex, lastLength;
+    str += ""; // Type-convert
+    if (!compliantExecNpcg) {
+      // Doesn't need flags gy, but they don't hurt
+      separator2 = new RegExp("^" + separator.source + "$(?!\\s)", flags);
+    }
+    /* Values for `limit`, per the spec:
+     * If undefined: 4294967295 // Math.pow(2, 32) - 1
+     * If 0, Infinity, or NaN: 0
+     * If positive number: limit = Math.floor(limit); if (limit > 4294967295) limit -= 4294967296;
+     * If negative number: 4294967296 - Math.floor(Math.abs(limit))
+     * If other: Type-convert, then use the above rules
+     */
+    limit = limit === undef ? -1 >>> 0 : // Math.pow(2, 32) - 1
+    limit >>> 0; // ToUint32(limit)
+    while (match = separator.exec(str)) {
+      // `separator.lastIndex` is not reliable cross-browser
+      lastIndex = match.index + match[0].length;
+      if (lastIndex > lastLastIndex) {
+        output.push(str.slice(lastLastIndex, match.index));
+        // Fix browsers whose `exec` methods don't consistently return `undefined` for
+        // nonparticipating capturing groups
+        if (!compliantExecNpcg && match.length > 1) {
+          match[0].replace(separator2, function() {
+            for (var i = 1; i < arguments.length - 2; i++) {
+              if (arguments[i] === undef) {
+                match[i] = undef;
+              }
+            }
+          });
+        }
+        if (match.length > 1 && match.index < str.length) {
+          Array.prototype.push.apply(output, match.slice(1));
+        }
+        lastLength = match[0].length;
+        lastLastIndex = lastIndex;
+        if (output.length >= limit) {
+          break;
+        }
+      }
+      if (separator.lastIndex === match.index) {
+        separator.lastIndex++; // Avoid an infinite loop
+      }
+    }
+    if (lastLastIndex === str.length) {
+      if (lastLength || !separator.test("")) {
+        output.push("");
+      }
+    } else {
+      output.push(str.slice(lastLastIndex));
+    }
+    return output.length > limit ? output.slice(0, limit) : output;
+  };
+
+  return self;
+})();
+
 },{}],58:[function(_dereq_,module,exports){
 module.exports=_dereq_(7)
-},{}],59:[function(_dereq_,module,exports){
+},{"individual/one-version":60}],59:[function(_dereq_,module,exports){
 module.exports=_dereq_(8)
-},{"./create-hash.js":58,"individual":60,"weakmap-shim/create-store":61}],60:[function(_dereq_,module,exports){
-module.exports=_dereq_(11)
-},{}],61:[function(_dereq_,module,exports){
+},{}],60:[function(_dereq_,module,exports){
 module.exports=_dereq_(9)
-},{"./hidden-store.js":62}],62:[function(_dereq_,module,exports){
-module.exports=_dereq_(10)
-},{}],63:[function(_dereq_,module,exports){
-module.exports=_dereq_(20)
-},{}],64:[function(_dereq_,module,exports){
-module.exports=_dereq_(21)
-},{}],65:[function(_dereq_,module,exports){
-module.exports=_dereq_(22)
-},{"camelize":63,"string-template":64,"xtend/mutable":94}],66:[function(_dereq_,module,exports){
-module.exports = isObject
+},{"./index.js":59}],61:[function(_dereq_,module,exports){
+"use strict";
 
-function isObject(x) {
-    return typeof x === "object" && x !== null
-}
+module.exports = function isObject(x) {
+	return typeof x === "object" && x !== null;
+};
 
-},{}],67:[function(_dereq_,module,exports){
+},{}],62:[function(_dereq_,module,exports){
 var nativeIsArray = Array.isArray
 var toString = Object.prototype.toString
 
@@ -2678,7 +2795,7 @@ function isArray(obj) {
     return toString.call(obj) === "[object Array]"
 }
 
-},{}],68:[function(_dereq_,module,exports){
+},{}],63:[function(_dereq_,module,exports){
 var isObject = _dereq_("is-object")
 var isHook = _dereq_("../vnode/is-vhook.js")
 
@@ -2689,22 +2806,25 @@ function applyProperties(node, props, previous) {
         var propValue = props[propName]
 
         if (propValue === undefined) {
-            removeProperty(node, props, previous, propName);
+            removeProperty(node, propName, propValue, previous);
         } else if (isHook(propValue)) {
-            propValue.hook(node,
-                propName,
-                previous ? previous[propName] : undefined)
+            removeProperty(node, propName, propValue, previous)
+            if (propValue.hook) {
+                propValue.hook(node,
+                    propName,
+                    previous ? previous[propName] : undefined)
+            }
         } else {
             if (isObject(propValue)) {
                 patchObject(node, props, previous, propName, propValue);
-            } else if (propValue !== undefined) {
+            } else {
                 node[propName] = propValue
             }
         }
     }
 }
 
-function removeProperty(node, props, previous, propName) {
+function removeProperty(node, propName, propValue, previous) {
     if (previous) {
         var previousValue = previous[propName]
 
@@ -2723,7 +2843,7 @@ function removeProperty(node, props, previous, propName) {
                 node[propName] = null
             }
         } else if (previousValue.unhook) {
-            previousValue.unhook(node, propName)
+            previousValue.unhook(node, propName, propValue)
         }
     }
 }
@@ -2774,7 +2894,7 @@ function getPrototype(value) {
     }
 }
 
-},{"../vnode/is-vhook.js":82,"is-object":66}],69:[function(_dereq_,module,exports){
+},{"../vnode/is-vhook.js":78,"is-object":61}],64:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 
 var applyProperties = _dereq_("./apply-properties")
@@ -2822,7 +2942,7 @@ function createElement(vnode, opts) {
     return node
 }
 
-},{"../vnode/handle-thunk.js":80,"../vnode/is-vnode.js":83,"../vnode/is-vtext.js":84,"../vnode/is-widget.js":85,"./apply-properties":68,"global/document":18}],70:[function(_dereq_,module,exports){
+},{"../vnode/handle-thunk.js":76,"../vnode/is-vnode.js":79,"../vnode/is-vtext.js":80,"../vnode/is-widget.js":81,"./apply-properties":63,"global/document":17}],65:[function(_dereq_,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -2909,7 +3029,7 @@ function ascending(a, b) {
     return a > b ? 1 : -1
 }
 
-},{}],71:[function(_dereq_,module,exports){
+},{}],66:[function(_dereq_,module,exports){
 var applyProperties = _dereq_("./apply-properties")
 
 var isWidget = _dereq_("../vnode/is-widget.js")
@@ -3045,22 +3165,33 @@ function reorderChildren(domNode, bIndex) {
     var move
     var node
     var insertNode
-    for (i = 0; i < len; i++) {
+    var chainLength
+    var insertedLength
+    var nextSibling
+    for (i = 0; i < len;) {
         move = bIndex[i]
+        chainLength = 1
         if (move !== undefined && move !== i) {
+            // try to bring forward as long of a chain as possible
+            while (bIndex[i + chainLength] === move + chainLength) {
+                chainLength++;
+            }
+
             // the element currently at this index will be moved later so increase the insert offset
-            if (reverseIndex[i] > i) {
+            if (reverseIndex[i] > i + chainLength) {
                 insertOffset++
             }
 
             node = children[move]
             insertNode = childNodes[i + insertOffset] || null
-            if (node !== insertNode) {
-                domNode.insertBefore(node, insertNode)
+            insertedLength = 0
+            while (node !== insertNode && insertedLength++ < chainLength) {
+                domNode.insertBefore(node, insertNode);
+                node = children[move + insertedLength];
             }
 
             // the moved element came from the front of the array so reduce the insert offset
-            if (move < i) {
+            if (move + chainLength < i) {
                 insertOffset--
             }
         }
@@ -3069,6 +3200,8 @@ function reorderChildren(domNode, bIndex) {
         if (i in bIndex.removes) {
             insertOffset++
         }
+
+        i += chainLength
     }
 }
 
@@ -3081,7 +3214,7 @@ function replaceRoot(oldRoot, newRoot) {
     return newRoot;
 }
 
-},{"../vnode/is-widget.js":85,"../vnode/vpatch.js":88,"./apply-properties":68,"./create-element":69,"./update-widget":73}],72:[function(_dereq_,module,exports){
+},{"../vnode/is-widget.js":81,"../vnode/vpatch.js":84,"./apply-properties":63,"./create-element":64,"./update-widget":68}],67:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 var isArray = _dereq_("x-is-array")
 
@@ -3159,7 +3292,7 @@ function patchIndices(patches) {
     return indices
 }
 
-},{"./dom-index":70,"./patch-op":71,"global/document":18,"x-is-array":67}],73:[function(_dereq_,module,exports){
+},{"./dom-index":65,"./patch-op":66,"global/document":17,"x-is-array":62}],68:[function(_dereq_,module,exports){
 var isWidget = _dereq_("../vnode/is-widget.js")
 
 module.exports = updateWidget
@@ -3176,54 +3309,75 @@ function updateWidget(a, b) {
     return false
 }
 
-},{"../vnode/is-widget.js":85}],74:[function(_dereq_,module,exports){
-var DataSet = _dereq_("data-set")
+},{"../vnode/is-widget.js":81}],69:[function(_dereq_,module,exports){
+'use strict';
 
-module.exports = DataSetHook;
+module.exports = AttributeHook;
 
-function DataSetHook(value) {
-    if (!(this instanceof DataSetHook)) {
-        return new DataSetHook(value);
+function AttributeHook(namespace, value) {
+    if (!(this instanceof AttributeHook)) {
+        return new AttributeHook(namespace, value);
+    }
+
+    this.namespace = namespace;
+    this.value = value;
+}
+
+AttributeHook.prototype.hook = function (node, prop, prev) {
+    if (prev && prev.type === 'AttributeHook' &&
+        prev.value === this.value &&
+        prev.namespace === this.namespace) {
+        return;
+    }
+
+    node.setAttributeNS(this.namespace, prop, this.value);
+};
+
+AttributeHook.prototype.unhook = function (node, prop, next) {
+    if (next && next.type === 'AttributeHook' &&
+        next.namespace === this.namespace) {
+        return;
+    }
+
+    var colonPosition = prop.indexOf(':');
+    var localName = colonPosition > -1 ? prop.substr(colonPosition + 1) : prop;
+    node.removeAttributeNS(this.namespace, localName);
+};
+
+AttributeHook.prototype.type = 'AttributeHook';
+
+},{}],70:[function(_dereq_,module,exports){
+'use strict';
+
+var EvStore = _dereq_('ev-store');
+
+module.exports = EvHook;
+
+function EvHook(value) {
+    if (!(this instanceof EvHook)) {
+        return new EvHook(value);
     }
 
     this.value = value;
 }
 
-DataSetHook.prototype.hook = function (node, propertyName) {
-    var ds = DataSet(node)
-    var propName = propertyName.substr(5)
-
-    ds[propName] = this.value;
-};
-
-},{"data-set":59}],75:[function(_dereq_,module,exports){
-var DataSet = _dereq_("data-set")
-
-module.exports = DataSetHook;
-
-function DataSetHook(value) {
-    if (!(this instanceof DataSetHook)) {
-        return new DataSetHook(value);
-    }
-
-    this.value = value;
-}
-
-DataSetHook.prototype.hook = function (node, propertyName) {
-    var ds = DataSet(node)
-    var propName = propertyName.substr(3)
-
-    ds[propName] = this.value;
-};
-
-DataSetHook.prototype.unhook = function(node, propertyName) {
-    var ds = DataSet(node);
+EvHook.prototype.hook = function (node, propertyName) {
+    var es = EvStore(node);
     var propName = propertyName.substr(3);
 
-    ds[propName] = undefined;
-}
+    es[propName] = this.value;
+};
 
-},{"data-set":59}],76:[function(_dereq_,module,exports){
+EvHook.prototype.unhook = function(node, propertyName) {
+    var es = EvStore(node);
+    var propName = propertyName.substr(3);
+
+    es[propName] = undefined;
+};
+
+},{"ev-store":58}],71:[function(_dereq_,module,exports){
+'use strict';
+
 module.exports = SoftSetHook;
 
 function SoftSetHook(value) {
@@ -3240,241 +3394,579 @@ SoftSetHook.prototype.hook = function (node, propertyName) {
     }
 };
 
-},{}],77:[function(_dereq_,module,exports){
-var TypedError = _dereq_("error/typed")
+},{}],72:[function(_dereq_,module,exports){
+'use strict';
 
-var VNode = _dereq_("../vnode/vnode.js")
-var VText = _dereq_("../vnode/vtext.js")
-var isVNode = _dereq_("../vnode/is-vnode")
-var isVText = _dereq_("../vnode/is-vtext")
-var isWidget = _dereq_("../vnode/is-widget")
-var isHook = _dereq_("../vnode/is-vhook")
-var isVThunk = _dereq_("../vnode/is-thunk")
+var isArray = _dereq_('x-is-array');
 
-var parseTag = _dereq_("./parse-tag.js")
-var softSetHook = _dereq_("./hooks/soft-set-hook.js")
-var dataSetHook = _dereq_("./hooks/data-set-hook.js")
-var evHook = _dereq_("./hooks/ev-hook.js")
+var VNode = _dereq_('../vnode/vnode.js');
+var VText = _dereq_('../vnode/vtext.js');
+var isVNode = _dereq_('../vnode/is-vnode');
+var isVText = _dereq_('../vnode/is-vtext');
+var isWidget = _dereq_('../vnode/is-widget');
+var isHook = _dereq_('../vnode/is-vhook');
+var isVThunk = _dereq_('../vnode/is-thunk');
 
-var UnexpectedVirtualElement = TypedError({
-    type: "virtual-hyperscript.unexpected.virtual-element",
-    message: "Unexpected virtual child passed to h().\n" +
-        "Expected a VNode / Vthunk / VWidget / string but:\n" +
-        "got a {foreignObjectStr}.\n" +
-        "The parent vnode is {parentVnodeStr}.\n" +
-        "Suggested fix: change your `h(..., [ ... ])` callsite.",
-    foreignObjectStr: null,
-    parentVnodeStr: null,
-    foreignObject: null,
-    parentVnode: null
-})
+var parseTag = _dereq_('./parse-tag.js');
+var softSetHook = _dereq_('./hooks/soft-set-hook.js');
+var evHook = _dereq_('./hooks/ev-hook.js');
 
-module.exports = h
+module.exports = h;
 
 function h(tagName, properties, children) {
-    var childNodes = []
-    var tag, props, key, namespace
+    var childNodes = [];
+    var tag, props, key, namespace;
 
     if (!children && isChildren(properties)) {
-        children = properties
-        props = {}
+        children = properties;
+        props = {};
     }
 
-    props = props || properties || {}
-    tag = parseTag(tagName, props)
+    props = props || properties || {};
+    tag = parseTag(tagName, props);
 
     // support keys
-    if ("key" in props) {
-        key = props.key
-        props.key = undefined
+    if (props.hasOwnProperty('key')) {
+        key = props.key;
+        props.key = undefined;
     }
 
     // support namespace
-    if ("namespace" in props) {
-        namespace = props.namespace
-        props.namespace = undefined
+    if (props.hasOwnProperty('namespace')) {
+        namespace = props.namespace;
+        props.namespace = undefined;
     }
 
     // fix cursor bug
-    if (tag === "input" &&
-        "value" in props &&
+    if (tag === 'INPUT' &&
+        !namespace &&
+        props.hasOwnProperty('value') &&
         props.value !== undefined &&
         !isHook(props.value)
     ) {
-        props.value = softSetHook(props.value)
+        props.value = softSetHook(props.value);
     }
 
-    var keys = Object.keys(props)
-    var propName, value
-    for (var j = 0; j < keys.length; j++) {
-        propName = keys[j]
-        value = props[propName]
-        if (isHook(value)) {
-            continue
-        }
-
-        // add data-foo support
-        if (propName.substr(0, 5) === "data-") {
-            props[propName] = dataSetHook(value)
-        }
-
-        // add ev-foo support
-        if (propName.substr(0, 3) === "ev-") {
-            props[propName] = evHook(value)
-        }
-    }
+    transformProperties(props);
 
     if (children !== undefined && children !== null) {
-        addChild(children, childNodes, tag, props)
+        addChild(children, childNodes, tag, props);
     }
 
 
-    var node = new VNode(tag, props, childNodes, key, namespace)
-
-    return node
+    return new VNode(tag, props, childNodes, key, namespace);
 }
 
 function addChild(c, childNodes, tag, props) {
-    if (typeof c === "string") {
-        childNodes.push(new VText(c))
+    if (typeof c === 'string') {
+        childNodes.push(new VText(c));
     } else if (isChild(c)) {
-        childNodes.push(c)
-    } else if (Array.isArray(c)) {
+        childNodes.push(c);
+    } else if (isArray(c)) {
         for (var i = 0; i < c.length; i++) {
-            addChild(c[i], childNodes, tag, props)
+            addChild(c[i], childNodes, tag, props);
         }
     } else if (c === null || c === undefined) {
-        return
+        return;
     } else {
         throw UnexpectedVirtualElement({
-            foreignObjectStr: JSON.stringify(c),
             foreignObject: c,
-            parentVnodeStr: JSON.stringify({
-                tagName: tag,
-                properties: props
-            }),
             parentVnode: {
                 tagName: tag,
                 properties: props
             }
-        })
+        });
+    }
+}
+
+function transformProperties(props) {
+    for (var propName in props) {
+        if (props.hasOwnProperty(propName)) {
+            var value = props[propName];
+
+            if (isHook(value)) {
+                continue;
+            }
+
+            if (propName.substr(0, 3) === 'ev-') {
+                // add ev-foo support
+                props[propName] = evHook(value);
+            }
+        }
     }
 }
 
 function isChild(x) {
-    return isVNode(x) || isVText(x) || isWidget(x) || isVThunk(x)
+    return isVNode(x) || isVText(x) || isWidget(x) || isVThunk(x);
 }
 
 function isChildren(x) {
-    return typeof x === "string" || Array.isArray(x) || isChild(x)
+    return typeof x === 'string' || isArray(x) || isChild(x);
 }
 
-},{"../vnode/is-thunk":81,"../vnode/is-vhook":82,"../vnode/is-vnode":83,"../vnode/is-vtext":84,"../vnode/is-widget":85,"../vnode/vnode.js":87,"../vnode/vtext.js":89,"./hooks/data-set-hook.js":74,"./hooks/ev-hook.js":75,"./hooks/soft-set-hook.js":76,"./parse-tag.js":78,"error/typed":65}],78:[function(_dereq_,module,exports){
-var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/
-var notClassId = /^\.|#/
+function UnexpectedVirtualElement(data) {
+    var err = new Error();
 
-module.exports = parseTag
+    err.type = 'virtual-hyperscript.unexpected.virtual-element';
+    err.message = 'Unexpected virtual child passed to h().\n' +
+        'Expected a VNode / Vthunk / VWidget / string but:\n' +
+        'got:\n' +
+        errorString(data.foreignObject) +
+        '.\n' +
+        'The parent vnode is:\n' +
+        errorString(data.parentVnode)
+        '\n' +
+        'Suggested fix: change your `h(..., [ ... ])` callsite.';
+    err.foreignObject = data.foreignObject;
+    err.parentVnode = data.parentVnode;
+
+    return err;
+}
+
+function errorString(obj) {
+    try {
+        return JSON.stringify(obj, null, '    ');
+    } catch (e) {
+        return String(obj);
+    }
+}
+
+},{"../vnode/is-thunk":77,"../vnode/is-vhook":78,"../vnode/is-vnode":79,"../vnode/is-vtext":80,"../vnode/is-widget":81,"../vnode/vnode.js":83,"../vnode/vtext.js":85,"./hooks/ev-hook.js":70,"./hooks/soft-set-hook.js":71,"./parse-tag.js":73,"x-is-array":62}],73:[function(_dereq_,module,exports){
+'use strict';
+
+var split = _dereq_('browser-split');
+
+var classIdSplit = /([\.#]?[a-zA-Z0-9_:-]+)/;
+var notClassId = /^\.|#/;
+
+module.exports = parseTag;
 
 function parseTag(tag, props) {
     if (!tag) {
-        return "div"
+        return 'DIV';
     }
 
-    var noId = !("id" in props)
+    var noId = !(props.hasOwnProperty('id'));
 
-    var tagParts = tag.split(classIdSplit)
-    var tagName = null
+    var tagParts = split(tag, classIdSplit);
+    var tagName = null;
 
     if (notClassId.test(tagParts[1])) {
-        tagName = "div"
+        tagName = 'DIV';
     }
 
-    var classes, part, type, i
+    var classes, part, type, i;
+
     for (i = 0; i < tagParts.length; i++) {
-        part = tagParts[i]
+        part = tagParts[i];
 
         if (!part) {
-            continue
+            continue;
         }
 
-        type = part.charAt(0)
+        type = part.charAt(0);
 
         if (!tagName) {
-            tagName = part
-        } else if (type === ".") {
-            classes = classes || []
-            classes.push(part.substring(1, part.length))
-        } else if (type === "#" && noId) {
-            props.id = part.substring(1, part.length)
+            tagName = part;
+        } else if (type === '.') {
+            classes = classes || [];
+            classes.push(part.substring(1, part.length));
+        } else if (type === '#' && noId) {
+            props.id = part.substring(1, part.length);
         }
     }
 
     if (classes) {
         if (props.className) {
-            classes.push(props.className)
+            classes.push(props.className);
         }
 
-        props.className = classes.join(" ")
+        props.className = classes.join(' ');
     }
 
-    return tagName ? tagName.toLowerCase() : "div"
+    return props.namespace ? tagName : tagName.toUpperCase();
 }
 
-},{}],79:[function(_dereq_,module,exports){
-var h = _dereq_("./index.js")
+},{"browser-split":57}],74:[function(_dereq_,module,exports){
+'use strict';
 
-var BLACKLISTED_KEYS = {
-    "style": true,
-    "namespace": true,
-    "key": true
+var DEFAULT_NAMESPACE = null;
+var EV_NAMESPACE = 'http://www.w3.org/2001/xml-events';
+var XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
+var XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
+
+// http://www.w3.org/TR/SVGTiny12/attributeTable.html
+// http://www.w3.org/TR/SVG/attindex.html
+var SVG_PROPERTIES = {
+    'about': DEFAULT_NAMESPACE,
+    'accent-height': DEFAULT_NAMESPACE,
+    'accumulate': DEFAULT_NAMESPACE,
+    'additive': DEFAULT_NAMESPACE,
+    'alignment-baseline': DEFAULT_NAMESPACE,
+    'alphabetic': DEFAULT_NAMESPACE,
+    'amplitude': DEFAULT_NAMESPACE,
+    'arabic-form': DEFAULT_NAMESPACE,
+    'ascent': DEFAULT_NAMESPACE,
+    'attributeName': DEFAULT_NAMESPACE,
+    'attributeType': DEFAULT_NAMESPACE,
+    'azimuth': DEFAULT_NAMESPACE,
+    'bandwidth': DEFAULT_NAMESPACE,
+    'baseFrequency': DEFAULT_NAMESPACE,
+    'baseProfile': DEFAULT_NAMESPACE,
+    'baseline-shift': DEFAULT_NAMESPACE,
+    'bbox': DEFAULT_NAMESPACE,
+    'begin': DEFAULT_NAMESPACE,
+    'bias': DEFAULT_NAMESPACE,
+    'by': DEFAULT_NAMESPACE,
+    'calcMode': DEFAULT_NAMESPACE,
+    'cap-height': DEFAULT_NAMESPACE,
+    'class': DEFAULT_NAMESPACE,
+    'clip': DEFAULT_NAMESPACE,
+    'clip-path': DEFAULT_NAMESPACE,
+    'clip-rule': DEFAULT_NAMESPACE,
+    'clipPathUnits': DEFAULT_NAMESPACE,
+    'color': DEFAULT_NAMESPACE,
+    'color-interpolation': DEFAULT_NAMESPACE,
+    'color-interpolation-filters': DEFAULT_NAMESPACE,
+    'color-profile': DEFAULT_NAMESPACE,
+    'color-rendering': DEFAULT_NAMESPACE,
+    'content': DEFAULT_NAMESPACE,
+    'contentScriptType': DEFAULT_NAMESPACE,
+    'contentStyleType': DEFAULT_NAMESPACE,
+    'cursor': DEFAULT_NAMESPACE,
+    'cx': DEFAULT_NAMESPACE,
+    'cy': DEFAULT_NAMESPACE,
+    'd': DEFAULT_NAMESPACE,
+    'datatype': DEFAULT_NAMESPACE,
+    'defaultAction': DEFAULT_NAMESPACE,
+    'descent': DEFAULT_NAMESPACE,
+    'diffuseConstant': DEFAULT_NAMESPACE,
+    'direction': DEFAULT_NAMESPACE,
+    'display': DEFAULT_NAMESPACE,
+    'divisor': DEFAULT_NAMESPACE,
+    'dominant-baseline': DEFAULT_NAMESPACE,
+    'dur': DEFAULT_NAMESPACE,
+    'dx': DEFAULT_NAMESPACE,
+    'dy': DEFAULT_NAMESPACE,
+    'edgeMode': DEFAULT_NAMESPACE,
+    'editable': DEFAULT_NAMESPACE,
+    'elevation': DEFAULT_NAMESPACE,
+    'enable-background': DEFAULT_NAMESPACE,
+    'end': DEFAULT_NAMESPACE,
+    'ev:event': EV_NAMESPACE,
+    'event': DEFAULT_NAMESPACE,
+    'exponent': DEFAULT_NAMESPACE,
+    'externalResourcesRequired': DEFAULT_NAMESPACE,
+    'fill': DEFAULT_NAMESPACE,
+    'fill-opacity': DEFAULT_NAMESPACE,
+    'fill-rule': DEFAULT_NAMESPACE,
+    'filter': DEFAULT_NAMESPACE,
+    'filterRes': DEFAULT_NAMESPACE,
+    'filterUnits': DEFAULT_NAMESPACE,
+    'flood-color': DEFAULT_NAMESPACE,
+    'flood-opacity': DEFAULT_NAMESPACE,
+    'focusHighlight': DEFAULT_NAMESPACE,
+    'focusable': DEFAULT_NAMESPACE,
+    'font-family': DEFAULT_NAMESPACE,
+    'font-size': DEFAULT_NAMESPACE,
+    'font-size-adjust': DEFAULT_NAMESPACE,
+    'font-stretch': DEFAULT_NAMESPACE,
+    'font-style': DEFAULT_NAMESPACE,
+    'font-variant': DEFAULT_NAMESPACE,
+    'font-weight': DEFAULT_NAMESPACE,
+    'format': DEFAULT_NAMESPACE,
+    'from': DEFAULT_NAMESPACE,
+    'fx': DEFAULT_NAMESPACE,
+    'fy': DEFAULT_NAMESPACE,
+    'g1': DEFAULT_NAMESPACE,
+    'g2': DEFAULT_NAMESPACE,
+    'glyph-name': DEFAULT_NAMESPACE,
+    'glyph-orientation-horizontal': DEFAULT_NAMESPACE,
+    'glyph-orientation-vertical': DEFAULT_NAMESPACE,
+    'glyphRef': DEFAULT_NAMESPACE,
+    'gradientTransform': DEFAULT_NAMESPACE,
+    'gradientUnits': DEFAULT_NAMESPACE,
+    'handler': DEFAULT_NAMESPACE,
+    'hanging': DEFAULT_NAMESPACE,
+    'height': DEFAULT_NAMESPACE,
+    'horiz-adv-x': DEFAULT_NAMESPACE,
+    'horiz-origin-x': DEFAULT_NAMESPACE,
+    'horiz-origin-y': DEFAULT_NAMESPACE,
+    'id': DEFAULT_NAMESPACE,
+    'ideographic': DEFAULT_NAMESPACE,
+    'image-rendering': DEFAULT_NAMESPACE,
+    'in': DEFAULT_NAMESPACE,
+    'in2': DEFAULT_NAMESPACE,
+    'initialVisibility': DEFAULT_NAMESPACE,
+    'intercept': DEFAULT_NAMESPACE,
+    'k': DEFAULT_NAMESPACE,
+    'k1': DEFAULT_NAMESPACE,
+    'k2': DEFAULT_NAMESPACE,
+    'k3': DEFAULT_NAMESPACE,
+    'k4': DEFAULT_NAMESPACE,
+    'kernelMatrix': DEFAULT_NAMESPACE,
+    'kernelUnitLength': DEFAULT_NAMESPACE,
+    'kerning': DEFAULT_NAMESPACE,
+    'keyPoints': DEFAULT_NAMESPACE,
+    'keySplines': DEFAULT_NAMESPACE,
+    'keyTimes': DEFAULT_NAMESPACE,
+    'lang': DEFAULT_NAMESPACE,
+    'lengthAdjust': DEFAULT_NAMESPACE,
+    'letter-spacing': DEFAULT_NAMESPACE,
+    'lighting-color': DEFAULT_NAMESPACE,
+    'limitingConeAngle': DEFAULT_NAMESPACE,
+    'local': DEFAULT_NAMESPACE,
+    'marker-end': DEFAULT_NAMESPACE,
+    'marker-mid': DEFAULT_NAMESPACE,
+    'marker-start': DEFAULT_NAMESPACE,
+    'markerHeight': DEFAULT_NAMESPACE,
+    'markerUnits': DEFAULT_NAMESPACE,
+    'markerWidth': DEFAULT_NAMESPACE,
+    'mask': DEFAULT_NAMESPACE,
+    'maskContentUnits': DEFAULT_NAMESPACE,
+    'maskUnits': DEFAULT_NAMESPACE,
+    'mathematical': DEFAULT_NAMESPACE,
+    'max': DEFAULT_NAMESPACE,
+    'media': DEFAULT_NAMESPACE,
+    'mediaCharacterEncoding': DEFAULT_NAMESPACE,
+    'mediaContentEncodings': DEFAULT_NAMESPACE,
+    'mediaSize': DEFAULT_NAMESPACE,
+    'mediaTime': DEFAULT_NAMESPACE,
+    'method': DEFAULT_NAMESPACE,
+    'min': DEFAULT_NAMESPACE,
+    'mode': DEFAULT_NAMESPACE,
+    'name': DEFAULT_NAMESPACE,
+    'nav-down': DEFAULT_NAMESPACE,
+    'nav-down-left': DEFAULT_NAMESPACE,
+    'nav-down-right': DEFAULT_NAMESPACE,
+    'nav-left': DEFAULT_NAMESPACE,
+    'nav-next': DEFAULT_NAMESPACE,
+    'nav-prev': DEFAULT_NAMESPACE,
+    'nav-right': DEFAULT_NAMESPACE,
+    'nav-up': DEFAULT_NAMESPACE,
+    'nav-up-left': DEFAULT_NAMESPACE,
+    'nav-up-right': DEFAULT_NAMESPACE,
+    'numOctaves': DEFAULT_NAMESPACE,
+    'observer': DEFAULT_NAMESPACE,
+    'offset': DEFAULT_NAMESPACE,
+    'opacity': DEFAULT_NAMESPACE,
+    'operator': DEFAULT_NAMESPACE,
+    'order': DEFAULT_NAMESPACE,
+    'orient': DEFAULT_NAMESPACE,
+    'orientation': DEFAULT_NAMESPACE,
+    'origin': DEFAULT_NAMESPACE,
+    'overflow': DEFAULT_NAMESPACE,
+    'overlay': DEFAULT_NAMESPACE,
+    'overline-position': DEFAULT_NAMESPACE,
+    'overline-thickness': DEFAULT_NAMESPACE,
+    'panose-1': DEFAULT_NAMESPACE,
+    'path': DEFAULT_NAMESPACE,
+    'pathLength': DEFAULT_NAMESPACE,
+    'patternContentUnits': DEFAULT_NAMESPACE,
+    'patternTransform': DEFAULT_NAMESPACE,
+    'patternUnits': DEFAULT_NAMESPACE,
+    'phase': DEFAULT_NAMESPACE,
+    'playbackOrder': DEFAULT_NAMESPACE,
+    'pointer-events': DEFAULT_NAMESPACE,
+    'points': DEFAULT_NAMESPACE,
+    'pointsAtX': DEFAULT_NAMESPACE,
+    'pointsAtY': DEFAULT_NAMESPACE,
+    'pointsAtZ': DEFAULT_NAMESPACE,
+    'preserveAlpha': DEFAULT_NAMESPACE,
+    'preserveAspectRatio': DEFAULT_NAMESPACE,
+    'primitiveUnits': DEFAULT_NAMESPACE,
+    'propagate': DEFAULT_NAMESPACE,
+    'property': DEFAULT_NAMESPACE,
+    'r': DEFAULT_NAMESPACE,
+    'radius': DEFAULT_NAMESPACE,
+    'refX': DEFAULT_NAMESPACE,
+    'refY': DEFAULT_NAMESPACE,
+    'rel': DEFAULT_NAMESPACE,
+    'rendering-intent': DEFAULT_NAMESPACE,
+    'repeatCount': DEFAULT_NAMESPACE,
+    'repeatDur': DEFAULT_NAMESPACE,
+    'requiredExtensions': DEFAULT_NAMESPACE,
+    'requiredFeatures': DEFAULT_NAMESPACE,
+    'requiredFonts': DEFAULT_NAMESPACE,
+    'requiredFormats': DEFAULT_NAMESPACE,
+    'resource': DEFAULT_NAMESPACE,
+    'restart': DEFAULT_NAMESPACE,
+    'result': DEFAULT_NAMESPACE,
+    'rev': DEFAULT_NAMESPACE,
+    'role': DEFAULT_NAMESPACE,
+    'rotate': DEFAULT_NAMESPACE,
+    'rx': DEFAULT_NAMESPACE,
+    'ry': DEFAULT_NAMESPACE,
+    'scale': DEFAULT_NAMESPACE,
+    'seed': DEFAULT_NAMESPACE,
+    'shape-rendering': DEFAULT_NAMESPACE,
+    'slope': DEFAULT_NAMESPACE,
+    'snapshotTime': DEFAULT_NAMESPACE,
+    'spacing': DEFAULT_NAMESPACE,
+    'specularConstant': DEFAULT_NAMESPACE,
+    'specularExponent': DEFAULT_NAMESPACE,
+    'spreadMethod': DEFAULT_NAMESPACE,
+    'startOffset': DEFAULT_NAMESPACE,
+    'stdDeviation': DEFAULT_NAMESPACE,
+    'stemh': DEFAULT_NAMESPACE,
+    'stemv': DEFAULT_NAMESPACE,
+    'stitchTiles': DEFAULT_NAMESPACE,
+    'stop-color': DEFAULT_NAMESPACE,
+    'stop-opacity': DEFAULT_NAMESPACE,
+    'strikethrough-position': DEFAULT_NAMESPACE,
+    'strikethrough-thickness': DEFAULT_NAMESPACE,
+    'string': DEFAULT_NAMESPACE,
+    'stroke': DEFAULT_NAMESPACE,
+    'stroke-dasharray': DEFAULT_NAMESPACE,
+    'stroke-dashoffset': DEFAULT_NAMESPACE,
+    'stroke-linecap': DEFAULT_NAMESPACE,
+    'stroke-linejoin': DEFAULT_NAMESPACE,
+    'stroke-miterlimit': DEFAULT_NAMESPACE,
+    'stroke-opacity': DEFAULT_NAMESPACE,
+    'stroke-width': DEFAULT_NAMESPACE,
+    'surfaceScale': DEFAULT_NAMESPACE,
+    'syncBehavior': DEFAULT_NAMESPACE,
+    'syncBehaviorDefault': DEFAULT_NAMESPACE,
+    'syncMaster': DEFAULT_NAMESPACE,
+    'syncTolerance': DEFAULT_NAMESPACE,
+    'syncToleranceDefault': DEFAULT_NAMESPACE,
+    'systemLanguage': DEFAULT_NAMESPACE,
+    'tableValues': DEFAULT_NAMESPACE,
+    'target': DEFAULT_NAMESPACE,
+    'targetX': DEFAULT_NAMESPACE,
+    'targetY': DEFAULT_NAMESPACE,
+    'text-anchor': DEFAULT_NAMESPACE,
+    'text-decoration': DEFAULT_NAMESPACE,
+    'text-rendering': DEFAULT_NAMESPACE,
+    'textLength': DEFAULT_NAMESPACE,
+    'timelineBegin': DEFAULT_NAMESPACE,
+    'title': DEFAULT_NAMESPACE,
+    'to': DEFAULT_NAMESPACE,
+    'transform': DEFAULT_NAMESPACE,
+    'transformBehavior': DEFAULT_NAMESPACE,
+    'type': DEFAULT_NAMESPACE,
+    'typeof': DEFAULT_NAMESPACE,
+    'u1': DEFAULT_NAMESPACE,
+    'u2': DEFAULT_NAMESPACE,
+    'underline-position': DEFAULT_NAMESPACE,
+    'underline-thickness': DEFAULT_NAMESPACE,
+    'unicode': DEFAULT_NAMESPACE,
+    'unicode-bidi': DEFAULT_NAMESPACE,
+    'unicode-range': DEFAULT_NAMESPACE,
+    'units-per-em': DEFAULT_NAMESPACE,
+    'v-alphabetic': DEFAULT_NAMESPACE,
+    'v-hanging': DEFAULT_NAMESPACE,
+    'v-ideographic': DEFAULT_NAMESPACE,
+    'v-mathematical': DEFAULT_NAMESPACE,
+    'values': DEFAULT_NAMESPACE,
+    'version': DEFAULT_NAMESPACE,
+    'vert-adv-y': DEFAULT_NAMESPACE,
+    'vert-origin-x': DEFAULT_NAMESPACE,
+    'vert-origin-y': DEFAULT_NAMESPACE,
+    'viewBox': DEFAULT_NAMESPACE,
+    'viewTarget': DEFAULT_NAMESPACE,
+    'visibility': DEFAULT_NAMESPACE,
+    'width': DEFAULT_NAMESPACE,
+    'widths': DEFAULT_NAMESPACE,
+    'word-spacing': DEFAULT_NAMESPACE,
+    'writing-mode': DEFAULT_NAMESPACE,
+    'x': DEFAULT_NAMESPACE,
+    'x-height': DEFAULT_NAMESPACE,
+    'x1': DEFAULT_NAMESPACE,
+    'x2': DEFAULT_NAMESPACE,
+    'xChannelSelector': DEFAULT_NAMESPACE,
+    'xlink:actuate': XLINK_NAMESPACE,
+    'xlink:arcrole': XLINK_NAMESPACE,
+    'xlink:href': XLINK_NAMESPACE,
+    'xlink:role': XLINK_NAMESPACE,
+    'xlink:show': XLINK_NAMESPACE,
+    'xlink:title': XLINK_NAMESPACE,
+    'xlink:type': XLINK_NAMESPACE,
+    'xml:base': XML_NAMESPACE,
+    'xml:id': XML_NAMESPACE,
+    'xml:lang': XML_NAMESPACE,
+    'xml:space': XML_NAMESPACE,
+    'y': DEFAULT_NAMESPACE,
+    'y1': DEFAULT_NAMESPACE,
+    'y2': DEFAULT_NAMESPACE,
+    'yChannelSelector': DEFAULT_NAMESPACE,
+    'z': DEFAULT_NAMESPACE,
+    'zoomAndPan': DEFAULT_NAMESPACE
+};
+
+module.exports = SVGAttributeNamespace;
+
+function SVGAttributeNamespace(value) {
+  if (SVG_PROPERTIES.hasOwnProperty(value)) {
+    return SVG_PROPERTIES[value];
+  }
 }
-var SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 
-module.exports = svg
+},{}],75:[function(_dereq_,module,exports){
+'use strict';
+
+var isArray = _dereq_('x-is-array');
+
+var h = _dereq_('./index.js');
+
+
+var SVGAttributeNamespace = _dereq_('./svg-attribute-namespace');
+var attributeHook = _dereq_('./hooks/attribute-hook');
+
+var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
+module.exports = svg;
 
 function svg(tagName, properties, children) {
     if (!children && isChildren(properties)) {
-        children = properties
-        properties = {}
+        children = properties;
+        properties = {};
     }
 
-    properties = properties || {}
+    properties = properties || {};
 
     // set namespace for svg
-    properties.namespace = SVG_NAMESPACE
+    properties.namespace = SVG_NAMESPACE;
 
-    var attributes = properties.attributes || (properties.attributes = {})
+    var attributes = properties.attributes || (properties.attributes = {});
 
-    // for each key, if attribute & string, bool or number then
-    // convert it into a setAttribute hook
     for (var key in properties) {
         if (!properties.hasOwnProperty(key)) {
-            continue
+            continue;
         }
 
-        if (BLACKLISTED_KEYS[key]) {
-            continue
+        var namespace = SVGAttributeNamespace(key);
+
+        if (namespace === undefined) { // not a svg attribute
+            continue;
         }
 
-        var value = properties[key]
-        if (typeof value !== "string" &&
-            typeof value !== "number" &&
-            typeof value !== "boolean"
+        var value = properties[key];
+
+        if (typeof value !== 'string' &&
+            typeof value !== 'number' &&
+            typeof value !== 'boolean'
         ) {
-            continue
+            continue;
+        }
+
+        if (namespace !== null) { // namespaced attribute
+            properties[key] = attributeHook(namespace, value);
+            continue;
         }
 
         attributes[key] = value
+        properties[key] = undefined
     }
 
-    return h(tagName, properties, children)
+    return h(tagName, properties, children);
 }
 
 function isChildren(x) {
-    return typeof x === "string" || Array.isArray(x)
+    return typeof x === 'string' || isArray(x);
 }
 
-},{"./index.js":77}],80:[function(_dereq_,module,exports){
+},{"./hooks/attribute-hook":69,"./index.js":72,"./svg-attribute-namespace":74,"x-is-array":62}],76:[function(_dereq_,module,exports){
 var isVNode = _dereq_("./is-vnode")
 var isVText = _dereq_("./is-vtext")
 var isWidget = _dereq_("./is-widget")
@@ -3516,22 +4008,23 @@ function renderThunk(thunk, previous) {
     return renderedThunk
 }
 
-},{"./is-thunk":81,"./is-vnode":83,"./is-vtext":84,"./is-widget":85}],81:[function(_dereq_,module,exports){
+},{"./is-thunk":77,"./is-vnode":79,"./is-vtext":80,"./is-widget":81}],77:[function(_dereq_,module,exports){
 module.exports = isThunk
 
 function isThunk(t) {
     return t && t.type === "Thunk"
 }
 
-},{}],82:[function(_dereq_,module,exports){
+},{}],78:[function(_dereq_,module,exports){
 module.exports = isHook
 
 function isHook(hook) {
-    return hook && typeof hook.hook === "function" &&
-        !hook.hasOwnProperty("hook")
+    return hook &&
+      (typeof hook.hook === "function" && !hook.hasOwnProperty("hook") ||
+       typeof hook.unhook === "function" && !hook.hasOwnProperty("unhook"))
 }
 
-},{}],83:[function(_dereq_,module,exports){
+},{}],79:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualNode
@@ -3540,7 +4033,7 @@ function isVirtualNode(x) {
     return x && x.type === "VirtualNode" && x.version === version
 }
 
-},{"./version":86}],84:[function(_dereq_,module,exports){
+},{"./version":82}],80:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualText
@@ -3549,17 +4042,17 @@ function isVirtualText(x) {
     return x && x.type === "VirtualText" && x.version === version
 }
 
-},{"./version":86}],85:[function(_dereq_,module,exports){
+},{"./version":82}],81:[function(_dereq_,module,exports){
 module.exports = isWidget
 
 function isWidget(w) {
     return w && w.type === "Widget"
 }
 
-},{}],86:[function(_dereq_,module,exports){
+},{}],82:[function(_dereq_,module,exports){
 module.exports = "1"
 
-},{}],87:[function(_dereq_,module,exports){
+},{}],83:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 var isVNode = _dereq_("./is-vnode")
 var isWidget = _dereq_("./is-widget")
@@ -3633,7 +4126,7 @@ function VirtualNode(tagName, properties, children, key, namespace) {
 VirtualNode.prototype.version = version
 VirtualNode.prototype.type = "VirtualNode"
 
-},{"./is-thunk":81,"./is-vhook":82,"./is-vnode":83,"./is-widget":85,"./version":86}],88:[function(_dereq_,module,exports){
+},{"./is-thunk":77,"./is-vhook":78,"./is-vnode":79,"./is-widget":81,"./version":82}],84:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 VirtualPatch.NONE = 0
@@ -3657,7 +4150,7 @@ function VirtualPatch(type, vNode, patch) {
 VirtualPatch.prototype.version = version
 VirtualPatch.prototype.type = "VirtualPatch"
 
-},{"./version":86}],89:[function(_dereq_,module,exports){
+},{"./version":82}],85:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = VirtualText
@@ -3669,88 +4162,11 @@ function VirtualText(text) {
 VirtualText.prototype.version = version
 VirtualText.prototype.type = "VirtualText"
 
-},{"./version":86}],90:[function(_dereq_,module,exports){
-var isArray = _dereq_("x-is-array")
+},{"./version":82}],86:[function(_dereq_,module,exports){
 var isObject = _dereq_("is-object")
-
-var VPatch = _dereq_("../vnode/vpatch")
-var isVNode = _dereq_("../vnode/is-vnode")
-var isVText = _dereq_("../vnode/is-vtext")
-var isWidget = _dereq_("../vnode/is-widget")
-var isThunk = _dereq_("../vnode/is-thunk")
 var isHook = _dereq_("../vnode/is-vhook")
-var handleThunk = _dereq_("../vnode/handle-thunk")
 
-module.exports = diff
-
-function diff(a, b) {
-    var patch = { a: a }
-    walk(a, b, patch, 0)
-    return patch
-}
-
-function walk(a, b, patch, index) {
-    if (a === b) {
-        return
-    }
-
-    var apply = patch[index]
-
-    if (isThunk(a) || isThunk(b)) {
-        thunks(a, b, patch, index)
-    } else if (b == null) {
-
-        // If a is a widget we will add a remove patch for it
-        // Otherwise any child widgets/hooks must be destroyed.
-        // This prevents adding two remove patches for a widget.
-        if (!isWidget(a)) {
-            clearState(a, patch, index)
-            apply = patch[index]
-        }
-
-        apply = appendPatch(apply, new VPatch(VPatch.REMOVE, a, b))
-    } else if (isVNode(b)) {
-        if (isVNode(a)) {
-            if (a.tagName === b.tagName &&
-                a.namespace === b.namespace &&
-                a.key === b.key) {
-                var propsPatch = diffProps(a.properties, b.properties)
-                if (propsPatch) {
-                    apply = appendPatch(apply,
-                        new VPatch(VPatch.PROPS, a, propsPatch))
-                }
-                apply = diffChildren(a, b, patch, apply, index)
-            } else {
-                clearState(a, patch, index)
-                apply = patch[index]
-                apply = appendPatch(apply, new VPatch(VPatch.VNODE, a, b))
-            }
-        } else {
-            clearState(a, patch, index)
-            apply = patch[index]
-            apply = appendPatch(apply, new VPatch(VPatch.VNODE, a, b))
-        }
-    } else if (isVText(b)) {
-        if (!isVText(a)) {
-            clearState(a, patch, index)
-            apply = patch[index]
-            apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b))
-        } else if (a.text !== b.text) {
-            apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b))
-        }
-    } else if (isWidget(b)) {
-        if (!isWidget(a)) {
-            clearState(a, patch, index)
-            apply = patch[index]
-        }
-
-        apply = appendPatch(apply, new VPatch(VPatch.WIDGET, a, b))
-    }
-
-    if (apply) {
-        patch[index] = apply
-    }
-}
+module.exports = diffProps
 
 function diffProps(a, b) {
     var diff
@@ -3797,12 +4213,96 @@ function diffProps(a, b) {
 }
 
 function getPrototype(value) {
-    if (Object.getPrototypeOf) {
-        return Object.getPrototypeOf(value)
-    } else if (value.__proto__) {
-        return value.__proto__
-    } else if (value.constructor) {
-        return value.constructor.prototype
+  if (Object.getPrototypeOf) {
+    return Object.getPrototypeOf(value)
+  } else if (value.__proto__) {
+    return value.__proto__
+  } else if (value.constructor) {
+    return value.constructor.prototype
+  }
+}
+
+},{"../vnode/is-vhook":78,"is-object":61}],87:[function(_dereq_,module,exports){
+var isArray = _dereq_("x-is-array")
+
+var VPatch = _dereq_("../vnode/vpatch")
+var isVNode = _dereq_("../vnode/is-vnode")
+var isVText = _dereq_("../vnode/is-vtext")
+var isWidget = _dereq_("../vnode/is-widget")
+var isThunk = _dereq_("../vnode/is-thunk")
+var handleThunk = _dereq_("../vnode/handle-thunk")
+
+var diffProps = _dereq_("./diff-props")
+
+module.exports = diff
+
+function diff(a, b) {
+    var patch = { a: a }
+    walk(a, b, patch, 0)
+    return patch
+}
+
+function walk(a, b, patch, index) {
+    if (a === b) {
+        return
+    }
+
+    var apply = patch[index]
+    var applyClear = false
+
+    if (isThunk(a) || isThunk(b)) {
+        thunks(a, b, patch, index)
+    } else if (b == null) {
+
+        // If a is a widget we will add a remove patch for it
+        // Otherwise any child widgets/hooks must be destroyed.
+        // This prevents adding two remove patches for a widget.
+        if (!isWidget(a)) {
+            clearState(a, patch, index)
+            apply = patch[index]
+        }
+
+        apply = appendPatch(apply, new VPatch(VPatch.REMOVE, a, b))
+    } else if (isVNode(b)) {
+        if (isVNode(a)) {
+            if (a.tagName === b.tagName &&
+                a.namespace === b.namespace &&
+                a.key === b.key) {
+                var propsPatch = diffProps(a.properties, b.properties)
+                if (propsPatch) {
+                    apply = appendPatch(apply,
+                        new VPatch(VPatch.PROPS, a, propsPatch))
+                }
+                apply = diffChildren(a, b, patch, apply, index)
+            } else {
+                apply = appendPatch(apply, new VPatch(VPatch.VNODE, a, b))
+                applyClear = true
+            }
+        } else {
+            apply = appendPatch(apply, new VPatch(VPatch.VNODE, a, b))
+            applyClear = true
+        }
+    } else if (isVText(b)) {
+        if (!isVText(a)) {
+            apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b))
+            applyClear = true
+        } else if (a.text !== b.text) {
+            apply = appendPatch(apply, new VPatch(VPatch.VTEXT, a, b))
+        }
+    } else if (isWidget(b)) {
+        if (!isWidget(a)) {
+            applyClear = true;
+        }
+
+        apply = appendPatch(apply, new VPatch(VPatch.WIDGET, a, b))
+    }
+
+    if (apply) {
+        patch[index] = apply
+    }
+
+    if (applyClear) {
+        clearState(a, patch, index)
     }
 }
 
@@ -4047,7 +4547,7 @@ function appendPatch(apply, patch) {
     }
 }
 
-},{"../vnode/handle-thunk":80,"../vnode/is-thunk":81,"../vnode/is-vhook":82,"../vnode/is-vnode":83,"../vnode/is-vtext":84,"../vnode/is-widget":85,"../vnode/vpatch":88,"is-object":66,"x-is-array":67}],91:[function(_dereq_,module,exports){
+},{"../vnode/handle-thunk":76,"../vnode/is-thunk":77,"../vnode/is-vnode":79,"../vnode/is-vtext":80,"../vnode/is-widget":81,"../vnode/vpatch":84,"./diff-props":86,"x-is-array":62}],88:[function(_dereq_,module,exports){
 var hiddenStore = _dereq_('./hidden-store.js');
 
 module.exports = createStore;
@@ -4068,11 +4568,27 @@ function createStore() {
     };
 }
 
-},{"./hidden-store.js":92}],92:[function(_dereq_,module,exports){
-module.exports=_dereq_(10)
-},{}],93:[function(_dereq_,module,exports){
-module.exports=_dereq_(33)
-},{}],94:[function(_dereq_,module,exports){
+},{"./hidden-store.js":89}],89:[function(_dereq_,module,exports){
+module.exports = hiddenStore;
+
+function hiddenStore(obj, key) {
+    var store = { identity: key };
+    var valueOf = obj.valueOf;
+
+    Object.defineProperty(obj, "valueOf", {
+        value: function (value) {
+            return value !== key ?
+                valueOf.apply(this, arguments) : store;
+        },
+        writable: true
+    });
+
+    return store;
+}
+
+},{}],90:[function(_dereq_,module,exports){
+module.exports=_dereq_(32)
+},{}],91:[function(_dereq_,module,exports){
 module.exports = extend
 
 function extend(target) {
