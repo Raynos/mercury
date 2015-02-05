@@ -38,7 +38,7 @@
   "dependencies": {
     "dom-delegator": "^13.0.1",
     "geval": "^2.1.1",
-    "main-loop": "^3.0.0",
+    "main-loop": "^3.1.0",
     "observ": "^0.2.0",
     "observ-array": "^3.1.0",
     "observ-struct": "^5.0.1",
