@@ -79,6 +79,7 @@ The following examples demonstrate how you can mix & match
   Your milage may vary on using these ideas
 
  - [Backbone + Mercury](examples/unidirectional/backbone)
+ - [Immutable + Mercury](examples/unidirectional/immutable)
  - [JSX + Mercury](examples/unidirectional/jsx)
 
 ## Motivation
