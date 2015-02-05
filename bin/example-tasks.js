@@ -20,6 +20,10 @@ var examplesTasks = [
         'unidirectional',
         'jsx'
     )),
+    browserifyTask(path.join(
+        'unidirectional',
+        'immutable'
+    )),
     browserifyTask('login-form'),
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),
