@@ -20,7 +20,7 @@ var mercury = module.exports = {
 
     // Input
     Delegator: _dereq_('dom-delegator'),
-    // deprecated: use hg.handles instead.
+    // deprecated: use hg.channels instead.
     input: input,
     // deprecated: use hg.channels instead.
     handles: channels,
@@ -45,7 +45,7 @@ var mercury = module.exports = {
     sendClick: _dereq_('value-event/click'),
 
     // State
-    // deprecated: use hg.varhash instead.
+    // remove from core: favor hg.varhash instead.
     array: _dereq_('observ-array'),
     struct: _dereq_('observ-struct'),
     // deprecated: use hg.struct instead.
@@ -60,13 +60,11 @@ var mercury = module.exports = {
     partial: _dereq_('vdom-thunk'),
     create: _dereq_('virtual-dom/vdom/create-element'),
     h: _dereq_('virtual-dom/virtual-hyperscript'),
-    // deprecated: require svg directly instead
-    svg: _dereq_('virtual-dom/virtual-hyperscript/svg'),
 
     // Utilities
-    // deprecated: require computed directly instead.
+    // remove from core: require computed directly instead.
     computed: _dereq_('observ/computed'),
-    // deprecated: require watch directly instead.
+    // remove from core: require watch directly instead.
     watch: _dereq_('observ/watch')
 };
 
@@ -123,7 +121,7 @@ function app(elem, observ, render, opts) {
     return observ(loop.update);
 }
 
-},{"dom-delegator":6,"geval/multiple":15,"geval/single":16,"main-loop":18,"observ":36,"observ-array":24,"observ-struct":31,"observ-varhash":33,"observ/computed":35,"observ/watch":37,"value-event/base-event":41,"value-event/change":42,"value-event/click":43,"value-event/event":44,"value-event/key":45,"value-event/submit":51,"value-event/value":52,"vdom-thunk":54,"virtual-dom/vdom/create-element":64,"virtual-dom/vdom/patch":67,"virtual-dom/virtual-hyperscript":72,"virtual-dom/virtual-hyperscript/svg":75,"virtual-dom/vtree/diff":87,"xtend":90}],2:[function(_dereq_,module,exports){
+},{"dom-delegator":6,"geval/multiple":15,"geval/single":16,"main-loop":18,"observ":36,"observ-array":24,"observ-struct":31,"observ-varhash":33,"observ/computed":35,"observ/watch":37,"value-event/base-event":41,"value-event/change":42,"value-event/click":43,"value-event/event":44,"value-event/key":45,"value-event/submit":51,"value-event/value":52,"vdom-thunk":54,"virtual-dom/vdom/create-element":64,"virtual-dom/vdom/patch":67,"virtual-dom/virtual-hyperscript":71,"virtual-dom/vtree/diff":84,"xtend":87}],2:[function(_dereq_,module,exports){
 
 },{}],3:[function(_dereq_,module,exports){
 /**
@@ -446,7 +444,7 @@ function Handle() {
     this.type = "dom-delegator-handle"
 }
 
-},{"./add-event.js":4,"./proxy-event.js":12,"./remove-event.js":13,"ev-store":7,"global/document":17,"weakmap-shim/create-store":88}],6:[function(_dereq_,module,exports){
+},{"./add-event.js":4,"./proxy-event.js":12,"./remove-event.js":13,"ev-store":7,"global/document":17,"weakmap-shim/create-store":85}],6:[function(_dereq_,module,exports){
 var Individual = _dereq_("individual")
 var cuid = _dereq_("cuid")
 var globalDocument = _dereq_("global/document")
@@ -866,13 +864,14 @@ function main(initialState, view, opts) {
         var newTree = view(currentState)
 
         if (opts.createOnly) {
+            inRenderingTransaction = false
             create(newTree, opts)
         } else {
             var patches = diff(tree, newTree, opts)
+            inRenderingTransaction = false
             target = patch(target, patches, opts)
         }
 
-        inRenderingTransaction = false
         tree = newTree
         currentState = null
     }
@@ -1000,7 +999,7 @@ function TypedError(args) {
         args.name = errorName[0].toUpperCase() + errorName.substr(1)
     }
 
-    createError.type = args.type;
+    extend(createError, args);
     createError._name = args.name;
 
     return createError;
@@ -1025,7 +1024,7 @@ function TypedError(args) {
 }
 
 
-},{"camelize":19,"string-template":20,"xtend/mutable":91}],22:[function(_dereq_,module,exports){
+},{"camelize":19,"string-template":20,"xtend/mutable":88}],22:[function(_dereq_,module,exports){
 var setNonEnumerable = _dereq_("./lib/set-non-enumerable.js");
 
 module.exports = addListener
@@ -2894,7 +2893,7 @@ function getPrototype(value) {
     }
 }
 
-},{"../vnode/is-vhook.js":78,"is-object":61}],64:[function(_dereq_,module,exports){
+},{"../vnode/is-vhook.js":75,"is-object":61}],64:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 
 var applyProperties = _dereq_("./apply-properties")
@@ -2942,7 +2941,7 @@ function createElement(vnode, opts) {
     return node
 }
 
-},{"../vnode/handle-thunk.js":76,"../vnode/is-vnode.js":79,"../vnode/is-vtext.js":80,"../vnode/is-widget.js":81,"./apply-properties":63,"global/document":17}],65:[function(_dereq_,module,exports){
+},{"../vnode/handle-thunk.js":73,"../vnode/is-vnode.js":76,"../vnode/is-vtext.js":77,"../vnode/is-widget.js":78,"./apply-properties":63,"global/document":17}],65:[function(_dereq_,module,exports){
 // Maps a virtual DOM tree onto a real DOM tree in an efficient manner.
 // We don't want to read all of the DOM nodes in the tree so we use
 // the in-order tree indexing to eliminate recursion down certain branches.
@@ -3214,7 +3213,7 @@ function replaceRoot(oldRoot, newRoot) {
     return newRoot;
 }
 
-},{"../vnode/is-widget.js":81,"../vnode/vpatch.js":84,"./apply-properties":63,"./create-element":64,"./update-widget":68}],67:[function(_dereq_,module,exports){
+},{"../vnode/is-widget.js":78,"../vnode/vpatch.js":81,"./apply-properties":63,"./create-element":64,"./update-widget":68}],67:[function(_dereq_,module,exports){
 var document = _dereq_("global/document")
 var isArray = _dereq_("x-is-array")
 
@@ -3309,44 +3308,7 @@ function updateWidget(a, b) {
     return false
 }
 
-},{"../vnode/is-widget.js":81}],69:[function(_dereq_,module,exports){
-'use strict';
-
-module.exports = AttributeHook;
-
-function AttributeHook(namespace, value) {
-    if (!(this instanceof AttributeHook)) {
-        return new AttributeHook(namespace, value);
-    }
-
-    this.namespace = namespace;
-    this.value = value;
-}
-
-AttributeHook.prototype.hook = function (node, prop, prev) {
-    if (prev && prev.type === 'AttributeHook' &&
-        prev.value === this.value &&
-        prev.namespace === this.namespace) {
-        return;
-    }
-
-    node.setAttributeNS(this.namespace, prop, this.value);
-};
-
-AttributeHook.prototype.unhook = function (node, prop, next) {
-    if (next && next.type === 'AttributeHook' &&
-        next.namespace === this.namespace) {
-        return;
-    }
-
-    var colonPosition = prop.indexOf(':');
-    var localName = colonPosition > -1 ? prop.substr(colonPosition + 1) : prop;
-    node.removeAttributeNS(this.namespace, localName);
-};
-
-AttributeHook.prototype.type = 'AttributeHook';
-
-},{}],70:[function(_dereq_,module,exports){
+},{"../vnode/is-widget.js":78}],69:[function(_dereq_,module,exports){
 'use strict';
 
 var EvStore = _dereq_('ev-store');
@@ -3375,7 +3337,7 @@ EvHook.prototype.unhook = function(node, propertyName) {
     es[propName] = undefined;
 };
 
-},{"ev-store":58}],71:[function(_dereq_,module,exports){
+},{"ev-store":58}],70:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = SoftSetHook;
@@ -3394,7 +3356,7 @@ SoftSetHook.prototype.hook = function (node, propertyName) {
     }
 };
 
-},{}],72:[function(_dereq_,module,exports){
+},{}],71:[function(_dereq_,module,exports){
 'use strict';
 
 var isArray = _dereq_('x-is-array');
@@ -3531,7 +3493,7 @@ function errorString(obj) {
     }
 }
 
-},{"../vnode/is-thunk":77,"../vnode/is-vhook":78,"../vnode/is-vnode":79,"../vnode/is-vtext":80,"../vnode/is-widget":81,"../vnode/vnode.js":83,"../vnode/vtext.js":85,"./hooks/ev-hook.js":70,"./hooks/soft-set-hook.js":71,"./parse-tag.js":73,"x-is-array":62}],73:[function(_dereq_,module,exports){
+},{"../vnode/is-thunk":74,"../vnode/is-vhook":75,"../vnode/is-vnode":76,"../vnode/is-vtext":77,"../vnode/is-widget":78,"../vnode/vnode.js":80,"../vnode/vtext.js":82,"./hooks/ev-hook.js":69,"./hooks/soft-set-hook.js":70,"./parse-tag.js":72,"x-is-array":62}],72:[function(_dereq_,module,exports){
 'use strict';
 
 var split = _dereq_('browser-split');
@@ -3587,386 +3549,7 @@ function parseTag(tag, props) {
     return props.namespace ? tagName : tagName.toUpperCase();
 }
 
-},{"browser-split":57}],74:[function(_dereq_,module,exports){
-'use strict';
-
-var DEFAULT_NAMESPACE = null;
-var EV_NAMESPACE = 'http://www.w3.org/2001/xml-events';
-var XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
-var XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
-
-// http://www.w3.org/TR/SVGTiny12/attributeTable.html
-// http://www.w3.org/TR/SVG/attindex.html
-var SVG_PROPERTIES = {
-    'about': DEFAULT_NAMESPACE,
-    'accent-height': DEFAULT_NAMESPACE,
-    'accumulate': DEFAULT_NAMESPACE,
-    'additive': DEFAULT_NAMESPACE,
-    'alignment-baseline': DEFAULT_NAMESPACE,
-    'alphabetic': DEFAULT_NAMESPACE,
-    'amplitude': DEFAULT_NAMESPACE,
-    'arabic-form': DEFAULT_NAMESPACE,
-    'ascent': DEFAULT_NAMESPACE,
-    'attributeName': DEFAULT_NAMESPACE,
-    'attributeType': DEFAULT_NAMESPACE,
-    'azimuth': DEFAULT_NAMESPACE,
-    'bandwidth': DEFAULT_NAMESPACE,
-    'baseFrequency': DEFAULT_NAMESPACE,
-    'baseProfile': DEFAULT_NAMESPACE,
-    'baseline-shift': DEFAULT_NAMESPACE,
-    'bbox': DEFAULT_NAMESPACE,
-    'begin': DEFAULT_NAMESPACE,
-    'bias': DEFAULT_NAMESPACE,
-    'by': DEFAULT_NAMESPACE,
-    'calcMode': DEFAULT_NAMESPACE,
-    'cap-height': DEFAULT_NAMESPACE,
-    'class': DEFAULT_NAMESPACE,
-    'clip': DEFAULT_NAMESPACE,
-    'clip-path': DEFAULT_NAMESPACE,
-    'clip-rule': DEFAULT_NAMESPACE,
-    'clipPathUnits': DEFAULT_NAMESPACE,
-    'color': DEFAULT_NAMESPACE,
-    'color-interpolation': DEFAULT_NAMESPACE,
-    'color-interpolation-filters': DEFAULT_NAMESPACE,
-    'color-profile': DEFAULT_NAMESPACE,
-    'color-rendering': DEFAULT_NAMESPACE,
-    'content': DEFAULT_NAMESPACE,
-    'contentScriptType': DEFAULT_NAMESPACE,
-    'contentStyleType': DEFAULT_NAMESPACE,
-    'cursor': DEFAULT_NAMESPACE,
-    'cx': DEFAULT_NAMESPACE,
-    'cy': DEFAULT_NAMESPACE,
-    'd': DEFAULT_NAMESPACE,
-    'datatype': DEFAULT_NAMESPACE,
-    'defaultAction': DEFAULT_NAMESPACE,
-    'descent': DEFAULT_NAMESPACE,
-    'diffuseConstant': DEFAULT_NAMESPACE,
-    'direction': DEFAULT_NAMESPACE,
-    'display': DEFAULT_NAMESPACE,
-    'divisor': DEFAULT_NAMESPACE,
-    'dominant-baseline': DEFAULT_NAMESPACE,
-    'dur': DEFAULT_NAMESPACE,
-    'dx': DEFAULT_NAMESPACE,
-    'dy': DEFAULT_NAMESPACE,
-    'edgeMode': DEFAULT_NAMESPACE,
-    'editable': DEFAULT_NAMESPACE,
-    'elevation': DEFAULT_NAMESPACE,
-    'enable-background': DEFAULT_NAMESPACE,
-    'end': DEFAULT_NAMESPACE,
-    'ev:event': EV_NAMESPACE,
-    'event': DEFAULT_NAMESPACE,
-    'exponent': DEFAULT_NAMESPACE,
-    'externalResourcesRequired': DEFAULT_NAMESPACE,
-    'fill': DEFAULT_NAMESPACE,
-    'fill-opacity': DEFAULT_NAMESPACE,
-    'fill-rule': DEFAULT_NAMESPACE,
-    'filter': DEFAULT_NAMESPACE,
-    'filterRes': DEFAULT_NAMESPACE,
-    'filterUnits': DEFAULT_NAMESPACE,
-    'flood-color': DEFAULT_NAMESPACE,
-    'flood-opacity': DEFAULT_NAMESPACE,
-    'focusHighlight': DEFAULT_NAMESPACE,
-    'focusable': DEFAULT_NAMESPACE,
-    'font-family': DEFAULT_NAMESPACE,
-    'font-size': DEFAULT_NAMESPACE,
-    'font-size-adjust': DEFAULT_NAMESPACE,
-    'font-stretch': DEFAULT_NAMESPACE,
-    'font-style': DEFAULT_NAMESPACE,
-    'font-variant': DEFAULT_NAMESPACE,
-    'font-weight': DEFAULT_NAMESPACE,
-    'format': DEFAULT_NAMESPACE,
-    'from': DEFAULT_NAMESPACE,
-    'fx': DEFAULT_NAMESPACE,
-    'fy': DEFAULT_NAMESPACE,
-    'g1': DEFAULT_NAMESPACE,
-    'g2': DEFAULT_NAMESPACE,
-    'glyph-name': DEFAULT_NAMESPACE,
-    'glyph-orientation-horizontal': DEFAULT_NAMESPACE,
-    'glyph-orientation-vertical': DEFAULT_NAMESPACE,
-    'glyphRef': DEFAULT_NAMESPACE,
-    'gradientTransform': DEFAULT_NAMESPACE,
-    'gradientUnits': DEFAULT_NAMESPACE,
-    'handler': DEFAULT_NAMESPACE,
-    'hanging': DEFAULT_NAMESPACE,
-    'height': DEFAULT_NAMESPACE,
-    'horiz-adv-x': DEFAULT_NAMESPACE,
-    'horiz-origin-x': DEFAULT_NAMESPACE,
-    'horiz-origin-y': DEFAULT_NAMESPACE,
-    'id': DEFAULT_NAMESPACE,
-    'ideographic': DEFAULT_NAMESPACE,
-    'image-rendering': DEFAULT_NAMESPACE,
-    'in': DEFAULT_NAMESPACE,
-    'in2': DEFAULT_NAMESPACE,
-    'initialVisibility': DEFAULT_NAMESPACE,
-    'intercept': DEFAULT_NAMESPACE,
-    'k': DEFAULT_NAMESPACE,
-    'k1': DEFAULT_NAMESPACE,
-    'k2': DEFAULT_NAMESPACE,
-    'k3': DEFAULT_NAMESPACE,
-    'k4': DEFAULT_NAMESPACE,
-    'kernelMatrix': DEFAULT_NAMESPACE,
-    'kernelUnitLength': DEFAULT_NAMESPACE,
-    'kerning': DEFAULT_NAMESPACE,
-    'keyPoints': DEFAULT_NAMESPACE,
-    'keySplines': DEFAULT_NAMESPACE,
-    'keyTimes': DEFAULT_NAMESPACE,
-    'lang': DEFAULT_NAMESPACE,
-    'lengthAdjust': DEFAULT_NAMESPACE,
-    'letter-spacing': DEFAULT_NAMESPACE,
-    'lighting-color': DEFAULT_NAMESPACE,
-    'limitingConeAngle': DEFAULT_NAMESPACE,
-    'local': DEFAULT_NAMESPACE,
-    'marker-end': DEFAULT_NAMESPACE,
-    'marker-mid': DEFAULT_NAMESPACE,
-    'marker-start': DEFAULT_NAMESPACE,
-    'markerHeight': DEFAULT_NAMESPACE,
-    'markerUnits': DEFAULT_NAMESPACE,
-    'markerWidth': DEFAULT_NAMESPACE,
-    'mask': DEFAULT_NAMESPACE,
-    'maskContentUnits': DEFAULT_NAMESPACE,
-    'maskUnits': DEFAULT_NAMESPACE,
-    'mathematical': DEFAULT_NAMESPACE,
-    'max': DEFAULT_NAMESPACE,
-    'media': DEFAULT_NAMESPACE,
-    'mediaCharacterEncoding': DEFAULT_NAMESPACE,
-    'mediaContentEncodings': DEFAULT_NAMESPACE,
-    'mediaSize': DEFAULT_NAMESPACE,
-    'mediaTime': DEFAULT_NAMESPACE,
-    'method': DEFAULT_NAMESPACE,
-    'min': DEFAULT_NAMESPACE,
-    'mode': DEFAULT_NAMESPACE,
-    'name': DEFAULT_NAMESPACE,
-    'nav-down': DEFAULT_NAMESPACE,
-    'nav-down-left': DEFAULT_NAMESPACE,
-    'nav-down-right': DEFAULT_NAMESPACE,
-    'nav-left': DEFAULT_NAMESPACE,
-    'nav-next': DEFAULT_NAMESPACE,
-    'nav-prev': DEFAULT_NAMESPACE,
-    'nav-right': DEFAULT_NAMESPACE,
-    'nav-up': DEFAULT_NAMESPACE,
-    'nav-up-left': DEFAULT_NAMESPACE,
-    'nav-up-right': DEFAULT_NAMESPACE,
-    'numOctaves': DEFAULT_NAMESPACE,
-    'observer': DEFAULT_NAMESPACE,
-    'offset': DEFAULT_NAMESPACE,
-    'opacity': DEFAULT_NAMESPACE,
-    'operator': DEFAULT_NAMESPACE,
-    'order': DEFAULT_NAMESPACE,
-    'orient': DEFAULT_NAMESPACE,
-    'orientation': DEFAULT_NAMESPACE,
-    'origin': DEFAULT_NAMESPACE,
-    'overflow': DEFAULT_NAMESPACE,
-    'overlay': DEFAULT_NAMESPACE,
-    'overline-position': DEFAULT_NAMESPACE,
-    'overline-thickness': DEFAULT_NAMESPACE,
-    'panose-1': DEFAULT_NAMESPACE,
-    'path': DEFAULT_NAMESPACE,
-    'pathLength': DEFAULT_NAMESPACE,
-    'patternContentUnits': DEFAULT_NAMESPACE,
-    'patternTransform': DEFAULT_NAMESPACE,
-    'patternUnits': DEFAULT_NAMESPACE,
-    'phase': DEFAULT_NAMESPACE,
-    'playbackOrder': DEFAULT_NAMESPACE,
-    'pointer-events': DEFAULT_NAMESPACE,
-    'points': DEFAULT_NAMESPACE,
-    'pointsAtX': DEFAULT_NAMESPACE,
-    'pointsAtY': DEFAULT_NAMESPACE,
-    'pointsAtZ': DEFAULT_NAMESPACE,
-    'preserveAlpha': DEFAULT_NAMESPACE,
-    'preserveAspectRatio': DEFAULT_NAMESPACE,
-    'primitiveUnits': DEFAULT_NAMESPACE,
-    'propagate': DEFAULT_NAMESPACE,
-    'property': DEFAULT_NAMESPACE,
-    'r': DEFAULT_NAMESPACE,
-    'radius': DEFAULT_NAMESPACE,
-    'refX': DEFAULT_NAMESPACE,
-    'refY': DEFAULT_NAMESPACE,
-    'rel': DEFAULT_NAMESPACE,
-    'rendering-intent': DEFAULT_NAMESPACE,
-    'repeatCount': DEFAULT_NAMESPACE,
-    'repeatDur': DEFAULT_NAMESPACE,
-    'requiredExtensions': DEFAULT_NAMESPACE,
-    'requiredFeatures': DEFAULT_NAMESPACE,
-    'requiredFonts': DEFAULT_NAMESPACE,
-    'requiredFormats': DEFAULT_NAMESPACE,
-    'resource': DEFAULT_NAMESPACE,
-    'restart': DEFAULT_NAMESPACE,
-    'result': DEFAULT_NAMESPACE,
-    'rev': DEFAULT_NAMESPACE,
-    'role': DEFAULT_NAMESPACE,
-    'rotate': DEFAULT_NAMESPACE,
-    'rx': DEFAULT_NAMESPACE,
-    'ry': DEFAULT_NAMESPACE,
-    'scale': DEFAULT_NAMESPACE,
-    'seed': DEFAULT_NAMESPACE,
-    'shape-rendering': DEFAULT_NAMESPACE,
-    'slope': DEFAULT_NAMESPACE,
-    'snapshotTime': DEFAULT_NAMESPACE,
-    'spacing': DEFAULT_NAMESPACE,
-    'specularConstant': DEFAULT_NAMESPACE,
-    'specularExponent': DEFAULT_NAMESPACE,
-    'spreadMethod': DEFAULT_NAMESPACE,
-    'startOffset': DEFAULT_NAMESPACE,
-    'stdDeviation': DEFAULT_NAMESPACE,
-    'stemh': DEFAULT_NAMESPACE,
-    'stemv': DEFAULT_NAMESPACE,
-    'stitchTiles': DEFAULT_NAMESPACE,
-    'stop-color': DEFAULT_NAMESPACE,
-    'stop-opacity': DEFAULT_NAMESPACE,
-    'strikethrough-position': DEFAULT_NAMESPACE,
-    'strikethrough-thickness': DEFAULT_NAMESPACE,
-    'string': DEFAULT_NAMESPACE,
-    'stroke': DEFAULT_NAMESPACE,
-    'stroke-dasharray': DEFAULT_NAMESPACE,
-    'stroke-dashoffset': DEFAULT_NAMESPACE,
-    'stroke-linecap': DEFAULT_NAMESPACE,
-    'stroke-linejoin': DEFAULT_NAMESPACE,
-    'stroke-miterlimit': DEFAULT_NAMESPACE,
-    'stroke-opacity': DEFAULT_NAMESPACE,
-    'stroke-width': DEFAULT_NAMESPACE,
-    'surfaceScale': DEFAULT_NAMESPACE,
-    'syncBehavior': DEFAULT_NAMESPACE,
-    'syncBehaviorDefault': DEFAULT_NAMESPACE,
-    'syncMaster': DEFAULT_NAMESPACE,
-    'syncTolerance': DEFAULT_NAMESPACE,
-    'syncToleranceDefault': DEFAULT_NAMESPACE,
-    'systemLanguage': DEFAULT_NAMESPACE,
-    'tableValues': DEFAULT_NAMESPACE,
-    'target': DEFAULT_NAMESPACE,
-    'targetX': DEFAULT_NAMESPACE,
-    'targetY': DEFAULT_NAMESPACE,
-    'text-anchor': DEFAULT_NAMESPACE,
-    'text-decoration': DEFAULT_NAMESPACE,
-    'text-rendering': DEFAULT_NAMESPACE,
-    'textLength': DEFAULT_NAMESPACE,
-    'timelineBegin': DEFAULT_NAMESPACE,
-    'title': DEFAULT_NAMESPACE,
-    'to': DEFAULT_NAMESPACE,
-    'transform': DEFAULT_NAMESPACE,
-    'transformBehavior': DEFAULT_NAMESPACE,
-    'type': DEFAULT_NAMESPACE,
-    'typeof': DEFAULT_NAMESPACE,
-    'u1': DEFAULT_NAMESPACE,
-    'u2': DEFAULT_NAMESPACE,
-    'underline-position': DEFAULT_NAMESPACE,
-    'underline-thickness': DEFAULT_NAMESPACE,
-    'unicode': DEFAULT_NAMESPACE,
-    'unicode-bidi': DEFAULT_NAMESPACE,
-    'unicode-range': DEFAULT_NAMESPACE,
-    'units-per-em': DEFAULT_NAMESPACE,
-    'v-alphabetic': DEFAULT_NAMESPACE,
-    'v-hanging': DEFAULT_NAMESPACE,
-    'v-ideographic': DEFAULT_NAMESPACE,
-    'v-mathematical': DEFAULT_NAMESPACE,
-    'values': DEFAULT_NAMESPACE,
-    'version': DEFAULT_NAMESPACE,
-    'vert-adv-y': DEFAULT_NAMESPACE,
-    'vert-origin-x': DEFAULT_NAMESPACE,
-    'vert-origin-y': DEFAULT_NAMESPACE,
-    'viewBox': DEFAULT_NAMESPACE,
-    'viewTarget': DEFAULT_NAMESPACE,
-    'visibility': DEFAULT_NAMESPACE,
-    'width': DEFAULT_NAMESPACE,
-    'widths': DEFAULT_NAMESPACE,
-    'word-spacing': DEFAULT_NAMESPACE,
-    'writing-mode': DEFAULT_NAMESPACE,
-    'x': DEFAULT_NAMESPACE,
-    'x-height': DEFAULT_NAMESPACE,
-    'x1': DEFAULT_NAMESPACE,
-    'x2': DEFAULT_NAMESPACE,
-    'xChannelSelector': DEFAULT_NAMESPACE,
-    'xlink:actuate': XLINK_NAMESPACE,
-    'xlink:arcrole': XLINK_NAMESPACE,
-    'xlink:href': XLINK_NAMESPACE,
-    'xlink:role': XLINK_NAMESPACE,
-    'xlink:show': XLINK_NAMESPACE,
-    'xlink:title': XLINK_NAMESPACE,
-    'xlink:type': XLINK_NAMESPACE,
-    'xml:base': XML_NAMESPACE,
-    'xml:id': XML_NAMESPACE,
-    'xml:lang': XML_NAMESPACE,
-    'xml:space': XML_NAMESPACE,
-    'y': DEFAULT_NAMESPACE,
-    'y1': DEFAULT_NAMESPACE,
-    'y2': DEFAULT_NAMESPACE,
-    'yChannelSelector': DEFAULT_NAMESPACE,
-    'z': DEFAULT_NAMESPACE,
-    'zoomAndPan': DEFAULT_NAMESPACE
-};
-
-module.exports = SVGAttributeNamespace;
-
-function SVGAttributeNamespace(value) {
-  if (SVG_PROPERTIES.hasOwnProperty(value)) {
-    return SVG_PROPERTIES[value];
-  }
-}
-
-},{}],75:[function(_dereq_,module,exports){
-'use strict';
-
-var isArray = _dereq_('x-is-array');
-
-var h = _dereq_('./index.js');
-
-
-var SVGAttributeNamespace = _dereq_('./svg-attribute-namespace');
-var attributeHook = _dereq_('./hooks/attribute-hook');
-
-var SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-
-module.exports = svg;
-
-function svg(tagName, properties, children) {
-    if (!children && isChildren(properties)) {
-        children = properties;
-        properties = {};
-    }
-
-    properties = properties || {};
-
-    // set namespace for svg
-    properties.namespace = SVG_NAMESPACE;
-
-    var attributes = properties.attributes || (properties.attributes = {});
-
-    for (var key in properties) {
-        if (!properties.hasOwnProperty(key)) {
-            continue;
-        }
-
-        var namespace = SVGAttributeNamespace(key);
-
-        if (namespace === undefined) { // not a svg attribute
-            continue;
-        }
-
-        var value = properties[key];
-
-        if (typeof value !== 'string' &&
-            typeof value !== 'number' &&
-            typeof value !== 'boolean'
-        ) {
-            continue;
-        }
-
-        if (namespace !== null) { // namespaced attribute
-            properties[key] = attributeHook(namespace, value);
-            continue;
-        }
-
-        attributes[key] = value
-        properties[key] = undefined
-    }
-
-    return h(tagName, properties, children);
-}
-
-function isChildren(x) {
-    return typeof x === 'string' || isArray(x);
-}
-
-},{"./hooks/attribute-hook":69,"./index.js":72,"./svg-attribute-namespace":74,"x-is-array":62}],76:[function(_dereq_,module,exports){
+},{"browser-split":57}],73:[function(_dereq_,module,exports){
 var isVNode = _dereq_("./is-vnode")
 var isVText = _dereq_("./is-vtext")
 var isWidget = _dereq_("./is-widget")
@@ -4008,14 +3591,14 @@ function renderThunk(thunk, previous) {
     return renderedThunk
 }
 
-},{"./is-thunk":77,"./is-vnode":79,"./is-vtext":80,"./is-widget":81}],77:[function(_dereq_,module,exports){
+},{"./is-thunk":74,"./is-vnode":76,"./is-vtext":77,"./is-widget":78}],74:[function(_dereq_,module,exports){
 module.exports = isThunk
 
 function isThunk(t) {
     return t && t.type === "Thunk"
 }
 
-},{}],78:[function(_dereq_,module,exports){
+},{}],75:[function(_dereq_,module,exports){
 module.exports = isHook
 
 function isHook(hook) {
@@ -4024,7 +3607,7 @@ function isHook(hook) {
        typeof hook.unhook === "function" && !hook.hasOwnProperty("unhook"))
 }
 
-},{}],79:[function(_dereq_,module,exports){
+},{}],76:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualNode
@@ -4033,7 +3616,7 @@ function isVirtualNode(x) {
     return x && x.type === "VirtualNode" && x.version === version
 }
 
-},{"./version":82}],80:[function(_dereq_,module,exports){
+},{"./version":79}],77:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = isVirtualText
@@ -4042,17 +3625,17 @@ function isVirtualText(x) {
     return x && x.type === "VirtualText" && x.version === version
 }
 
-},{"./version":82}],81:[function(_dereq_,module,exports){
+},{"./version":79}],78:[function(_dereq_,module,exports){
 module.exports = isWidget
 
 function isWidget(w) {
     return w && w.type === "Widget"
 }
 
-},{}],82:[function(_dereq_,module,exports){
+},{}],79:[function(_dereq_,module,exports){
 module.exports = "1"
 
-},{}],83:[function(_dereq_,module,exports){
+},{}],80:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 var isVNode = _dereq_("./is-vnode")
 var isWidget = _dereq_("./is-widget")
@@ -4126,7 +3709,7 @@ function VirtualNode(tagName, properties, children, key, namespace) {
 VirtualNode.prototype.version = version
 VirtualNode.prototype.type = "VirtualNode"
 
-},{"./is-thunk":77,"./is-vhook":78,"./is-vnode":79,"./is-widget":81,"./version":82}],84:[function(_dereq_,module,exports){
+},{"./is-thunk":74,"./is-vhook":75,"./is-vnode":76,"./is-widget":78,"./version":79}],81:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 VirtualPatch.NONE = 0
@@ -4150,7 +3733,7 @@ function VirtualPatch(type, vNode, patch) {
 VirtualPatch.prototype.version = version
 VirtualPatch.prototype.type = "VirtualPatch"
 
-},{"./version":82}],85:[function(_dereq_,module,exports){
+},{"./version":79}],82:[function(_dereq_,module,exports){
 var version = _dereq_("./version")
 
 module.exports = VirtualText
@@ -4162,7 +3745,7 @@ function VirtualText(text) {
 VirtualText.prototype.version = version
 VirtualText.prototype.type = "VirtualText"
 
-},{"./version":82}],86:[function(_dereq_,module,exports){
+},{"./version":79}],83:[function(_dereq_,module,exports){
 var isObject = _dereq_("is-object")
 var isHook = _dereq_("../vnode/is-vhook")
 
@@ -4222,7 +3805,7 @@ function getPrototype(value) {
   }
 }
 
-},{"../vnode/is-vhook":78,"is-object":61}],87:[function(_dereq_,module,exports){
+},{"../vnode/is-vhook":75,"is-object":61}],84:[function(_dereq_,module,exports){
 var isArray = _dereq_("x-is-array")
 
 var VPatch = _dereq_("../vnode/vpatch")
@@ -4547,7 +4130,7 @@ function appendPatch(apply, patch) {
     }
 }
 
-},{"../vnode/handle-thunk":76,"../vnode/is-thunk":77,"../vnode/is-vnode":79,"../vnode/is-vtext":80,"../vnode/is-widget":81,"../vnode/vpatch":84,"./diff-props":86,"x-is-array":62}],88:[function(_dereq_,module,exports){
+},{"../vnode/handle-thunk":73,"../vnode/is-thunk":74,"../vnode/is-vnode":76,"../vnode/is-vtext":77,"../vnode/is-widget":78,"../vnode/vpatch":81,"./diff-props":83,"x-is-array":62}],85:[function(_dereq_,module,exports){
 var hiddenStore = _dereq_('./hidden-store.js');
 
 module.exports = createStore;
@@ -4568,7 +4151,7 @@ function createStore() {
     };
 }
 
-},{"./hidden-store.js":89}],89:[function(_dereq_,module,exports){
+},{"./hidden-store.js":86}],86:[function(_dereq_,module,exports){
 module.exports = hiddenStore;
 
 function hiddenStore(obj, key) {
@@ -4586,9 +4169,9 @@ function hiddenStore(obj, key) {
     return store;
 }
 
-},{}],90:[function(_dereq_,module,exports){
+},{}],87:[function(_dereq_,module,exports){
 module.exports=_dereq_(32)
-},{}],91:[function(_dereq_,module,exports){
+},{}],88:[function(_dereq_,module,exports){
 module.exports = extend
 
 function extend(target) {
