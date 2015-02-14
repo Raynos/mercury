@@ -4,6 +4,8 @@ Auto generated from vdom at version: 0.0.22.
 
 A DOM render and patch algorithm for vtree
 
+Please note that this now lives under https://github.com/Matt-Esch/virtual-dom and all related issues shoud be opened there. This repository will eventually become a build artifact of `virtual-dom` for developers with an advanced usage pattern.
+
 ## Motivation
 
 Given a `vtree` structure representing a DOM structure, we would like to either
@@ -18,11 +20,11 @@ depend on `vdom` instead.
 ## Example
 
 ```js
-var VNode = require("virtual-dom/vnode/vnode")
-var diff = require("virtual-dom/vtree/diff")
+var VNode = require("vtree/vnode")
+var diff = require("vtree/diff")
 
-var createElement = require("virtual-dom/vdom/create-element")
-var patch = require("virtual-dom/vdom/patch")
+var createElement = require("vdom/create-element")
+var patch = require("vdom/patch")
 
 var leftNode = new VNode("div")
 var rightNode = new VNode("text")
