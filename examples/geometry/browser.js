@@ -2,7 +2,7 @@
 
 var document = require('global/document');
 var hg = require('../../index.js');
-var svg = require('../../index.js').svg;
+var svg = require('virtual-dom/virtual-hyperscript/svg');
 
 var shapes = require('./shapes.js');
 var dragEvent = require('./lib/drag-handler.js');

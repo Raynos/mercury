@@ -2,7 +2,7 @@
 
 var extend = require('xtend');
 
-var svg = require('../../index.js').svg;
+var svg = require('virtual-dom/virtual-hyperscript/svg');
 
 var pointDefaults = {
     'stroke': 'black',
