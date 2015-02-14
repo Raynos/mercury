@@ -1,4 +1,4 @@
-Auto generated from main-loop at version: 2.3.0.
+Auto generated from main-loop at version: 3.1.0.
 
 # main-loop
 
@@ -39,7 +39,11 @@ function render(state) {
 }
 
 // set up a loop
-var loop = mainLoop(initState, render)
+var loop = mainLoop(initState, render, {
+    create: require("virtual-dom/create-element"),
+    diff: require("virtual-dom/diff"),
+    patch: require("virtual-dom/patch")
+})
 document.body.appendChild(loop.target)
 
 // update the loop with the new application state

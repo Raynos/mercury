@@ -1,4 +1,4 @@
-Auto generated from value-event at version: 4.0.0.
+Auto generated from value-event at version: 5.0.0.
 
 # value-event
 
@@ -42,7 +42,7 @@ elem.querySelector('input.name')
 
 ## Example (change)
 
-The cahnge event happens when form elements change
+The change event happens when form elements change
 
 For example:
 

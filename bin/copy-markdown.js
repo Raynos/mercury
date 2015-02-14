@@ -74,7 +74,7 @@ parallel(tasks, function onTasks(err) {
 });
 
 function getProject(uri, cb) {
-    var projectUri = 'git@github.com:' + uri;
+    var projectUri = 'https://github.com/' + uri;
     var parts = uri.split('/');
     var folderName = parts[parts.length - 1];
     var dir = os.tmpDir();

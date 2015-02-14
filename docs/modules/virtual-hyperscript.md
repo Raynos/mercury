@@ -14,6 +14,8 @@ Auto generated from virtual-hyperscript at version: 4.6.0.
 
 A DSL for creating virtual trees
 
+# **MOVED.** Please check out [virtual-dom](https://github.com/Matt-Esch/virtual-dom/tree/master/virtual-hyperscript) for the source code.
+
 ## Example
 
 ```js
@@ -86,6 +88,12 @@ If you call `h` with `h('div', { ev-click: function (ev) { } })` it
 This means that `dom-delegator` will recognise the event handler
   on that element and correctly call your handler when an a click
   event happens.
+
+#### `children`
+
+If you call `h` with `h('div', { children: "foo" })` it will use
+  `properties.children` as the nodes children instead of the third
+  argument.
 
 ## Installation
 
