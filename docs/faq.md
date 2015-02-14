@@ -475,3 +475,7 @@ Another example of this is wanting to synchronize state between
 ### Example seperating serializable state & application state
 
 // TODO
+
+### How do I do routing ?
+
+Use [`mercury-router`](https://github.com/twilson63/mercury-router)
