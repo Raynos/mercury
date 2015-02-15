@@ -237,13 +237,12 @@ Using the higher order functions defined in
   [backbone]: https://github.com/jashkenas/backbone
   [quiescent]: https://github.com/levand/quiescent
   [virtual-dom]: https://github.com/Matt-Esch/virtual-dom
-
-  [vtree]: https://github.com/Matt-Esch/vtree
-  [vdom]: https://github.com/Matt-Esch/vdom
-  [vdom-create-element]: https://github.com/Matt-Esch/vdom/blob/master/create-element.js
-  [vdom-patch]: https://github.com/Matt-Esch/vdom/blob/master/patch.js
+  [vtree]: https://github.com/Matt-Esch/virtual-dom/tree/master/vtree
+  [vdom]: https://github.com/Matt-Esch/virtual-dom/tree/master/vdom
+  [vdom-create-element]: https://github.com/Matt-Esch/virtual-dom/blob/master/vdom/create-element.js
+  [vdom-patch]: https://github.com/Matt-Esch/virtual-dom/blob/master/vdom/patch.js
   [min-document]: https://github.com/Raynos/min-document
-  [virtual-hyperscript]: https://github.com/Raynos/virtual-hyperscript
+  [virtual-hyperscript]: https://github.com/Matt-Esch/virtual-dom/tree/master/virtual-hyperscript
   [main-loop]: https://github.com/Raynos/main-loop
   [vdom-thunk]: https://github.com/Raynos/vdom-thunk
   [observ]: https://github.com/Raynos/observ
