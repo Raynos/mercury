@@ -48,26 +48,32 @@ In `mercury` the view is just a function that takes your
   `mercury`. Mercury uses a diffing algorithm on a virtual DOM 
   to compute a minimal set of `VPatch` records that it can apply to the DOM.
 
-#### [`vdom`][vdom]
+- [vtree repository](//github.com/Raynos/vtree)
+[vtree]: vtree.md
 
-[`vdom`][vdom] is the module that contains the `create` and 
+#### `vdom`
+
+`vdom` is the module that contains the `create` and 
   `patch` algorithm for turning the `vtree` data structures 
   into real DOM objects.
 
-[`vdom/create-element`][vdom-create-element] is used to turn a 
+`vdom/create-element` is used to turn a 
   virtual DOM into a real DOM. this is used for the initial 
   rendering of your app.
 
-[`vdom/patch`][vdom-patch] is used to apply a series of `VPatch` 
+`vdom/patch` is used to apply a series of `VPatch` 
   records to a real DOM element.
 
-You can also use [`vdom`][vdom] and 
-  [`min-document`][min-document] together on the server to 
-  generate HTML strings. [`min-document`][min-document] is a 
+You can also use `vdom` and 
+  `min-document` together on the server to 
+  generate HTML strings. `min-document` is a 
   minimal fake DOM for use on the server, you can pass 
-  [`vdom`][vdom] any `document` you want. In this case 
-  [`min-document`][min-document] contains the logic to convert 
+  `vdom` any `document` you want. In this case 
+  `min-document` contains the logic to convert 
   its fake DOM into a HTML string.
+
+- [vdom repository](//github.com/Raynos/vdom)
+- [min-document repository](//github.com/Raynos/min-document)
 
 #### [`virtual-hyperscript`][virtual-hyperscript]
 
@@ -78,6 +84,9 @@ You can also use [`vdom`][vdom] and
 
 [`virtual-hyperscript`][virtual-hyperscript] allows you to write 
   your views in an expressive manner.
+
+- [virtual-hyperscript repository](//github.com/Raynos/virtual-hyperscript)
+[virtual-hyperscript]: virtual-hyperscript.md
 
 #### [`vdom-thunk`][vdom-thunk]
 
@@ -102,6 +111,9 @@ It should be noted that [`vdom-thunk`][vdom-thunk] assumes
   work if your state is immutable. Thankfully, 
   [`observ-struct`][observ-struct] is immutable
 
+- [vdom-thunk repository](//github.com/Raynos/vdom-thunk)
+[vdom-thunk]: vdom-thunk.md
+
 #### [`main-loop`][main-loop]
 
 [`main-loop`][main-loop] is another optimization module for a 
@@ -114,6 +126,9 @@ It should be noted that [`vdom-thunk`][vdom-thunk] assumes
   virtual DOM changes, which means if you change your model 
   multiple times it will be rendered once asynchronously on 
   the next request animation frame.
+
+- [main-loop repository](//github.com/Raynos/main-loop)
+[main-loop]: main-loop.md
 
 ### State modules (The model layer)
 
@@ -131,20 +146,22 @@ Generally applications built with mercury will have a single
   child component in our top level state "atom" to achieve 
   composition.
 
-#### [`observ`][observ]
+#### `observ`
 
-[`observ`][observ] is the data structure used for observable 
+`observ` is the data structure used for observable 
   data. It allows you to create a value for which you can 
   listen for changes.
 
-[`observ`][observ] also comes with higher order functions 
-  like [`observ/computed`][observ-computed] that can be used to 
+`observ` also comes with higher order functions 
+  like `observ/computed` that can be used to 
   create new dependent observables. Generally these computed 
   observables cannot be directly mutated but instead change 
   when they data they rely on changes.
 
-[`observ`][observ] is basically an implementation of the 
+`observ` is basically an implementation of the 
   `Signal` type that is normally used in FRP.
+
+- [observ repository](//github.com/Raynos/observ)
 
 #### [`observ-struct`][observ-struct]
 
@@ -158,6 +175,9 @@ Generally applications built with mercury will have a single
 [`observ-struct`][observ-struct] uses shallow extension to ensure 
   that every time the struct changes you get a fresh immutable 
   object.
+
+- [observ-struct repository](//github.com/Raynos/observ-struct)
+[observ-struct]: observ-struct.md
 
 #### [`observ-array`][observ-array]
 
@@ -176,6 +196,9 @@ Generally applications built with mercury will have a single
   [`observ-struct`][observ-struct] has a fixed number
   of keys and you cannot add more keys to an 
   [`observ-struct`][observ-struct]
+
+- [observ-array repository](//github.com/Raynos/observ-array)
+[observ-array]: observ-array.md
 
 ### Input modules (The controller layer)
 
@@ -200,6 +223,9 @@ Most of the time you will either create a computed Event that
 [`geval`][geval] is basically an implementation of the 
   `Event` type that is normally used in FRP.
 
+- [geval repository](//github.com/Raynos/geval)
+[geval]: geval.md
+
 #### [`dom-delegator`][dom-delegator]
 
 [`dom-delegator`][dom-delegator] is an event delegator that 
@@ -208,6 +234,9 @@ Most of the time you will either create a computed Event that
   allow you to embed event handlers on your virtual DOM 
   elements without having to manage adding or removing 
   actual event listeners.
+
+- [dom-delegator repository](//github.com/Raynos/dom-delegator)
+[dom-delegator]: dom-delegator.md
 
 #### [`value-event`][value-event]
 
@@ -225,3 +254,6 @@ Using the higher order functions defined in
   allows you to not have to write any DOM event handling 
   code in your application. [`value-event`][value-event]
   takes care of all the reading from the DOM.
+
+- [value-event repository](//github.com/Raynos/value-event)
+[value-event]: value-event.md
