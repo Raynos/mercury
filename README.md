@@ -165,6 +165,7 @@ npm test
  - `npm run build` will build the html assets for gh-pages
  - `npm run examples` will start a HTTP server that shows examples
  - `npm run dist` will create a distributed version of mercury
+ - `npm run modules-docs` will (re)generate docs of mercury modules
 
 ## Inspirations
 

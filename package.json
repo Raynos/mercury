@@ -109,7 +109,8 @@
     "build": "node bin/build.js",
     "examples": "node bin/example-server.js",
     "dist": "node bin/dist.js",
-    "dist-publish": "npm run dist && git add dist/mercury.js && git commit -m 'dist' && npm publish"
+    "dist-publish": "npm run dist && git add dist/mercury.js && git commit -m 'dist' && npm publish",
+    "modules-docs": "node bin/modules-docs.js"
   },
   "testling": {
     "files": "test/index.js",
