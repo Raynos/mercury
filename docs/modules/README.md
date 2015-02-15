@@ -225,3 +225,32 @@ Using the higher order functions defined in
   allows you to not have to write any DOM event handling 
   code in your application. [`value-event`][value-event]
   takes care of all the reading from the DOM.
+
+
+
+
+  [graphics]: https://github.com/Raynos/graphics
+  [elm]: https://github.com/elm-lang/Elm
+  [react]: https://github.com/facebook/react
+  [om]: https://github.com/swannodette/om
+  [reflex]: https://github.com/Gozala/reflex
+  [backbone]: https://github.com/jashkenas/backbone
+  [quiescent]: https://github.com/levand/quiescent
+  [virtual-dom]: https://github.com/Matt-Esch/virtual-dom
+
+  [vtree]: https://github.com/Matt-Esch/vtree
+  [vdom]: https://github.com/Matt-Esch/vdom
+  [vdom-create-element]: https://github.com/Matt-Esch/vdom/blob/master/create-element.js
+  [vdom-patch]: https://github.com/Matt-Esch/vdom/blob/master/patch.js
+  [min-document]: https://github.com/Raynos/min-document
+  [virtual-hyperscript]: https://github.com/Raynos/virtual-hyperscript
+  [main-loop]: https://github.com/Raynos/main-loop
+  [vdom-thunk]: https://github.com/Raynos/vdom-thunk
+  [observ]: https://github.com/Raynos/observ
+  [observ-computed]: https://github.com/Raynos/observ/blob/master/computed.js
+  [observ-struct]: https://github.com/Raynos/observ-struct
+  [observ-array]: https://github.com/Raynos/observ-array
+  [geval]: https://github.com/Raynos/geval
+  [dom-delegator]: https://github.com/Raynos/dom-delegator
+  [value-event]: https://github.com/Raynos/value-event
+
