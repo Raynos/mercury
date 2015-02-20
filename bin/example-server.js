@@ -28,10 +28,10 @@ router.addRoute('/', function index(req, res) {
 });
 
 router.addRoute('/:name', function example(req, res, opts) {
-    var task = tasksHash[opts.name];
+    var task = tasksHash[opts.params.name];
     if (!task) {
         res.statusCode = 404;
-        return res.end('Example ' + opts.name + ' Not Found');
+        return res.end('Example ' + opts.params.name + ' Not Found');
     }
 
     res.setHeader('Content-Type', 'text/html');
