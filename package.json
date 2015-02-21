@@ -105,7 +105,7 @@
     "phantom": "run-browser test/index.js -b | tap-spec",
     "browser": "run-browser test/index.js",
     "cover": "istanbul cover --report html --print detail ./test/index.js",
-    "view-cover": "istanbul report html && google-chrome ./coverage/index.html",
+    "view-cover": "istanbul report html && xdg-open ./coverage/index.html",
     "build": "node bin/build.js",
     "examples": "node bin/example-server.js",
     "dist": "node bin/dist.js",
