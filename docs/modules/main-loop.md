@@ -1,4 +1,4 @@
-Auto generated from main-loop at version: 3.1.0.
+Auto generated from [main-loop](https://github.com/Raynos/main-loop) package (version 3.1.0).
 
 # main-loop
 

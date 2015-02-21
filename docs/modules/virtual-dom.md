@@ -1,4 +1,4 @@
-Auto generated from virtual-dom at version: 1.3.0.
+Auto generated from [virtual-dom](https://github.com/Matt-Esch/virtual-dom) package (version 1.3.0).
 
 # virtual-dom
 
@@ -82,8 +82,8 @@ We can create a VTree using the objects directly in a verbose manner, or we can 
 ### Example - creating a VTree using the objects directly
 
 ```javascript
-var VNode = require('virtual-dom/vnode/vnode');
-var VText = require('virtual-dom/vnode/vtext')
+var VNode = require('virtual-dom/vtree/vnode');
+var VText = require('virtual-dom/vtree/vtext')
 
 function render(data) {
     return new VNode('div', {
@@ -142,12 +142,6 @@ Once we have computed the set of patches required to apply to the DOM, we need a
 ## Original motivation
 
 virtual-dom is heavily inspired by the inner workings of React by facebook. This project originated as a gist of ideas, which [we have linked to provide some background context](https://gist.github.com/Raynos/8414846).
-
-## Tools
-
-* [html2hscript](https://github.com/twilson63/html2hscript) - Parse HTML into hyperscript
-* [html2hscript.herokuapp.com](http://html2hscript.herokuapp.com/) - Online Tool that converts html snippets to hyperscript
-
 
 [1]: https://secure.travis-ci.org/Matt-Esch/virtual-dom.svg
 [2]: https://travis-ci.org/Matt-Esch/virtual-dom

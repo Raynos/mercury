@@ -1,10 +1,8 @@
-Auto generated from vtree at version: 0.0.22.
+Auto generated from [virtual-dom](https://github.com/Matt-Esch/virtual-dom) package (version 1.3.0).
 
 # vtree
 
 A realtime tree diffing algorithm
-
-Please note that this now lives under https://github.com/Matt-Esch/virtual-dom and all related issues shoud be opened there. This repository will eventually become a build artifact of `virtual-dom` for developers with an advanced usage pattern.
 
 ## Motivation
 
@@ -15,11 +13,11 @@ the active DOM node structure in the browser.
 ## Example
 
 ```js
-var VNode = require("vtree/vnode")
-var diff = require("vtree/diff")
+var h = require("virtual-dom/h")
+var diff = require("virtual-dom/diff")
 
-var leftNode = new VNode("div")
-var rightNode = new VNode("text")
+var leftNode = h("div")
+var rightNode = h("text")
 
 var patches = diff(leftNode, rightNode)
 /*
@@ -32,7 +30,7 @@ var patches = diff(leftNode, rightNode)
 
 ## Installation
 
-`npm install vtree`
+`npm install virtual-dom`
 
 ## Contributors
 
