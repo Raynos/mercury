@@ -8,13 +8,14 @@ Individuals making significant and valuable contributions are given commit-acces
 
 There are a few basic ground-rules for contributors:
 
- - No --force pushes or modifying the Git history in any way.
+ - No `--force` pushes or modifying the Git history in any way.
  - Non-master branches ought to be used for ongoing work.
  - External API changes and significant modifications ought to be subject to an internal pull-request to solicit feedback from other contributors.
  - Internal pull-requests to solicit feedback are encouraged for any other non-trivial contribution but left to the discretion of the contributor.
  - For significant changes wait a full 24 hours before merging so that active contributors who are distributed throughout the world have a chance to weigh in.
  - Contributors should attempt to adhere to the prevailing code-style.
-Releases
+
+## Releases
 
 Declaring formal releases requires peer review.
 
@@ -26,14 +27,14 @@ Declaring formal releases requires peer review.
 
 Even though collaborators may contribute as they see fit, if you are not sure what to do, here's a suggested process:
 
-## Cutting a new version
+### Cutting a new version
 
  - Get your branch merged on master
  - Run `npm version major` or `npm version minor` or `npm version patch`
  - `git push origin master --tags`
  - If you are a project owner, then `npm publish`
 
-## If you want to have a bug fixed or a feature added:
+### If you want to have a bug fixed or a feature added:
 
  - Check open issues for what you want.
  - If there is an open issue, comment on it, otherwise open an issue describing your bug or feature with use cases.
