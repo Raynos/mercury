@@ -32,14 +32,18 @@ var handler = function exampleHandler(req, res, opts) {
         } + '(' + JSON.stringify(error.message) + '))</script>');
     });
     stream.pipe(res);
-}
+};
 
 var buildList = function buildList(items) {
-    var i = 0, l = items.length, list, li, name, subTasks = '';
+    var i = 0;
+    var l = items.length;
+    var list = '<ol class="rounded-list">';
+    var name;
 
-    if (!items || !items.length) return;// return here if there are no items to render
+    if (!items || !items.length) {
+        return ''; // return here if there are no items to render
+    }
 
-    list = '<ol class="rounded-list">';
     for (; i < l ; i++) {
         name = items[i].name;
         list += '<li><a href="/' +
@@ -49,20 +53,18 @@ var buildList = function buildList(items) {
     list += '</ol>';
 
     return list;
-}
+};
 
-/**
- * Routes handlers
- */
+// Routes handlers
 router.set('/', function index(req, res) {
     var filename = path.dirname(__dirname) + '/examples/index.html';
-    var buf = fs.readFileSync(filename, "utf8");
+    var buf = fs.readFileSync(filename, 'utf8');
 
     res.setHeader('Content-Type', 'text/html');
 
     buf = buf.replace('{{examples}}', buildList(tasks));
     res.end(buf);
-})
+});
 router.set('/:name', handler);
 router.set('/:name/*', handler);
 router.set('/mercury/*', st({
@@ -71,9 +73,7 @@ router.set('/mercury/*', st({
     cache: false
 }));
 
-/**
- * Server implementation
- */
+// Server implementation
 var server = http.createServer(function handler(req, res) {
     router(req, res, {}, onError);
 
