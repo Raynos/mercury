@@ -89,7 +89,8 @@
     "virtual-dom-stringify": "^0.2.0",
     "vtree-select": "^1.0.1",
     "weakmap-shim": "^1.1.0",
-    "zuul": "^1.9.0"
+    "zuul": "^1.9.0",
+    "opn": "^1.0.1"
   },
   "licenses": [
     {
@@ -98,14 +99,14 @@
     }
   ],
   "scripts": {
-    "disc": "browserify index.js --full-paths | discify > disc.html && xdg-open disc.html",
+    "disc": "browserify index.js --full-paths | discify > disc.html && opn disc.html",
     "lint": "lint-trap",
     "test": "npm run lint && node test/index.js | tap-spec",
     "travis-test": "npm run phantom && npm run cover && istanbul report lcov && ((cat coverage/lcov.info | coveralls) || exit 0) && zuul -- test/index.js",
     "phantom": "run-browser test/index.js -b | tap-spec",
     "browser": "run-browser test/index.js",
     "cover": "istanbul cover --report html --print detail ./test/index.js",
-    "view-cover": "istanbul report html && google-chrome ./coverage/index.html",
+    "view-cover": "istanbul report html && opn coverage/index.html",
     "build": "node bin/build.js",
     "examples": "node bin/example-server.js",
     "dist": "node bin/dist.js",
