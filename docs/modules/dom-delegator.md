@@ -1,4 +1,4 @@
-Auto generated from dom-delegator at version: 13.1.0.
+Auto generated from [dom-delegator](https://github.com/Raynos/dom-delegator) package (version 13.1.0).
 
 # dom-delegator
 

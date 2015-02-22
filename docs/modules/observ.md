@@ -1,4 +1,4 @@
-Auto generated from observ at version: 0.2.0.
+Auto generated from [observ](https://github.com/Raynos/observ) package (version 0.2.0).
 
 # observ
 
@@ -72,19 +72,13 @@ assert.equal(together(), 7)
 ## Docs
 
 ```ocaml
-type Observable<A> :
-  (() => A) & 
-  ((Function<A>) => void) & {
+type Observable<A> := {
+    () => A &
+    (Function<A>) => void,
     set: (A) => void
-  }
-  
+}
 
-observ : (A) => Observable<A>
-
-observ/computed : (
-  sources: Array<Observ<T>>,
-  lambda: (...args: T) => S
-) => Observ<S>
+observ := (A) => Observable<A>
 ```
 
 

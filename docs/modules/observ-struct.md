@@ -1,4 +1,4 @@
-Auto generated from observ-struct at version: 6.0.0.
+Auto generated from [observ-struct](https://github.com/Raynos/observ-struct) package (version 5.0.1).
 
 # observ-struct
 
@@ -36,7 +36,7 @@ var state = ObservStruct({
 })
 
 state(function (current) {
-  console.log("apples", current.fruits.apples)
+  console.log("apples", current.fruit.apples)
   console.log("customers", current.customers)
 })
 
@@ -45,7 +45,7 @@ state.fruits(function (current) {
 })
 
 var initialState = state()
-assert.equal(initialState.fruits.oranges, 5)
+assert.equal(initialState.fruits.bananas, 5)
 assert.equal(initialState.customers, 5)
 
 state.fruits.oranges.set(6)

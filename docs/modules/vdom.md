@@ -1,10 +1,8 @@
-Auto generated from vdom at version: 0.0.22.
+Auto generated from [virtual-dom](https://github.com/Matt-Esch/virtual-dom) package (version 1.3.0).
 
 # vdom
 
 A DOM render and patch algorithm for vtree
-
-Please note that this now lives under https://github.com/Matt-Esch/virtual-dom and all related issues shoud be opened there. This repository will eventually become a build artifact of `virtual-dom` for developers with an advanced usage pattern.
 
 ## Motivation
 
@@ -13,21 +11,17 @@ render the structure to a DOM node using `vdom/create-element` or we would like
 to update the DOM using the results of `vtree/diff` by patching the DOM with
 `vdom/patch`
 
-This module is currently re-exporting the `vdom` from `virtual-dom`, but the
-aim is to eventually make this a standalone module and have `virtual-dom`
-depend on `vdom` instead.
-
 ## Example
 
 ```js
-var VNode = require("vtree/vnode")
-var diff = require("vtree/diff")
+var h = require("virtual-dom/h")
+var diff = require("virtual-dom/diff")
 
-var createElement = require("vdom/create-element")
-var patch = require("vdom/patch")
+var createElement = require("virtual-dom/create-element")
+var patch = require("virtual-dom/patch")
 
-var leftNode = new VNode("div")
-var rightNode = new VNode("text")
+var leftNode = h("div")
+var rightNode = h("text")
 
 // Render the left node to a DOM node
 var rootNode = createElement(leftNode)
@@ -40,7 +34,7 @@ patch(rootNode, patches)
 
 ## Installation
 
-`npm install vdom`
+`npm install virtual-dom`
 
 ## Contributors
 
