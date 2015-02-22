@@ -47,7 +47,7 @@
     "vdom-thunk": "^3.0.0",
     "virtual-dom": "^1.3.0",
     "xtend": "^4.0.0",
-    "routes-router": "~4.1.2"
+    "http-hash-router": "~1.1.0"
   },
   "devDependencies": {
     "backbone": "^1.1.2",
@@ -77,7 +77,6 @@
     "require-modify": "^0.1.0",
     "rimraf": "^2.2.8",
     "route-map": "^0.1.0",
-    "routes-router": "^1.5.4",
     "run-browser": "^1.3.1",
     "run-parallel": "^1.0.0",
     "run-series": "^1.0.2",
