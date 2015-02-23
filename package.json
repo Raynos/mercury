@@ -112,21 +112,5 @@
     "dist": "node bin/dist.js",
     "dist-publish": "npm run dist && git add dist/mercury.js && git commit -m 'dist' && npm publish",
     "modules-docs": "node bin/modules-docs.js"
-  },
-  "testling": {
-    "files": "test/index.js",
-    "browsers": [
-      "ie/9..latest",
-      "firefox/26..latest",
-      "firefox/nightly",
-      "chrome/31..latest",
-      "chrome/canary",
-      "opera/18..latest",
-      "opera/next",
-      "safari/5.1..latest",
-      "ipad/6.0..latest",
-      "iphone/6.0..latest",
-      "android-browser/4.2..latest"
-    ]
   }
 }
