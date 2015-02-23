@@ -7,8 +7,6 @@ browsers:
     version: 9..latest
   - name: firefox
     version: 25..latest
-  - name: iphone
-    version: 4.3..latest
   - name: ipad
     version: 4.3..latest
   - name: android
