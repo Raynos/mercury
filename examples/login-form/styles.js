@@ -3,10 +3,10 @@
 var RCSS = require('rcss');
 
 module.exports = {
-    error: RCSS.createClass({
+    error: RCSS.registerClass({
         color: 'red'
     }),
-    inputError: RCSS.createClass({
+    inputError: RCSS.registerClass({
         borderColor: 'red'
     })
 };

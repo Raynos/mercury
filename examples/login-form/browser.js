@@ -5,6 +5,9 @@ var h = require('../../index').h;
 var LoginComponent = require('./login-component.js');
 var document = require('global/document');
 
+var RCSS = require('rcss');
+RCSS.injectAll();
+
 function App() {
     var state = hg.state({
         message: hg.value(''),
