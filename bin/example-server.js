@@ -44,7 +44,7 @@ var buildList = function buildList(items) {
         return ''; // return here if there are no items to render
     }
 
-    for (; i < l ; i++) {
+    for (; i < l; i++) {
         name = items[i].name;
         list += '<li><a href="/' +
             encodeURI(name) + '">' +

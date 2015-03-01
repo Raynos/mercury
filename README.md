@@ -5,8 +5,6 @@
 [![Coverage Status][5]][6]
 [![Davis Dependency status][9]][10]
 
-<!-- [![browser support][11]][12] -->
-
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/raynos.svg)](https://saucelabs.com/u/raynos)
 
 A truly modular frontend framework
@@ -204,8 +202,6 @@ A lot of the philosophy and design of `mercury` is inspired by
   [8]: https://gemnasium.com/Raynos/mercury
   [9]: https://david-dm.org/Raynos/mercury.svg
   [10]: https://david-dm.org/Raynos/mercury
-  [11]: https://ci.testling.com/Raynos/mercury.png
-  [12]: https://ci.testling.com/Raynos/mercury
   
   [graphics]: https://github.com/Raynos/graphics
   [elm]: https://github.com/elm-lang/Elm

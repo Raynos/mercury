@@ -60,11 +60,11 @@
     "global": "^4.2.1",
     "hash-router": "^0.4.0",
     "immutable": "^3.6.2",
-    "indexhtmlify": "git://github.com/Raynos/indexhtmlify#v1.1.1-module2",
+    "indexhtmlify": "^1.2.0",
     "istanbul": "^0.2.16",
     "javascript-editor": "^0.2.1",
     "json-globals": "^0.2.1",
-    "lint-trap": "git://github.com/Raynos/lint-trap",
+    "lint-trap": "^1.0.1",
     "marked": "^0.3.2",
     "mercury-jsxify": "^0.14.0",
     "min-document": "^2.9.0",
@@ -73,7 +73,7 @@
     "pre-commit": "0.0.7",
     "process": "^0.7.0",
     "raf": "^2.0.1",
-    "rcss": "git://github.com/chenglou/rcss#424fc1ac17cdc2860736f73722e8135be96e1ba6",
+    "rcss": "^0.1.5",
     "require-modify": "^0.1.0",
     "rimraf": "^2.2.8",
     "route-map": "^0.1.0",
@@ -112,21 +112,5 @@
     "dist": "node bin/dist.js",
     "dist-publish": "npm run dist && git add dist/mercury.js && git commit -m 'dist' && npm publish",
     "modules-docs": "node bin/modules-docs.js"
-  },
-  "testling": {
-    "files": "test/index.js",
-    "browsers": [
-      "ie/9..latest",
-      "firefox/26..latest",
-      "firefox/nightly",
-      "chrome/31..latest",
-      "chrome/canary",
-      "opera/18..latest",
-      "opera/next",
-      "safari/5.1..latest",
-      "ipad/6.0..latest",
-      "iphone/6.0..latest",
-      "android-browser/4.2..latest"
-    ]
   }
 }
