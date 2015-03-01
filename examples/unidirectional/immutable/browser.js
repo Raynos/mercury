@@ -18,11 +18,11 @@ var data = Immutable.fromJS({
     events: events
 });
 
-var state = Cursor.from(data);
+var appState = Cursor.from(data);
 
-events.add(function add(data) {
-    state.update('items', function pushItem(items) {
-        return items.push(Immutable.fromJS(data));
+events.add(function add(newItem) {
+    appState.update('items', function pushItem(items) {
+        return items.push(Immutable.fromJS(newItem));
     });
 });
 
@@ -64,11 +64,11 @@ function toObserv(cursor) {
             return cursor.deref();
         }
 
-        cursor._onChange = function onChange(data) {
-            cursor._rootData = data;
-            listener(data);
+        cursor._onChange = function onChange(newData) {
+            cursor._rootData = newData;
+            listener(newData);
         };
     };
 }
 
-mercury.app(document.body, toObserv(state), render);
+mercury.app(document.body, toObserv(appState), render);

@@ -14,12 +14,12 @@ function handleDrag(ev, broadcast) {
         y: ev.offsetY || ev.layerY
     };
 
-    function onmove(ev) {
+    function onmove(ev2) {
         var previous = current;
 
         current = {
-            x: ev.offsetX || ev.layerX,
-            y: ev.offsetY || ev.layerY
+            x: ev2.offsetX || ev2.layerX,
+            y: ev2.offsetY || ev2.layerY
         };
 
         var delta = {
@@ -30,7 +30,7 @@ function handleDrag(ev, broadcast) {
         broadcast(extend(data, delta));
     }
 
-    function onup(ev) {
+    function onup(ev2) {
         delegator.unlistenTo('mousemove');
         delegator.removeGlobalEventListener('mousemove', onmove);
         delegator.removeGlobalEventListener('mouseup', onup);

@@ -61,6 +61,6 @@ function main(fileName) {
 module.exports = main;
 
 if (require.main === module) {
-    var fileName = process.argv[2];
-    main(fileName).pipe(process.stdout);
+    var file = process.argv[2];
+    main(file).pipe(process.stdout);
 }

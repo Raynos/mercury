@@ -15,10 +15,10 @@ function App() {
 }
 
 App.render = function render(state) {
-    function numberspanny(name, state) {
+    function numberspanny(name, numberInput) {
         return h('span', [
             name,
-            NumberInput.render(state)
+            NumberInput.render(numberInput)
         ]);
     }
 

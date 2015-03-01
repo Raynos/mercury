@@ -23,8 +23,7 @@ function add(state, data) {
 
 App.render = require('./render.js');
 
-var initialState = JSONGlobals('state');
-var app = App(initialState);
+var app = App(JSONGlobals('state'));
 var targetElem = document.body.firstChild;
 var prevTree = virtualize(targetElem);
 

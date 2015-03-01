@@ -30,7 +30,7 @@ var AppState = backbone.Model.extend({
 
 var events = mercury.input(['add']);
 
-var state = new AppState({
+var appState = new AppState({
     description: 'app state description',
     events: events,
     items: new Items([
@@ -40,12 +40,12 @@ var state = new AppState({
 });
 
 events.add(function add(data) {
-    state.get('items').add(data);
+    appState.get('items').add(data);
 });
 
-window.state = state;
+window.state = appState;
 
-mercury.app(document.body, toObserv(state), render);
+mercury.app(document.body, toObserv(appState), render);
 
 function render(state) {
     return h('div', [

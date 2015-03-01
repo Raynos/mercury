@@ -24,46 +24,46 @@ function toObserv(model) {
             listener(serialize(model));
         });
     };
+}
 
-    // listen to a Backbone model
-    function listen(model, listener) {
-        model.on('change', listener);
+// convert a Backbone model to JSON
+function serialize(model) {
+    var data = model.toJSON();
+    Object.keys(data).forEach(function serializeRecur(key) {
+        var value = data[key];
+        // if any value can be serialized toJSON() then do it
+        if (value && value.toJSON) {
+            data[key] = data[key].toJSON();
+        }
+    });
+    return data;
+}
 
-        model.values().forEach(function listenRecur(value) {
-            var isCollection = value && value._byId;
+// listen to a Backbone model
+function listen(model, listener) {
+    model.on('change', listener);
 
-            if (!isCollection) {
-                return;
-            }
+    model.values().forEach(function listenRecur(value) {
+        var isCollection = value && value._byId;
 
-            // for each collection listen to it
-            // console.log('listenCollection')
-            listenCollection(value, listener);
-        });
-    }
+        if (!isCollection) {
+            return;
+        }
 
-    // listen to a Backbone collection
-    function listenCollection(collection, listener) {
-        collection.forEach(function listenModel(model) {
-            listen(model, listener);
-        });
+        // for each collection listen to it
+        // console.log('listenCollection')
+        listenCollection(value, listener);
+    });
+}
 
-        collection.on('add', function onAdd(model) {
-            listen(model, listener);
-            listener();
-        });
-    }
+// listen to a Backbone collection
+function listenCollection(collection, listener) {
+    collection.forEach(function listenModel(model) {
+        listen(model, listener);
+    });
 
-    // convert a Backbone model to JSON
-    function serialize(model) {
-        var data = model.toJSON();
-        Object.keys(data).forEach(function serializeRecur(key) {
-            var value = data[key];
-            // if any value can be serialized toJSON() then do it
-            if (value && value.toJSON) {
-                data[key] = data[key].toJSON();
-            }
-        });
-        return data;
-    }
+    collection.on('add', function onAdd(model) {
+        listen(model, listener);
+        listener();
+    });
 }
