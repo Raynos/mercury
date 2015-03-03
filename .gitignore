@@ -16,3 +16,5 @@ coverage
 node_modules
 disc.html
 TODO.md
+*.iml
+.idea

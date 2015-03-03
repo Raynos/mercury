@@ -15,6 +15,19 @@ test('mercury is a object', function t(assert) {
     assert.end();
 });
 
+// jscs:disable disallowKeywords
+test('missing element prevents app init', function t(assert) {
+    assert.throws(mercury);
+
+    try {
+        mercury.app(null);
+    } catch (exception) {
+        assert.equal(exception.name, 'ReferenceError');
+        assert.end();
+    }
+});
+// jscs:enable disallowKeywords
+
 require('./synthetic-events.js');
 require('./count.js');
 require('./shared-state.js');
