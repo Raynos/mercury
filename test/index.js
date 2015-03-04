@@ -17,12 +17,12 @@ test('mercury is a object', function t(assert) {
 
 // jscs:disable disallowKeywords
 test('missing element prevents app init', function t(assert) {
-    assert.throws(mercury);
-
     try {
+        assert.throws(mercury);
         mercury.app(null);
     } catch (exception) {
-        assert.equal(exception.name, 'ReferenceError');
+        assert.equal(exception.message,
+            'Element does not exist. Mercury cannot be initialized.');
         assert.end();
     }
 });

@@ -108,7 +108,7 @@ function channels(funcs, context) {
 
 function app(elem, observ, render, opts) {
     if (!elem) {
-        throw new ReferenceError(
+        throw new Error(
             'Element does not exist. ' +
             'Mercury cannot be initialized.');
     }
