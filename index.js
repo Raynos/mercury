@@ -107,14 +107,20 @@ function channels(funcs, context) {
 }
 
 function app(elem, observ, render, opts) {
+    if (!elem) {
+        throw new Error(
+            'Element does not exist. ' +
+            'Mercury cannot be initialized.');
+    }
+
     mercury.Delegator(opts);
     var loop = mercury.main(observ(), render, extend({
         diff: mercury.diff,
         create: mercury.create,
         patch: mercury.patch
     }, opts));
-    if (elem) {
-        elem.appendChild(loop.target);
-    }
+
+    elem.appendChild(loop.target);
+
     return observ(loop.update);
 }
