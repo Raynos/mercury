@@ -293,8 +293,8 @@ Sometimes you might run into deeply nested data structures and
   get frustrated with passing around keys & paths to the correct
   thing in your data structure.
 
-Let's say you have a calendar of events where each day can have
-  multiple events.
+Let's say you have a calendar of meetings where each day can have
+  multiple meetings.
 
 Let's take a look at what the state might look like for it
 
@@ -303,12 +303,13 @@ var state = mercury.struct({
   calendar: mercury.struct({
     days: mercury.array([
       mercury.struct({
-        events: mercury.array([
+        meetings: mercury.array([
           mercury.struct({
-            name: 'event name',
+            name: 'meeting name',
             isOpen: mercury.value(false),
-            description: 'event description'
-          })
+            description: 'meeting description'
+          }),
+          ...
         ])
       })
     ])
@@ -316,32 +317,32 @@ var state = mercury.struct({
 })
 ```
 
-Let's say we want to have an open & close event for this guy,
-  we might create an event and a UI like:
+Let's say we want to be able to expand & collapse meetings so
+  we might create a UI like:
 
 ```js
 var events = mercury.input(['eventToggle'])
 
 events.eventToggle(function (data) {
   state.calendar.days.get(data.dayIndex)
-    .events.get(data.eventIndex).isOpen.set(data.value)
+    .meetings.get(data.meetingIndex).isOpen.set(data.value)
 })
 
 function render(calender) {
   return h('ul', calendar.days.map(function (day, i) {
     return h('li', [
-      h('ul', day.events.map(function (event, j) {
+      h('ul', day.meetings.map(function (meeting, j) {
         h('li', [
           h('div', {
-            'ev-click': mercury.event(events.eventToggle, {
-              eventIndex: j,
+            'ev-click': mercury.event(events.meetingToggle, {
+              meetingIndex: j,
               dayIndex: i,
-              value: !event.isOpen
+              value: !meeting.isOpen
             })
-          }, event.name),
+          }, meeting.name),
           h('div', {
-            hidden: !event.isOpen
-          }, event.description)
+            hidden: !meeting.isOpen
+          }, meeting.description)
         ])
       }))
     ])
@@ -350,65 +351,62 @@ function render(calender) {
 ```
 
 There is a problem with this example. We don't really want to
-  be writing `calendar.days.get(i).events.get(j).isOpen`. That
+  be writing `calendar.days.get(i).meetings.get(j).isOpen`. That
   is far too long and you don't really care about all that.
 
 There is a second issue here as well. When we embed our
-  `'ev-click'` event we have to pass up the `eventIndex` and
+  `'ev-click'` event we have to pass up the `meetingIndex` and
   `dayIndex` because the event handler doesn't have this
   context. This is really annoying because we can't put the 
-  event UI code in a seperate function without passing it
-  eventIndex and dayIndex.
+  meeting UI code in a seperate function without passing it
+  meetingIndex and dayIndex.
 
 ### Solution
 
 What we want to do is get rid of the
-  `.calendar.days.get(i).events.get(j)` path and instead just
+  `.calendar.days.get(i).meetings.get(j)` path and instead just
   access `state.isOpen()` in the event handler, this is a lot
   cleaner.
 
 The best way to do this is to move the events object from the top
   level down to a lower level, basically embed it locally to
-  the event so that we can make an assumption about the indices.
+  the meeting so that we can make an assumption about the indices.
 
 The best way to do this is to use a "mercury component" for the
-  actual event logic.
+  actual meeting logic.
 
 ```js
-function EventComponent() {
+function MeetingComponent() {
   var events = mercury.input(['toggle']);
 
   var state = mercury.struct({
-    name: 'event name',
+    name: 'meeting name',
     isOpen: mercury.value(false),
-    description: 'event description',
-    events: events
+    description: 'meeting description'
   });
 
   events.toggle(function (data) {
-    state.isOpen.set(data.value)
-  })
+    state.isOpen.set(data.value);
+  });
 
-  return state
+  return state;
 }
 
 EventComponent.render = function (state) {
   return h('div', [
     h('div', {
-      'ev-click': mercury.event(events.eventToggle, {
-        eventIndex: j,
-        dayIndex: i,
-        value: !event.isOpen
+      'ev-click': mercury.event(events.toggle, {
+        value: !state.isOpen
       })
-    }, event.name),
+    }, state.name),
     h('div', {
-      hidden: !event.isOpen
-    }, event.description)
-  ])
+      hidden: !state.isOpen
+    }, state.description)
+  ]);
 }
 ```
 
-Now we've created a local events object for each event and have
+Now we've created a local events object for each meeting and have
   completely gotten rid of all the path information.
 
 We'll need to update our top level state and top level render
@@ -420,34 +418,34 @@ var state = mercury.struct({
   calendar: mercury.struct({
     days: mercury.array([
       mercury.struct({
-        events: mercury.array([
-          EventComponent(...)
+        meetings: mercury.array([
+          MeetingComponent(...)
         ])
       })
     ])
   })
-})
+});
 ```
 
 ```js
 function render(calender) {
-  return h('ul', calendar.days.map(function (day, i) {
+  return h('ul', calendar.days.map(function (day) {
     return h('li', [
-      h('ul', day.events.map(function (event, j) {
+      h('ul', day.meetings.map(function (meeting) {
         h('li', [
-          EventComponent.render(event)
+          MeetingComponent.render(meeting)
         ])
       }))
-    ])
-  }))
+    ]);
+  }));
 }
 ```
 
-Look at how much cleaner this code is. The event component's
+Look at how much cleaner this code is. The meeting component's
   rendering logic no longer cares about the index or path in
   the state that it is at.
 
-The EventComponent boundary also happened to be a really clean
+The MeetingComponent boundary also happened to be a really clean
   place to use functions to seperate our code out.
 
 ## How do I seperate serializable state from application state ? (WIP)
