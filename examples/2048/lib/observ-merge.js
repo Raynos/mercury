@@ -1,18 +1,20 @@
-var Observ = require("observ")
+'use strict';
 
-module.exports = merge
+var Observ = require('observ');
+
+module.exports = merge;
 
 function merge(observs) {
-    var last = observs[observs.length - 1]
-    var value = Observ(last())
+    var last = observs[observs.length - 1];
+    var value = Observ(last());
 
     function onvalue(v) {
-        value.set(v)
+        value.set(v);
     }
 
     observs.forEach(function (o) {
-        o(onvalue)
-    })
+        o(onvalue);
+    });
 
-    return value
+    return value;
 }

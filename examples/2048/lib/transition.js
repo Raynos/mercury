@@ -1,30 +1,32 @@
-var nextTick = require("next-tick")
+'use strict';
 
-module.exports = Transition
+var nextTick = require('next-tick')
+
+module.exports = Transition;
 
 function Transition(value, propName) {
     if (!(this instanceof Transition)) {
-        return new Transition(value)
+        return new Transition(value);
     }
 
-    this.value = value
-    this.property = propName
+    this.value = value;
+    this.property = propName;
 }
 
 Transition.prototype.hook = function setOnNextTick(domNode, propName) {
-    var value = this.value
-    var property = this.property
+    var value = this.value;
+    var property = this.property;
 
     if (property === null || property === undefined) {
-        property = propName
+        property = propName;
     }
 
     if (domNode[property]) {
         nextTick(function () {
-            console.log(domNode, propName)
-            domNode[property] = value
-        })
+            console.log(domNode, propName);
+            domNode[property] = value;
+        });
     } else {
-        domNode[property] = value
+        domNode[property] = value;
     }
-}
+};

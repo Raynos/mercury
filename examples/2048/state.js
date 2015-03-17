@@ -1,5 +1,7 @@
-var mercury = require("../../index.js")
-var extend = require("xtend")
+'use strict';
+
+var mercury = require('../../index.js');
+var extend = require('xtend');
 
 var Game2048 = {
     size: 4,
@@ -8,18 +10,18 @@ var Game2048 = {
     highScore: 0,
     defaultTileValue: 2,
     startingTiles: 2
-}
+};
 
 module.exports = {
     game: gameBoard
-}
+};
 
 function gameBoard(events, initialState) {
-    var state = extend(Game2048, initialState)
+    var state = extend(Game2048, initialState);
 
     if (state.grid.length === 0) {
         for (var i = 0; i < state.size * state.size; i++) {
-            state.grid[i] = null
+            state.grid[i] = null;
         }
     }
 
@@ -31,5 +33,5 @@ function gameBoard(events, initialState) {
         highScore: mercury.value(state.highScore),
         defaultTileValue: mercury.value(state.defaultTileValue),
         startingTiles: mercury.value(state.startingTiles)
-    })
+    });
 }

@@ -1,31 +1,33 @@
-var mercury = require("../../index.js")
-var window = require("global/window")
+'use strict';
 
-var Input = require("./input.js")
-var Render = require("./render.js")
-var State = require("./state.js")
-var Update = require("./update.js")
+var mercury = require('../../index.js');
+var window = require('global/window');
 
-module.exports = createApp
+var Input = require('./input.js');
+var Render = require('./render.js');
+var State = require('./state.js');
+var Update = require('./update.js');
 
-var state = window.state = createApp()
-mercury.app(document.body, state, Render)
+module.exports = createApp;
+
+var state = window.state = createApp();
+mercury.app(document.body, state, Render);
 
 function createApp() {
-    var initialState = null
+    var initialState = null;
 
-    var events = Input()
-    var state = State.game(events, initialState)
+    var events = Input();
+    var state = State.game(events, initialState);
 
-    wireUpEvents(state, events)
+    wireUpEvents(state, events);
 
     // resetGame() to initial position
-    Update.resetGame(state)
+    Update.resetGame(state);
 
-    return state
+    return state;
 }
 
 function wireUpEvents(state, events) {
-    events.resetGame(Update.resetGame.bind(null, state))
-    events.move(Update.move.bind(null, state))
+    events.resetGame(Update.resetGame.bind(null, state));
+    events.move(Update.move.bind(null, state));
 }
