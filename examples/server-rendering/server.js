@@ -3,7 +3,7 @@
 var http = require('http');
 var browserify = require('browserify');
 var path = require('path');
-var stringify = require('virtual-dom-stringify');
+var toHTML = require('vdom-to-html');
 var JSONGlobals = require('json-globals');
 var h = require('../../index.js').h;
 var logger = require('console');
@@ -30,7 +30,7 @@ var server = http.createServer(function onReq(req, res) {
     var vtree = layout(content, state);
 
     res.setHeader('Content-Type', 'text/html');
-    res.end('<!DOCTYPE html>' + stringify(vtree));
+    res.end('<!DOCTYPE html>' + toHTML(vtree));
 });
 
 server.listen(8000);
