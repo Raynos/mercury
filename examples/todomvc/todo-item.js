@@ -98,7 +98,7 @@ TodoItem.render = function render(todo, parentHandles) {
             // invoked at patch time
             'ev-focus': todo.editing ? FocusHook() : null,
             'ev-keydown': hg.sendKey(
-                todo.channels.cancelEdit, ESCAPE),
+                todo.channels.cancelEdit, null, {key: ESCAPE}),
             'ev-event': hg.sendSubmit(todo.channels.finishEdit),
             'ev-blur': hg.sendValue(todo.channels.finishEdit)
         })
