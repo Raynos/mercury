@@ -3,13 +3,15 @@
 [![build status][1]][2]
 [![NPM version][3]][4]
 [![Coverage Status][5]][6]
-[![Davis Dependency status][9]][10]
+[![David Dependency status][9]][10]
+[![Gitter][11]][12]
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/raynos.svg)](https://saucelabs.com/u/raynos)
 
 A truly modular frontend framework
 
 To understand what I mean by truly modular just [read the source](https://github.com/Raynos/mercury/blob/master/index.js)
+
 
 ## Examples
 
@@ -189,6 +191,7 @@ A lot of the philosophy and design of `mercury` is inspired by
  - neonstalwart
  - parshap
  - nrw
+ - kumavis
 
 ## MIT Licenced
 
@@ -202,6 +205,8 @@ A lot of the philosophy and design of `mercury` is inspired by
   [8]: https://gemnasium.com/Raynos/mercury
   [9]: https://david-dm.org/Raynos/mercury.svg
   [10]: https://david-dm.org/Raynos/mercury
+  [11]: https://img.shields.io/badge/GITTER-join%20chat-green.svg
+  [12]: https://gitter.im/Raynos/mercury
   
   [graphics]: https://github.com/Raynos/graphics
   [elm]: https://github.com/elm-lang/Elm
