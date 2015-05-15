@@ -1,35 +1,38 @@
 # FAQ
 
 These are frequently asked questions. If you have any questions
-  not on this list, then **please** open an issue and ask.
-  
+not on this list, then **please** [open an issue and ask][new-issue].
+
+[new-issue]: https://github.com/Raynos/mercury/issues/new
+
 ## What are channels in mercury ?
 
 To handle events in mercury you can can pass a function to your
 rendering logic. You pass this function to `ev-click` and
-`dom-delegator` will call that function when a DOM click event
-happens.
+[`dom-delegator`][dom-delegator] will call that function when a
+DOM click event happens.
 
 Alternatively, a better way to handle events in mercury is
 to create a handle for a function you want to get called when
 an event happens. You then pass this handle to your rendering
-logic, which passes it to `ev-click` and `dom-delegator` will
-call the function associated with the handle.
+logic, which passes it to `ev-click` and [`dom-delegator`][dom-delegator]
+will call the function associated with the handle.
 
-the advantage of channels is that it's effectively a reference 
-to a function to call with an event. The nice thing about 
+The advantage of channels is that it's effectively a reference
+to a function to call with an event. The nice thing about
 this reference is that it's immutable.
 
-previously the view (the rendering logic) could "cheat" by 
-calling the function from `mercury.input()` directly with 
-an event object without going through `dom-delegator`.
-Now when you create channels you are GARANTUEED that the 
-associated function only gets called when a REAL USER 
-dom event happens.
+Previously the view (the rendering logic) could "cheat" by
+calling the function from `mercury.input()` directly with
+an event object without going through [`dom-delegator`][dom-delegator].
+Now when you create channels you are **guaranteed** that the associated
+function only gets called when a **real user** DOM event happens.
 
 This means you can write immutable unidirectional web apps
 with mercury and mercury ensures you don't accidentally cheat
 or shoot yourself in the foot.
+
+[dom-delegator]: https://github.com/Raynos/dom-delegator
 
 ## How do I do custom event handling in mercury
 
@@ -106,7 +109,7 @@ The second method is `update()` if we see a widget and we have
   the same widget in the previous tree we call `update(prev, elem)`
   instead. `update()` is a good place to copy over any stateful
   things from the `prev` widget instance and then to update the
-  state with the current properties by accesing them with `this`
+  state with the current properties by accessing them with `this`
 
 For another example of a widget see the
     [canvas demo](examples/canvas.js)
@@ -182,14 +185,14 @@ h('div', {
 ```
 
 We only have one type of hook as maintaining both life cycles
-  seperately is very complex when it can simply be done at
+  separately is very complex when it can simply be done at
   the user level with a `setImmediate`
 
 We have the hook fire immediately by default because sometimes
   you need to run DOM logic BEFORE the element is in the DOM.
 
-Firing the hook when the element is in the DOM makes it 
-  impossible to fire it when it's not in the DOM. 
+Firing the hook when the element is in the DOM makes it
+  impossible to fire it when it's not in the DOM.
 
 ## How does `mercury.struct()` unwrapping work
 
@@ -217,8 +220,8 @@ assert.equal(obj.key2(), 50)
 assert.deepEqual(obj(), { key: 42, key2: 50 })
 ```
 
-When any of the properties passed into `mercury.struct({ ... })` 
-  change then the value of the returned observable changes. 
+When any of the properties passed into `mercury.struct({ ... })`
+  change then the value of the returned observable changes.
   Specifically the value of the observable is updated by updating
   the changed key to the new plain value
 
@@ -266,7 +269,7 @@ obj.foo.bar.set(30)
 ```
 
 The same idea also works for `mercury.array()` except that
-  is based on arrays instead of objects. 
+  is based on arrays instead of objects.
 
 ## How do I implement components or widgets (WIP)
 
@@ -278,9 +281,9 @@ show Component() -> state { state: state } and Component.render()
 
 show that you can call functions
 
-### But I want to seperate my model state from my view state
+### But I want to separate my model state from my view state
 
-Talk about having two observables and setting up computed 
+Talk about having two observables and setting up computed
   relationships
 
 ### No i really, truly want local state
@@ -328,7 +331,7 @@ events.eventToggle(function (data) {
     .meetings.get(data.meetingIndex).isOpen.set(data.value)
 })
 
-function render(calender) {
+function render(calendar) {
   return h('ul', calendar.days.map(function (day, i) {
     return h('li', [
       h('ul', day.meetings.map(function (meeting, j) {
@@ -357,8 +360,8 @@ There is a problem with this example. We don't really want to
 There is a second issue here as well. When we embed our
   `'ev-click'` event we have to pass up the `meetingIndex` and
   `dayIndex` because the event handler doesn't have this
-  context. This is really annoying because we can't put the 
-  meeting UI code in a seperate function without passing it
+  context. This is really annoying because we can't put the
+  meeting UI code in a separate function without passing it
   meetingIndex and dayIndex.
 
 ### Solution
@@ -446,9 +449,9 @@ Look at how much cleaner this code is. The meeting component's
   the state that it is at.
 
 The MeetingComponent boundary also happened to be a really clean
-  place to use functions to seperate our code out.
+  place to use functions to separate our code out.
 
-## How do I seperate serializable state from application state ? (WIP)
+## How do I separate serializable state from application state ? (WIP)
 
 Sometimes you want to be able to just do
 
@@ -462,7 +465,7 @@ However the `appState` generally contains all the application
   state including local state and transient state that you don't
   really want to save.
 
-The solution to this is to have two different state atoms. 
+The solution to this is to have two different state atoms.
   One for "model" state and one for "application" state.
 
 Another example of this is wanting to synchronize state between
@@ -470,7 +473,7 @@ Another example of this is wanting to synchronize state between
   state you don't want to share, for example currently selected
   tab is not something you would want to share
 
-### Example seperating serializable state & application state
+### Example separating serializable state & application state
 
 // TODO
 
