@@ -28,7 +28,9 @@ var examplesTasks = [
     browserifyEditorTask('bmi-counter'),
     browserifyEditorTask('shared-state'),
     browserifyEditorTask('count'),
-    browserifyEditorTask('canvas')
+    browserifyEditorTask('canvas'),
+    browserifyEditorTask('async-state'),
+
 ];
 
 module.exports = examplesTasks;

@@ -57,6 +57,7 @@ hg.app(document.body, App(), App.render);
  - [shared-state](examples/shared-state.js)
  - [bmi-counter](examples/bmi-counter.js)
  - [canvas](examples/canvas.js)
+ - [async-state](examples/async-state.js)
 
 ### Intermediate Examples
 
@@ -86,19 +87,19 @@ The following examples demonstrate how you can mix & match
 
 ### Mercury vs React
 
-`mercury` is similar to react, however it's larger in scope, 
-  it is better compared against [`om`][om] or 
+`mercury` is similar to react, however it's larger in scope,
+  it is better compared against [`om`][om] or
   [`quiescent`][quiescent]
-  
- - mercury leverages [`virtual-dom`][virtual-dom] which uses 
+
+ - mercury leverages [`virtual-dom`][virtual-dom] which uses
     an immutable vdom structure
- - mercury comes with [`observ-struct`][observ-struct] which uses 
+ - mercury comes with [`observ-struct`][observ-struct] which uses
     immutable data for your state atom
- - mercury is truly modular, you can trivially swap out 
+ - mercury is truly modular, you can trivially swap out
     subsets of it for other modules
- - mercury source code itself is maintainable, the modules it 
+ - mercury source code itself is maintainable, the modules it
     uses are all small, well tested and well documented.
-    you should not be afraid to use mercury in production 
+    you should not be afraid to use mercury in production
     as it's easy to maintain & fix.
  - mercury encourages zero dom manipulation in your application code. As far as your application is concerned
     elements do not exist. This means you don't need to reference DOM elements when rendering or when handling
@@ -107,7 +108,7 @@ The following examples demonstrate how you can mix & match
  - mercury strongly encourages FRP techniques and discourages local mutable state.
  - mercury is highly performant, it's faster then React / Om / ember+htmlbars in multiple benchmarks
     [TodoMVC benchmark](http://matt-esch.github.io/mercury-perf/)\
-    [animation benchmark](http://jsfiddle.net/sVPQL/11/) 
+    [animation benchmark](http://jsfiddle.net/sVPQL/11/)
     [TodoMVC benchmark source](https://github.com/matt-esch/mercury-perf)
  - mercury comes with FP features like time-travel / easy undo out of the box.
  - mercury is lean, it's an weekend's read at 2.5kloc. (virtual-dom is 1.1kloc, an evening's read.)
@@ -177,9 +178,9 @@ A lot of the philosophy and design of `mercury` is inspired by
  - [`om`][om] for explaining the concept and benefits of
     immutable state and time travel.
  - [`elm`][elm] for explaining the concept of FRP and having a
-    reference implementation of FRP in JavaScript. I wrote a 
-    pre-cursor to `mercury` that was literally a 
-    re-implementation of [`elm`][elm] in javascript 
+    reference implementation of FRP in JavaScript. I wrote a
+    pre-cursor to `mercury` that was literally a
+    re-implementation of [`elm`][elm] in javascript
     ([`graphics`][graphics])
  - [`reflex`][reflex] for demonstrating the techniques used to
     implement dynamic inputs.
@@ -207,7 +208,7 @@ A lot of the philosophy and design of `mercury` is inspired by
   [10]: https://david-dm.org/Raynos/mercury
   [11]: https://img.shields.io/badge/GITTER-join%20chat-green.svg
   [12]: https://gitter.im/Raynos/mercury
-  
+
   [graphics]: https://github.com/Raynos/graphics
   [elm]: https://github.com/elm-lang/Elm
   [react]: https://github.com/facebook/react
