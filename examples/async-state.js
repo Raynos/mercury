@@ -3,6 +3,7 @@
 var document = require('global/document');
 var hg = require('../index.js');
 var h = require('../index.js').h;
+var setTimeout = require('timers').setTimeout;
 
 function App() {
     var state = hg.state({
