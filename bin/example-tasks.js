@@ -29,8 +29,7 @@ var examplesTasks = [
     browserifyEditorTask('shared-state'),
     browserifyEditorTask('count'),
     browserifyEditorTask('canvas'),
-    browserifyEditorTask('async-state'),
-
+    browserifyEditorTask('async-state')
 ];
 
 module.exports = examplesTasks;
