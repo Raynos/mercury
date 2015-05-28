@@ -68,6 +68,18 @@ You can also write your own custom higher order event handlers
 See [DragHandler](https://github.com/Raynos/mercury/blob/master/examples/geometry/lib/drag-handler.js) as an
   example of a custom higher order event handler.
 
+## Can I send one event to multiple channels?
+
+Yes, just assign an array to the event:
+
+```js
+h('input.button', {
+    type: 'button',
+    value: 'Click me!',
+    'ev-click': [hg.send(state.channels.first), hg.send(state.channels.second)]
+})
+```
+
 ## How do I do custom rendering
 
 If you want to embed a custom piece of rendering machinery in
