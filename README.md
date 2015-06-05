@@ -58,6 +58,7 @@ hg.app(document.body, App(), App.render);
  - [bmi-counter](examples/bmi-counter.js)
  - [canvas](examples/canvas.js)
  - [async-state](examples/async-state.js)
+ - [real-dom](examples/real-dom.js)
 
 ### Intermediate Examples
 
