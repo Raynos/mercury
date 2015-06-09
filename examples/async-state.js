@@ -17,7 +17,7 @@ function App() {
 }
 
 App.render = function render(state) {
-    return h('div.counter', [
+    return h('div', [
         'The state has been updated asynchronously: ' + state.isUpdated
     ]);
 };
