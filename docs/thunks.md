@@ -54,3 +54,37 @@ Here we use the fact that all our thunk instances that `isTextThunk` will have a
 This safes us a small amount of computation because we do not have to call `h()`. Also because we are return the previous vnode we know that the vtree/diff algorithm will go `prevVnode === currVnode` i.e. returning the same vnode instance means the diff algorithm can short circuit and does not have to recursively check stuff.
 
 Now imagine you wrapped a subtree containing 1000 virtual nodes behind a thunk, you would save having to recreate them if nothing changed and you would save having to diff them because diff can short circuit on strict equality of the root virtual node for that subtree.
+
+## Partials
+
+`hg.partial` is a wrapper over a low-level [thunk implementation](https://github.com/Raynos/vdom-thunk).
+Call it with a render function and the arguments that will be passed to that render function:
+
+```js
+App.render = function render(state) {
+    return h('div.counters', [
+        hg.partial(renderCounter, state.counter1),
+        hg.partial(renderCounter, state.counter2),
+    ]);
+};
+
+function renderCounter(counterValue) {
+   return h('span', ''+counterValue);
+}
+```
+
+In this example, when the `counter1` state changes, the `counter2` partial will not be re-evaluated and its vdom tree will simply be reused from the last state.
+
+**Be careful**: partials are also re-evaluated when their rendering function changes.
+If the code above were changed to:
+
+```js
+App.render = function render(state) {
+    var renderCounterLocal = function(cv) { ... };
+    return h('div.counters', [
+        hg.partial(renderCounterLocal, state.aCounter),
+        ...
+```
+
+then the counter's vdom would be re-evaluated every render, because the identity of `renderCounterLocal` changes every time the `render` function is called.
+This nullifies the benefits of using partials.
