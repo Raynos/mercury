@@ -295,12 +295,16 @@ show that you can call functions
 
 ### But I want to separate my model state from my view state
 
-Talk about having two observables and setting up computed
+Talk about having two observables and setting up [computed][]
   relationships
 
-### No i really, truly want local state
+[computed]: ./modules/observ.md#example-computed
 
-Talk about how to use widgets and the caveats
+### No I really, truly want local state
+
+Talk about how to use [widgets][] and the caveats
+
+[widgets]: ./widgets.md
 
 ## How do I avoid deeply nested paths & structures
 
