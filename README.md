@@ -70,6 +70,7 @@ hg.app(document.body, App(), App.render);
  - [geometry](examples/geometry)
  - [2048 (wip)](https://github.com/Raynos/mercury/tree/2048-wip/examples/2048)
  - [github issues (wip)](https://github.com/Raynos/mercury/tree/github-issues/examples/github-issues-viewer)
+ - [hot reloading with browserify or webpack](examples/hot-reload)
 
 ### Unidirectional examples
 
