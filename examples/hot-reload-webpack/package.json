@@ -1,8 +1,0 @@
-{
-  "scripts": {
-    "dev": "webpack-dev-server --port 8080 --hot --progress --colors --inline ./browser.js"
-  },
-  "devDependencies": {
-    "webpack-dev-server": "^1.10.1"
-  }
-}

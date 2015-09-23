@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "hot-browserify": "npm run http-server && npm run watchify",
+    "hot-webpack": "webpack-dev-server --port 8080 --hot --progress --colors --inline ./browser.js",
+    "http-server": "http-server -c 1 -a localhost &",
+    "watchify": "watchify -p browserify-hmr browser.js -o bundle.js"
+  },
+  "devDependencies": {
+    "browserify-hmr": "^0.2.2",
+    "http-server": "^0.8.0",
+    "watchify": "^3.4.0",
+    "webpack-dev-server": "^1.10.1"
+  }
+}
