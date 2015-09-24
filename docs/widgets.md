@@ -11,6 +11,8 @@ var diff = require('virtual-dom/diff');
 var patch = require('virtual-dom/patch');
 var document = require('global/document');
 
+module.exports = PureWrapperWidget;
+
 /*
     A PureWrapperWidget wraps a vnode in a container.
     
@@ -23,8 +25,10 @@ function PureWrapperWidget(vnode) {
 }
 
 var proto = PureWrapperWidget.prototype;
+proto.type = 'Widget';
+
 proto.init = function init() {
-    var elem = createElement(vnode);
+    var elem = createElement(this.currVnode);
     var container = document.createElement('div');
     container.appendChild(elem);
     return container;
