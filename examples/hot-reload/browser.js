@@ -9,8 +9,8 @@ function App() {
         count: hg.value(0),
         _hotVersion: hg.value(0), // This is new - see below
         channels: {
-            clicks: incrementCount,
-        },
+            clicks: incrementCount
+        }
     });
 }
 
@@ -20,7 +20,7 @@ function incrementCount(state) {
 
 // This render function may be replaced!
 var render = require('./render.js');
-App.render = function(state) {
+App.render = function renderApp(state) {
     return render(state);
 };
 
@@ -31,7 +31,7 @@ hg.app(document.body, appState, App.render);
 // Special sauce: detect changes to the rendering code and swap the rendering
 // function out without reloading the page.
 if (module.hot) {
-    module.hot.accept('./render.js', function() {
+    module.hot.accept('./render.js', function swapModule() {
         render = require('./render.js');
         // Force a re-render by changing the application state.
         appState._hotVersion.set(appState._hotVersion() + 1);
