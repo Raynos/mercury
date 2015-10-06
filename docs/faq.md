@@ -105,6 +105,10 @@ GoogleMapWidget.prototype.update = function (prev, elem) {
     this.map.setPosition(this.position)
 }
 
+GoogleMapWidget.prototype.destroy = function (el) {
+    // clean up lingering data
+}
+
 h('div', [
     new GoogleMapWidget({ x: 0, y: 0 })
 ])
@@ -122,6 +126,11 @@ The second method is `update()` if we see a widget and we have
   instead. `update()` is a good place to copy over any stateful
   things from the `prev` widget instance and then to update the
   state with the current properties by accessing them with `this`
+
+The third method is `destroy()` which is called when the widget is unmounted
+  from the DOM. It is passed the DOM node that is about to be unmounted. This
+  is generally the method in which you want to reset data structures, unbind
+  listeners and invoke other cleanup methods.
 
 For another example of a widget see the
     [canvas demo](examples/canvas.js)
