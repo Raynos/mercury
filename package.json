@@ -63,6 +63,7 @@
     "indexhtmlify": "^1.2.0",
     "istanbul": "^0.2.16",
     "javascript-editor": "^0.2.1",
+    "jquery": "^2.1.4",
     "json-globals": "^0.2.1",
     "lint-trap": "^1.0.1",
     "marked": "^0.3.2",
@@ -70,6 +71,7 @@
     "min-document": "^2.9.0",
     "next-tick": "^0.2.2",
     "node-hook": "^0.1.0",
+    "opn": "^1.0.1",
     "pre-commit": "0.0.7",
     "process": "^0.7.0",
     "raf": "^2.0.1",
@@ -85,12 +87,11 @@
     "tap-spec": "^0.2.0",
     "tape": "^2.13.2",
     "valid-email": "0.0.1",
-    "vdom-virtualize": "0.0.5",
     "vdom-to-html": "~1.2.5",
+    "vdom-virtualize": "0.0.5",
     "vtree-select": "^1.0.1",
     "weakmap-shim": "^1.1.0",
-    "zuul": "^1.9.0",
-    "opn": "^1.0.1"
+    "zuul": "^1.9.0"
   },
   "licenses": [
     {
