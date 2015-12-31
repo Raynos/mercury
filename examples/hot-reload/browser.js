@@ -26,6 +26,7 @@ App.render = function renderApp(state) {
 
 // Need a reference to this below.
 var appState = App();
+
 hg.app(document.body, appState, App.render);
 
 // Special sauce: detect changes to the rendering code and swap the rendering
@@ -33,8 +34,17 @@ hg.app(document.body, appState, App.render);
 if (module.hot) {
     module.hot.accept('./render.js', function swapModule() {
         render = require('./render.js');
-        // Force a re-render by changing the application state.
-        appState._hotVersion.set(appState._hotVersion() + 1);
+        forceRerender(appState);
         return true;
     });
+}
+
+// When using amok, an event is fired when a file changes.
+window.addEventListener('patch', function() {
+    forceRerender(appState);
+});
+
+// Force a re-render by changing the application state.
+function forceRerender(appState) {
+    appState._hotVersion.set(appState._hotVersion() + 1);
 }
