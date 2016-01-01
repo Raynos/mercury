@@ -28,7 +28,7 @@ Your changes should instantly appear on the page without refreshing or upsetting
 Note that if you edit [browser.js][], your page will refresh and your state will be reset (only using webpack).
 
 ### amok
-Amok starts its own web server to provide hot reloading and also starts the browser. It uses a V8 feature instead of eval. Live editing is not limited to the render function, try editing the counter increment in `browser.js`.
+Amok starts its own web server to provide hot reloading and also starts the browser. Live editing is not limited to the render function. It uses a V8 feature instead of eval and is limited to Chrome or Chromium browsers. Change the counter increment in `browser.js` for example.
 
 Edit [package.json][] to switch the web browser to use (Chrome or Chromium).
 
@@ -48,9 +48,10 @@ We have to be careful to not reseat any references - so we pass a function that 
 The main difference to webpack is that browserify does not come with a dev-server which is why we use [http-server][] to host our example. Other than that it works quite similar. Under the hood [browserify-hmr][] imitates webpack's hot module replacement.
 
 ### amok
-[Amok][] uses watchify to fire a `patch` event on the window object when a file is changed. Similarly to the webpack/browserify, we must change the state so Mercury re-renders automatically. Without this action, the changes in the code would only be seen after we clicked the button in the example. (The button click would change the state and trigger a re-render also.)
+[Amok][] uses watchify to fire a `patch` event on the window object when a file is changed. Similarly to the webpack/browserify, we must change the state so Mercury re-renders automatically. Without this action, the changes in the code would only be seen after we clicked the button in the example. (The button click would change the state and trigger a re-render as well.)
 
 [hot module replacement]: https://github.com/webpack/docs/wiki/hot-module-replacement-with-webpack
 [http-server]: https://github.com/indexzero/http-server
 [browserify-hmr]: https://github.com/AgentME/browserify-hmr
 [Amok]: https://github.com/caspervonb/amok
+

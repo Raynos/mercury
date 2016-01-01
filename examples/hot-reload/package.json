@@ -6,8 +6,7 @@
     "watchify-hmr": "watchify -p browserify-hmr browser.js -o bundle.js",
     "hot-amok": "npm run watchify & npm run amok-html",
     "watchify": "watchify browser.js -o bundle.js",
-    "amok-html": "amok file://$PWD/index.html --browser chrome --hot",
-    "amok-js": "amok browser.js --browser chrome --hot --compiler watchify"
+    "amok-html": "amok file://$PWD/index.html --browser chrome --hot"
   },
   "devDependencies": {
     "amok": "^1.1.3",

@@ -29,7 +29,8 @@ var appState = App();
 
 hg.app(document.body, appState, App.render);
 
-// Special sauce: detect changes to the rendering code and swap the rendering
+// Special sauce for webpack and browserify:
+// Detect changes to the rendering code and swap the rendering
 // function out without reloading the page.
 if (module.hot) {
     module.hot.accept('./render.js', function swapModule() {
@@ -39,7 +40,7 @@ if (module.hot) {
     });
 }
 
-// When using amok, an event is fired when a file changes.
+// Otherwise, using amok, an event is fired when a file changes.
 window.addEventListener('patch', function() {
     forceRerender(appState);
 });
