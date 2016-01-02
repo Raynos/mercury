@@ -2,6 +2,7 @@
 
 var hg = require('../../index.js');
 var document = require('global/document');
+var window = require('global/window');
 
 // Copied from examples/count.js
 function App() {
@@ -18,7 +19,7 @@ function incrementCount(state) {
     state.count.set(state.count() + 1);
 }
 
-// This render function may be replaced!
+// This render function may be replaced by webpack and browserify!
 var render = require('./render.js');
 App.render = function renderApp(state) {
     return render(state);
@@ -40,7 +41,7 @@ if (module.hot) {
     });
 }
 
-// Otherwise, using amok, an event is fired when a file changes.
+// Otherwise, if using amok, an event is fired when a file changes.
 window.addEventListener('patch', function() {
     forceRerender(appState);
 });
