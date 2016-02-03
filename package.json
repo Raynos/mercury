@@ -62,7 +62,7 @@
     "immutable": "^3.6.2",
     "indexhtmlify": "^1.2.0",
     "istanbul": "^0.2.16",
-    "javascript-editor": "^0.2.1",
+    "javascript-editor": "git://github.com/gcallaghan/javascript-editor.git#b8a6767536aeab14c156f003facdb308d3d12165",
     "jquery": "^2.1.4",
     "json-globals": "^0.2.1",
     "lint-trap": "^1.0.1",
