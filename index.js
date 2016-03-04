@@ -120,7 +120,11 @@ function app(elem, observ, render, opts) {
         patch: mercury.patch
     }, opts));
 
-    elem.appendChild(loop.target);
+    // This allows `true` to be passed meaning that the app was
+    // prerendered
+    if (elem !== true) {
+        elem.appendChild(loop.target);
+    }
 
     return observ(loop.update);
 }

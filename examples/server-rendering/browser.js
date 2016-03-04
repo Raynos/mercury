@@ -27,7 +27,7 @@ var app = App(JSONGlobals('state'));
 var targetElem = document.body.firstChild;
 var prevTree = virtualize(targetElem);
 
-hg.app(null, app, App.render, {
+hg.app(true, app, App.render, {
     initialTree: prevTree,
     target: targetElem
 });
