@@ -87,7 +87,7 @@
     "tap-spec": "^0.2.0",
     "tape": "^2.13.2",
     "valid-email": "0.0.1",
-    "vdom-to-html": "~1.2.5",
+    "vdom-to-html": "~2.2.0",
     "vdom-virtualize": "0.0.5",
     "vtree-select": "^1.0.1",
     "weakmap-shim": "^1.1.0",
