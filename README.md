@@ -211,7 +211,7 @@ A lot of the philosophy and design of `mercury` is inspired by
   [10]: https://david-dm.org/Raynos/mercury
   [11]: https://img.shields.io/badge/GITTER-join%20chat-green.svg
   [12]: https://gitter.im/Raynos/mercury
-  [13]: https://github.com/Raynos/mercury/blob/master/dist/mercury.js
+  [13]: https://badge-size.herokuapp.com/Raynos/mercury/master/dist/mercury.js
   [14]: https://badge-size.herokuapp.com/Raynos/mercury/master/dist/mercury.js
 
   [graphics]: https://github.com/Raynos/graphics
