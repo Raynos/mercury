@@ -5,6 +5,7 @@
 [![Coverage Status][5]][6]
 [![David Dependency status][9]][10]
 [![Gitter][11]][12]
+[![Size][13]][14]
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/raynos.svg)](https://saucelabs.com/u/raynos)
 
@@ -210,6 +211,8 @@ A lot of the philosophy and design of `mercury` is inspired by
   [10]: https://david-dm.org/Raynos/mercury
   [11]: https://img.shields.io/badge/GITTER-join%20chat-green.svg
   [12]: https://gitter.im/Raynos/mercury
+  [13]: https://github.com/Raynos/mercury/blob/master/dist/mercury.js
+  [14]: https://badge-size.herokuapp.com/Raynos/mercury/master/dist/mercury.js
 
   [graphics]: https://github.com/Raynos/graphics
   [elm]: https://github.com/elm-lang/Elm
