@@ -1,4 +1,6 @@
-# mercury
+![mercury](/mercury-logo.png?raw=true)
+
+--------------------------------
 
 [![build status][1]][2]
 [![NPM version][3]][4]
