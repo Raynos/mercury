@@ -124,7 +124,7 @@ The second method is `update()` if we see a widget and we have
   state with the current properties by accessing them with `this`
 
 For another example of a widget see the
-    [canvas demo](examples/canvas.js)
+    [canvas demo](/examples/canvas.js)
 
 ## How do I update custom properties
 
