@@ -411,7 +411,7 @@ function MeetingComponent() {
   return state;
 }
 
-EventComponent.render = function (state) {
+MeetingComponent.render = function (state) {
   return h('div', [
     h('div', {
       'ev-click': mercury.event(events.toggle, {
