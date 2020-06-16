@@ -340,9 +340,9 @@ Let's say we want to be able to expand & collapse meetings so
   we might create a UI like:
 
 ```js
-var events = mercury.input(['eventToggle'])
+var events = mercury.input(['meetingToggle'])
 
-events.eventToggle(function (data) {
+events.meetingToggle(function (data) {
   state.calendar.days.get(data.dayIndex)
     .meetings.get(data.meetingIndex).isOpen.set(data.value)
 })
@@ -411,7 +411,7 @@ function MeetingComponent() {
   return state;
 }
 
-EventComponent.render = function (state) {
+MeetingComponent.render = function (state) {
   return h('div', [
     h('div', {
       'ev-click': mercury.event(events.toggle, {
