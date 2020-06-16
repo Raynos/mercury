@@ -113,7 +113,7 @@ The following examples demonstrate how you can mix & match
     events
  - mercury is compact, it's 11kb min.gzip.js, that's smaller than backbone.
  - mercury strongly encourages FRP techniques and discourages local mutable state.
- - mercury is highly performant, it's faster then React / Om / ember+htmlbars in multiple benchmarks
+ - mercury is highly performant, it's faster than React / Om / ember+htmlbars in multiple benchmarks
     [TodoMVC benchmark](http://matt-esch.github.io/mercury-perf/)\
     [animation benchmark](http://jsfiddle.net/sVPQL/11/)
     [TodoMVC benchmark source](https://github.com/matt-esch/mercury-perf)
