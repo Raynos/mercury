@@ -106,7 +106,7 @@ The following examples demonstrate how you can mix & match
     subsets of it for other modules
  - mercury source code itself is maintainable, the modules it
     uses are all small, well tested and well documented.
-    you should not be afraid to use mercury in production
+    You should not be afraid to use mercury in production
     as it's easy to maintain & fix.
  - mercury encourages zero dom manipulation in your application code. As far as your application is concerned
     elements do not exist. This means you don't need to reference DOM elements when rendering or when handling
