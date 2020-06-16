@@ -1,13 +1,17 @@
 # mercury
 
-[![build status][1]][2]
-[![NPM version][3]][4]
-[![Coverage Status][5]][6]
-[![David Dependency status][9]][10]
-[![Gitter][11]][12]
-[![Size][13]][14]
+# Deprecated: Not actively being worked on.
 
-[![Sauce Test Status](https://saucelabs.com/browser-matrix/raynos.svg)](https://saucelabs.com/u/raynos)
+Instead [`tonic`](https://github.com/optoolco/tonic) and https://tonic.technology/ are actively being worked on.
+
+`mercury` has some interesting ideas but they are not very practical at scale.
+`tonic` is a lightweigth component system on top of web components that leverages
+the browsers HTML parser for the heavy lifting instead of `virtual-dom`.
+
+It comes with a set of [`components`](https://github.com/optoolco/components) which help with building
+apps more quickly by having some re-usable components out of the box.
+
+## Description
 
 A truly modular frontend framework
 
